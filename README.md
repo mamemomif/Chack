@@ -26,7 +26,7 @@
 ## 3. Commit 규칙
 - 하나의 커밋에 하나의 수정 사항을 포함하도록 진행
 - 기능 단위 또는 모듈 단위 커밋을 원칙으로 함
-- 카르마 커밋 규칙을 사용:
+- 카르마 커밋[https://karma-runner.github.io/6.3/dev/git-commit-msg.html] 규칙을 사용:
 
 ```
 <type>(<scope>): <subject>

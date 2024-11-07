@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "28041757619",
+    "project_id": "chack-ace76",
+    "storage_bucket": "chack-ace76.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:28041757619:android:6d6da4cdad44ce1b7141c6",
+        "android_client_info": {
+          "package_name": "com.hansung.chack"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "28041757619-dns64rkbm0nb2q5gspdh8j0hhg2momdj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCE0j2H5_42ubgFuc_mpWYEjNJ6sLLp8_E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "28041757619-dns64rkbm0nb2q5gspdh8j0hhg2momdj.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
