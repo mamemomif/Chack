@@ -1,5 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart'; 
+import 'package:flutter/material.dart'; 
 import '../services/recommended_books_service.dart';
 import '../services/location_service.dart';
 import '../models/book_model.dart';

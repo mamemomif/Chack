@@ -6,6 +6,8 @@ import '../components/book_recommendation_list.dart';
 import '../services/authentication_service.dart';
 import '../constants/colors.dart';
 import '../constants/text_styles.dart';
+import '../components/pomodoro_timer.dart';
+import '../screens/profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -68,6 +70,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   setState(() => _currentIndex = 0);
                   _pageController.jumpToPage(0);
                 },
+                onProfileTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ProfileScreen(),
+                    ),
+                  );
+                },
               ),
               Expanded(
                 child: PageView(
@@ -118,7 +128,8 @@ class _HomeTab extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05, vertical: 10),
+            padding: EdgeInsets.symmetric(
+                horizontal: screenWidth * 0.05, vertical: 10),
             child: Text(
               '오늘의 추천 도서',
               style: AppTextStyles.titleStyle.copyWith(fontSize: 18),
@@ -132,7 +143,6 @@ class _HomeTab extends StatelessWidget {
     );
   }
 }
-
 
 // 서재 탭
 class _BookshelfTab extends StatelessWidget {
@@ -162,18 +172,8 @@ class _TimerTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: AppColors.backgroundColor,
-      child: const Center(
-        child: Text(
-          '타이머',
-          style: TextStyle(
-            fontSize: 24,
-            fontFamily: 'SUITE',
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
+    return const Center(
+      child: CircularCountdownTimer(duration: 60 * 25), // 예: 25분 타이머
     );
   }
 }
