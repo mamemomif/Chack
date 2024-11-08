@@ -18,12 +18,125 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _confirmPasswordController = TextEditingController();
   final AuthService _authService = AuthService();
   bool _isLoading = false;
+  bool _hasError = false;
+  String _errorMessage = '';
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
+
+  void _showVerificationDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text(
+            '이메일 인증',
+            style: TextStyle(
+              fontFamily: 'SUITE',
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '${_emailController.text}로\n인증 메일이 발송되었습니다.',
+                style: const TextStyle(
+                  fontFamily: 'SUITE',
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                '이메일의 인증 링크를 클릭하여\n인증을 완료해 주세요.',
+                style: TextStyle(
+                  fontFamily: 'SUITE',
+                  color: Colors.grey,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () async {
+                try {
+                  await _authService.resendVerificationEmail(
+                    _emailController.text,
+                    _passwordController.text,
+                  );
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        '인증 메일이 재발송되었습니다.',
+                        style: TextStyle(fontFamily: 'SUITE'),
+                      ),
+                      backgroundColor: AppColors.pointColor,
+                    ),
+                  );
+                } catch (e) {
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        e.toString(),
+                        style: const TextStyle(fontFamily: 'SUITE'),
+                      ),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              },
+              child: const Text(
+                '인증 메일 재발송',
+                style: TextStyle(
+                  fontFamily: 'SUITE',
+                  color: AppColors.pointColor,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context); // 다이얼로그 닫기
+                Navigator.pop(context); // 회원가입 화면 닫기
+              },
+              child: const Text(
+                '확인',
+                style: TextStyle(
+                  fontFamily: 'SUITE',
+                  color: AppColors.pointColor,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   Future<void> _register() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() {
       _isLoading = true;
+      _hasError = false;
+      _errorMessage = '';
     });
 
     try {
@@ -35,16 +148,24 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('회원가입이 완료되었습니다!')),
-      );
-      
-      Navigator.pop(context); // 회원가입 성공 후 로그인 화면으로 돌아가기
+      _showVerificationDialog();
+
     } catch (e) {
       if (!mounted) return;
+      
+      setState(() {
+        _hasError = true;
+        _errorMessage = e.toString();
+      });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
+        SnackBar(
+          content: Text(
+            e.toString(),
+            style: const TextStyle(fontFamily: 'SUITE'),
+          ),
+          backgroundColor: Colors.red,
+        ),
       );
     } finally {
       if (mounted) {
@@ -96,35 +217,49 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   CustomTextField(
                     hintText: '이름',
                     controller: _nameController,
+                    hasError: _hasError,
                   ),
                   const SizedBox(height: 10),
+                  
                   CustomTextField(
                     hintText: '이메일 주소',
                     controller: _emailController,
+                    hasError: _hasError,
+                    keyboardType: TextInputType.emailAddress,
                     validator: (value) {
-                      if (value == null || !value.contains('@')) {
-                        return '유효한 이메일 주소를 입력하세요.';
+                      if (value == null || value.isEmpty) {
+                        return '이메일을 입력해주세요.';
+                      }
+                      if (!value.contains('@')) {
+                        return '올바른 이메일 형식이 아닙니다.';
                       }
                       return null;
                     },
                   ),
                   const SizedBox(height: 10),
+                  
                   CustomTextField(
                     hintText: '비밀번호',
                     obscureText: true,
                     controller: _passwordController,
+                    hasError: _hasError,
                     validator: (value) {
-                      if (value == null || value.length < 6) {
+                      if (value == null || value.isEmpty) {
+                        return '비밀번호를 입력해주세요.';
+                      }
+                      if (value.length < 6) {
                         return '비밀번호는 6자 이상이어야 합니다.';
                       }
                       return null;
                     },
                   ),
                   const SizedBox(height: 10),
+                  
                   CustomTextField(
                     hintText: '비밀번호 확인',
                     obscureText: true,
                     controller: _confirmPasswordController,
+                    hasError: _hasError,
                     validator: (value) {
                       if (value != _passwordController.text) {
                         return '비밀번호가 일치하지 않습니다.';
@@ -132,6 +267,22 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       return null;
                     },
                   ),
+                  
+                  if (_hasError) ...[
+                    const SizedBox(height: 16),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 30),
+                      child: Text(
+                        _errorMessage,
+                        style: const TextStyle(
+                          color: Colors.red,
+                          fontSize: 14,
+                          fontFamily: 'SUITE',
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
                   
                   const SizedBox(height: 45),
 

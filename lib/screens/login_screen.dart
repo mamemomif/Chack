@@ -1,4 +1,3 @@
-// lib/screens/login_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../services/authentication_service.dart';
@@ -23,6 +22,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   final AuthService _authService = AuthService();
   bool _isLoading = false;
+  bool _hasError = false;
+  String _errorMessage = '';
 
   @override
   void dispose() {
@@ -31,12 +32,23 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  void _clearError() {
+    if (_hasError) {
+      setState(() {
+        _hasError = false;
+        _errorMessage = '';
+      });
+    }
+  }
+
   // 이메일/비밀번호 로그인
   Future<void> _signInWithEmailAndPassword() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() {
       _isLoading = true;
+      _hasError = false;
+      _errorMessage = '';
     });
 
     try {
@@ -55,9 +67,10 @@ class _LoginScreenState extends State<LoginScreen> {
     } catch (e) {
       if (!mounted) return;
       
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
-      );
+      setState(() {
+        _hasError = true;
+        _errorMessage = e.toString();
+      });
     } finally {
       if (mounted) {
         setState(() {
@@ -71,6 +84,8 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _signInWithGoogle() async {
     setState(() {
       _isLoading = true;
+      _hasError = false;
+      _errorMessage = '';
     });
 
     try {
@@ -88,9 +103,10 @@ class _LoginScreenState extends State<LoginScreen> {
     } catch (e) {
       if (!mounted) return;
       
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
-      );
+      setState(() {
+        _hasError = true;
+        _errorMessage = e.toString();
+      });
     } finally {
       if (mounted) {
         setState(() {
@@ -158,6 +174,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         hintText: '아이디',
                         controller: _idController,
                         keyboardType: TextInputType.emailAddress,
+                        hasError: _hasError,
+                        onChanged: (_) => _clearError(),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return '이메일을 입력해주세요.';
@@ -175,6 +193,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         hintText: '비밀번호',
                         obscureText: true,
                         controller: _passwordController,
+                        hasError: _hasError,
+                        onChanged: (_) => _clearError(),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return '비밀번호를 입력해주세요.';
@@ -185,6 +205,23 @@ class _LoginScreenState extends State<LoginScreen> {
                           return null;
                         },
                       ),
+                      
+                      // 에러 메시지
+                      if (_hasError) ...[
+                        const SizedBox(height: 16),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 30),
+                          child: Text(
+                            _errorMessage,
+                            style: const TextStyle(
+                              color: Colors.red,
+                              fontSize: 14,
+                              fontFamily: 'SUITE',
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
                       
                       const SizedBox(height: 45),
                       
@@ -204,7 +241,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           children: [
                             TextButton(
                               onPressed: _isLoading ? null : () {},
-                              child: Text('아이디 찾기', style: AppTextStyles.subTextStyle),
+                              child: Text('아이디 찾기', 
+                                style: AppTextStyles.subTextStyle),
                             ),
                             const VerticalDivider(
                               width: 10,
@@ -215,7 +253,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             TextButton(
                               onPressed: _isLoading ? null : () {},
-                              child: Text('비밀번호 찾기', style: AppTextStyles.subTextStyle),
+                              child: Text('비밀번호 찾기', 
+                                style: AppTextStyles.subTextStyle),
                             ),
                             const VerticalDivider(
                               width: 10,
@@ -226,7 +265,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             TextButton(
                               onPressed: _isLoading ? null : _navigateToSignup,
-                              child: Text('회원가입', style: AppTextStyles.subTextStyle),
+                              child: Text('회원가입', 
+                                style: AppTextStyles.subTextStyle),
                             ),
                           ],
                         ),

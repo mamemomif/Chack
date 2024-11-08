@@ -1,4 +1,3 @@
-// lib/components/custom_text_field.dart
 import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 
@@ -7,7 +6,9 @@ class CustomTextField extends StatelessWidget {
   final bool obscureText;
   final TextEditingController? controller;
   final String? Function(String?)? validator;
-  final TextInputType? keyboardType;  // 키보드 타입 추가
+  final TextInputType? keyboardType;
+  final bool hasError;
+  final Function(String)? onChanged;
 
   const CustomTextField({
     Key? key,
@@ -15,7 +16,9 @@ class CustomTextField extends StatelessWidget {
     this.obscureText = false,
     this.controller,
     this.validator,
-    this.keyboardType,  // 키보드 타입 파라미터 추가
+    this.keyboardType,
+    this.hasError = false,
+    this.onChanged,
   }) : super(key: key);
 
   @override
@@ -24,18 +27,24 @@ class CustomTextField extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 5),
       decoration: ShapeDecoration(
-        color: Colors.black.withOpacity(0.05),
+        color: hasError 
+            ? Colors.red.withOpacity(0.1) 
+            : Colors.black.withOpacity(0.05),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(30),
+          side: hasError
+              ? const BorderSide(color: Colors.red, width: 1)
+              : BorderSide.none,
         ),
       ),
       child: TextFormField(
         controller: controller,
         obscureText: obscureText,
         validator: validator,
-        keyboardType: keyboardType,  // 키보드 타입 적용
-        style: const TextStyle(
-          color: AppColors.textColor,
+        keyboardType: keyboardType,
+        onChanged: onChanged,
+        style: TextStyle(
+          color: hasError ? Colors.red : AppColors.textColor,
           fontSize: 16,
           fontFamily: 'SUITE',
           fontWeight: FontWeight.w600,
@@ -43,7 +52,9 @@ class CustomTextField extends StatelessWidget {
         decoration: InputDecoration(
           hintText: hintText,
           hintStyle: TextStyle(
-            color: AppColors.textColor.withOpacity(0.3),
+            color: (hasError 
+                ? Colors.red 
+                : AppColors.textColor).withOpacity(0.3),
             fontSize: 16,
             fontFamily: 'SUITE',
             fontWeight: FontWeight.w600,
@@ -52,6 +63,7 @@ class CustomTextField extends StatelessWidget {
           fillColor: Colors.transparent,
           filled: true,
           contentPadding: const EdgeInsets.symmetric(vertical: 15),
+          errorStyle: const TextStyle(height: 0),
         ),
       ),
     );
