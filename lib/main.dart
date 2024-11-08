@@ -12,7 +12,7 @@ import 'constants/icons.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  await dotenv.load(); // dotenv 초기화
+  await dotenv.load(fileName: ".env"); // dotenv 초기화
 
   runApp(const MyApp());
 }

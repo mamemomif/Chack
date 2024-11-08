@@ -6,6 +6,7 @@ import '../components/book_recommendation_list.dart';
 import '../services/authentication_service.dart';
 import '../constants/colors.dart';
 import '../constants/text_styles.dart';
+import '../components/pomodoro_timer.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -162,18 +163,8 @@ class _TimerTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: AppColors.backgroundColor,
-      child: const Center(
-        child: Text(
-          '타이머',
-          style: TextStyle(
-            fontSize: 24,
-            fontFamily: 'SUITE',
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
+    return Center(
+      child: CircularCountdownTimer(duration: 60 * 25), // 예: 25분 타이머
     );
   }
 }
