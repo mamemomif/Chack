@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart'; // dotenv import
-import 'package:flutter_svg/flutter_svg.dart';
 import 'screens/splash_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
 import 'constants/colors.dart';
-import 'constants/icons.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
