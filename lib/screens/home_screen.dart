@@ -152,7 +152,7 @@ class _TimerTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Center(
-      child: CircularCountdownTimer(duration: 60 * 25), // 예: 25분 타이머
+      child: PomodoroTimer(duration: 60 * 25), // 예: 25분 타이머
     );
   }
 }
