@@ -70,14 +70,14 @@ class MyApp extends StatelessWidget {
         ),
       ),
       // To support Korean language
-      localizationsDelegates: [
+      localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      supportedLocales: [
-        const Locale('ko', 'KR'),
-        const Locale('en', 'US'),
+      supportedLocales: const [
+        Locale('ko', 'KR'),
+        Locale('en', 'US'),
       ],
       initialRoute: '/splash',
       routes: {
