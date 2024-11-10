@@ -9,6 +9,7 @@ import '../constants/text_styles.dart';
 import '../components/pomodoro_timer.dart';
 import '../screens/profile_screen.dart';
 import '../screens/bookshelf_screen.dart';
+import '../screens/search/search_screen.dart'; // 검색 화면 import 추가
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -66,7 +67,14 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             children: [
               CustomSearchBar(
-                onTap: () => Navigator.pushNamed(context, '/search'),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const SearchScreen(),
+                    ),
+                  );
+                },
                 onLogoTap: () {
                   setState(() => _currentIndex = 0);
                   _pageController.jumpToPage(0);
