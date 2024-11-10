@@ -8,8 +8,8 @@ import '../services/timer_service.dart';
 import '../services/stopwatch_service.dart';
 
 class PomodoroTimer extends StatefulWidget {
-  final int duration;
-  const PomodoroTimer({Key? key, required this.duration}) : super(key: key);
+
+  const PomodoroTimer({Key? key,}) : super(key: key);
 
   @override
   _PomodoroTimerState createState() => _PomodoroTimerState();
@@ -24,7 +24,7 @@ class _PomodoroTimerState extends State<PomodoroTimer> {
   @override
   void initState() {
     super.initState();
-    _timerService = TimerService(duration: widget.duration)
+    _timerService = TimerService()
       ..onTick = () {
         setState(() {});
       }

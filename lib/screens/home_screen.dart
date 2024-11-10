@@ -1,3 +1,4 @@
+import 'package:chack_project/components/pomodoro_timer.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../components/custom_bottom_nav_bar.dart';
@@ -6,10 +7,8 @@ import '../components/book_recommendation_list.dart';
 import '../services/authentication_service.dart';
 import '../constants/colors.dart';
 import '../constants/text_styles.dart';
-import '../components/pomodoro_timer.dart';
 import '../screens/profile_screen.dart';
 import '../screens/bookshelf_screen.dart';
-import '../screens/search/search_screen.dart'; // 검색 화면 import 추가
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -67,14 +66,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             children: [
               CustomSearchBar(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const SearchScreen(),
-                    ),
-                  );
-                },
+                onTap: () => Navigator.pushNamed(context, '/search'),
                 onLogoTap: () {
                   setState(() => _currentIndex = 0);
                   _pageController.jumpToPage(0);
@@ -160,7 +152,7 @@ class _TimerTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Center(
-      child: PomodoroTimer(duration: 60 * 25), // 예: 25분 타이머
+      child: PomodoroTimer(), // 예: 25분 타이머
     );
   }
 }
