@@ -1,3 +1,5 @@
+// services/authentication_service.dart
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -46,7 +48,6 @@ class AuthService {
     required String nickname,
     required String email,
     required String password,
-    required String birthDate,
   }) async {
     try {
       final credential = await _auth.createUserWithEmailAndPassword(
@@ -58,11 +59,11 @@ class AuthService {
 
       await credential.user?.updateDisplayName(nickname);
 
+      // Firestore에 사용자 데이터 저장
       await _firestore.collection('users').doc(uid).set({
         'uid': uid,
         'nickname': nickname,
         'email': email,
-        'birthDate': birthDate,
         'createdAt': FieldValue.serverTimestamp(),
       });
 
@@ -164,8 +165,14 @@ class AuthService {
 
       if (user != null) {
         final userDoc = await _firestore.collection('users').doc(user.uid).get();
-        if (!userDoc.exists || !userDoc.data()!.containsKey('birthDate')) {
-          return userCredential;
+        if (!userDoc.exists) {
+          // Firestore에 사용자 데이터 저장
+          await _firestore.collection('users').doc(user.uid).set({
+            'uid': user.uid,
+            'nickname': user.displayName ?? '사용자',
+            'email': user.email,
+            'createdAt': FieldValue.serverTimestamp(),
+          });
         }
       }
 
@@ -176,6 +183,28 @@ class AuthService {
     } catch (e) {
       print('Google Sign-In Error: $e');
       throw '구글 로그인 중 오류가 발생했습니다.';
+    }
+  }
+
+  // 생년월일 존재 여부 확인
+  Future<bool> isBirthDateAvailable(String uid) async {
+    final userDoc = await _firestore.collection('users').doc(uid).get();
+    return userDoc.exists && userDoc.data()!.containsKey('birthDate');
+  }
+
+  // 생년월일과 연령대 업데이트
+  Future<void> updateBirthDate(String birthDateStr, int ageGroup) async {
+    try {
+      final user = _auth.currentUser;
+      if (user != null) {
+        await _firestore.collection('users').doc(user.uid).update({
+          'birthDate': birthDateStr,
+          'age': ageGroup,
+        });
+      }
+    } catch (e) {
+      print('Error updating birthDate: $e');
+      throw '생년월일 업데이트 중 오류가 발생했습니다.';
     }
   }
 

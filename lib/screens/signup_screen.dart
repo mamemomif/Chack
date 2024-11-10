@@ -13,7 +13,6 @@ class SignUpScreen extends StatefulWidget {
 class _SignUpScreenState extends State<SignUpScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nicknameController = TextEditingController();
-  final _birthDateController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
@@ -25,111 +24,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   void dispose() {
     _nicknameController.dispose();
-    _birthDateController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
-  }
-
-  void _showVerificationDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text(
-            '이메일 인증',
-            style: TextStyle(
-              fontFamily: 'SUITE',
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '${_emailController.text}로\n인증 메일이 발송되었습니다.',
-                style: const TextStyle(
-                  fontFamily: 'SUITE',
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                '이메일의 인증 링크를 클릭하여\n인증을 완료해 주세요.',
-                style: TextStyle(
-                  fontFamily: 'SUITE',
-                  color: Colors.grey,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () async {
-                try {
-                  await _authService.resendVerificationEmail(
-                    _emailController.text,
-                    _passwordController.text,
-                  );
-                  if (!mounted) return;
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                        '인증 메일이 재발송되었습니다.',
-                        style: TextStyle(fontFamily: 'SUITE'),
-                      ),
-                      backgroundColor: AppColors.pointColor,
-                    ),
-                  );
-                } catch (e) {
-                  if (!mounted) return;
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        e.toString(),
-                        style: const TextStyle(fontFamily: 'SUITE'),
-                      ),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
-              },
-              child: const Text(
-                '인증 메일 재발송',
-                style: TextStyle(
-                  fontFamily: 'SUITE',
-                  color: AppColors.pointColor,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context); // 다이얼로그 닫기
-                Navigator.pop(context); // 회원가입 화면 닫기
-              },
-              child: const Text(
-                '확인',
-                style: TextStyle(
-                  fontFamily: 'SUITE',
-                  color: AppColors.pointColor,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
   }
 
   Future<void> _register() async {
@@ -146,12 +44,23 @@ class _SignUpScreenState extends State<SignUpScreen> {
         nickname: _nicknameController.text,
         email: _emailController.text,
         password: _passwordController.text,
-        birthDate: _birthDateController.text,
       );
 
       if (!mounted) return;
 
-      _showVerificationDialog();
+      // 회원가입 성공 메시지 표시
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '인증 메일을 보냈습니다. 메일함을 확인해주세요.',
+            style: const TextStyle(fontFamily: 'SUITE'),
+          ),
+          backgroundColor: AppColors.pointColor,
+        ),
+      );
+
+      // 로그인 화면으로 이동
+      Navigator.pushReplacementNamed(context, '/login');
 
     } catch (e) {
       if (!mounted) return;
@@ -176,21 +85,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
           _isLoading = false;
         });
       }
-    }
-  }
-
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime(2000), // 초기 날짜
-      firstDate: DateTime(1900), // 선택 가능한 가장 이른 날짜
-      lastDate: DateTime.now(), // 현재 날짜까지  
-      locale: const Locale('ko', 'KR'),
-    );
-    if (picked != null) {
-      setState(() {
-        _birthDateController.text = "${picked.toLocal()}".split(' ')[0];
-      });
     }
   }
 
@@ -236,25 +130,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     hintText: '닉네임',
                     controller: _nicknameController,
                     hasError: _hasError,
-                  ),
-                  const SizedBox(height: 10),
-
-                  // 생년월일 필드 수정: 달력 선택 가능
-                  GestureDetector(
-                    onTap: () => _selectDate(context),
-                    child: AbsorbPointer(
-                      child: CustomTextField(
-                        hintText: '생년월일 (예: 1990-01-01)',
-                        controller: _birthDateController,
-                        hasError: _hasError,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return '생년월일을 입력해주세요.';
-                          }
-                          return null;
-                        },
-                      ),
-                    ),
                   ),
                   const SizedBox(height: 10),
 

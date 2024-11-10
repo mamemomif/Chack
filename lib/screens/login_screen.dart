@@ -1,3 +1,4 @@
+import 'package:chack_project/screens/collect_birth_date_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../services/authentication_service.dart';
@@ -64,16 +65,27 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!userCredential.user!.emailVerified) {
         setState(() {
           _isEmailVerificationNeeded = true;
-          _errorMessage = '아이디/패스워드가 틀렸습니다';
+          _errorMessage = '이메일 인증이 완료되지 않았습니다.';
         });
         await _authService.signOut();
       } else {
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          '/home',
-          (route) => false,
-        );
-      }
+        final uid = userCredential.user!.uid;
+        final hasBirthDate = await _authService.isBirthDateAvailable(uid);
+
+        // 등록된 생년월일이 있으면 홈 화면으로 이동
+        if(hasBirthDate) {
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            '/home',
+            (route) => false,
+          );
+        } else { // 등록된 생년월일이 없으면 생년월일 입력 화면으로 이동
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => CollectBirthDateScreen()),
+          );
+        }
+      } 
     } catch (e) {
       if (!mounted) return;
 
@@ -122,40 +134,55 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
-Future<void> _signInWithGoogle() async {
-  setState(() {
-    _isLoading = true;
-    _hasError = false;
-    _errorMessage = '';
-  });
 
-  try {
-    final credential = await _authService.signInWithGoogle();
-
-    if (!mounted) return;
-
-    if (credential != null) {
-      Navigator.pushNamedAndRemoveUntil(
-        context,
-        '/home',
-        (route) => false,
-      );
-    }
-  } catch (e) {
-    if (!mounted) return;
-    
+  // 구글 로그인
+  Future<void> _signInWithGoogle() async {
     setState(() {
-      _hasError = true;
-      _errorMessage = e.toString();
+      _isLoading = true;
+      _hasError = false;
+      _errorMessage = '';
     });
-  } finally {
-    if (mounted) {
+
+    try {
+      final credential = await _authService.signInWithGoogle();
+
+      if (!mounted) return;
+
+      if (credential != null) {
+        // 구글 로그인 성공 후 생년월일 확인
+        final uid = credential.user!.uid;
+        final hasBirthDate = await _authService.isBirthDateAvailable(uid);
+
+        // 등록된 생년월일이 있으면 홈 화면으로 이동
+        if(hasBirthDate) {
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            '/home',
+            (route) => false,
+          );
+        } else { // 등록된 생년월일이 없으면 생년월일 입력 화면으로 이동
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => CollectBirthDateScreen()),
+          );
+        }
+      }
+    } catch (e) {
+      if (!mounted) return;
+
       setState(() {
-        _isLoading = false;
+        _hasError = true;
+        _errorMessage = e.toString();
       });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
-}
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -243,7 +270,7 @@ Future<void> _signInWithGoogle() async {
                           child: GestureDetector(
                             onTap: _resendVerificationEmail,
                             child: const Text(
-                              '이메일 인증이 필요합니다. 인증 메일이 안왔나요? 인증메일 재전송',
+                              '이메일 인증이 완료되지 않았습니다. 메일을 못 받으셨나요? 재전송',
                               style: TextStyle(
                                 color: AppColors.pointColor,
                                 fontWeight: FontWeight.bold,
@@ -287,8 +314,8 @@ Future<void> _signInWithGoogle() async {
                           children: [
                             TextButton(
                               onPressed: _isLoading ? null : () {},
-                              child: Text('아이디 찾기', 
-                                style: AppTextStyles.subTextStyle),
+                              child: Text('아이디 찾기',
+                                  style: AppTextStyles.subTextStyle),
                             ),
                             const VerticalDivider(
                               width: 10,
@@ -299,8 +326,8 @@ Future<void> _signInWithGoogle() async {
                             ),
                             TextButton(
                               onPressed: _isLoading ? null : () {},
-                              child: Text('비밀번호 찾기', 
-                                style: AppTextStyles.subTextStyle),
+                              child: Text('비밀번호 찾기',
+                                  style: AppTextStyles.subTextStyle),
                             ),
                             const VerticalDivider(
                               width: 10,
@@ -311,8 +338,8 @@ Future<void> _signInWithGoogle() async {
                             ),
                             TextButton(
                               onPressed: _isLoading ? null : _navigateToSignup,
-                              child: Text('회원가입', 
-                                style: AppTextStyles.subTextStyle),
+                              child: Text('회원가입',
+                                  style: AppTextStyles.subTextStyle),
                             ),
                           ],
                         ),
