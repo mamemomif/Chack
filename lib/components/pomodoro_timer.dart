@@ -63,11 +63,6 @@ class _PomodoroTimerState extends State<PomodoroTimer> {
             onPageChanged: (index) {
               setState(() {
                 _currentPageIndex = index;
-                if (index == 0) {
-                  _timerService.reset();
-                } else {
-                  _stopwatchService.reset();
-                }
               });
             },
             children: [
@@ -108,14 +103,8 @@ class _PomodoroTimerState extends State<PomodoroTimer> {
           alignment: Alignment.topLeft,
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.1, vertical: 1),
-            child: Text(
-              '뽀모도로',
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: 24,
-                fontWeight: FontWeight.w800,
-                fontFamily: 'SUITE',
-              ),
+            child: Text('뽀모도로', style: TextStyle(color: Colors.black, fontSize: 24, fontWeight: FontWeight.w800, fontFamily: 'SUITE',
+            ),
             ),
           ),
         ),
@@ -128,13 +117,16 @@ class _PomodoroTimerState extends State<PomodoroTimer> {
                 radius: 114.5,
                 lineWidth: 20.0,
                 percent: _timerService.progress,
+                //animation: true,
+                //animationDuration: 1500000,
+                //animateFromLastPercent:true ,
                 center: Text(
                   _timerService.formatTime(),
                   style: const TextStyle(fontFamily: "SUITE", fontSize: 44, fontWeight: FontWeight.w800),
                 ),
                 progressColor: AppColors.pointColor,
                 backgroundColor: Colors.grey[300]!,
-                circularStrokeCap: CircularStrokeCap.round,
+                circularStrokeCap: CircularStrokeCap.butt,
                 reverse: true,
               ),
               const SizedBox(height: 20),
@@ -216,7 +208,9 @@ class _PomodoroTimerState extends State<PomodoroTimer> {
         const SizedBox(height: 20),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
+
           children: [
+
             IconButton(
               icon: SvgPicture.asset(AppIcons.restartIcon),
               iconSize: 30,
@@ -225,6 +219,10 @@ class _PomodoroTimerState extends State<PomodoroTimer> {
                   _stopwatchService.reset();
                 });
               },
+            ),
+            const Text(
+              "다시 시작",
+              style: TextStyle(fontFamily: "SUITE", fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w600),
             ),
             const SizedBox(width: 40),
             IconButton(
@@ -238,6 +236,7 @@ class _PomodoroTimerState extends State<PomodoroTimer> {
             ),
           ],
         ),
+
       ],
     );
   }
