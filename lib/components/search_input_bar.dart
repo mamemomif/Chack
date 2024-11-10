@@ -15,56 +15,68 @@ class SearchInputBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Column(
       children: [
-        // 로고
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-          child: SvgPicture.asset(
-            AppIcons.chackIcon,
-            width: 24,
-          ),
+        const SizedBox(
+          height: 14,
         ),
-        const SizedBox(width: 5),
+        Row(
+          children: [
+            // 로고
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 5),
+              child: SvgPicture.asset(
+                AppIcons.chackIcon,
+                width: 24,
+              ),
+            ),
+            const SizedBox(width: 10),
 
-        // 검색 인풋 필드와 돋보기 아이콘 포함 컨테이너
-        Expanded(
-          child: Container(
-            height: 44,
-            padding: const EdgeInsets.symmetric(horizontal: 15),
-            decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.05),
-              borderRadius: BorderRadius.circular(22),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: controller,
-                    decoration: InputDecoration(
-                      fillColor: Colors.transparent,
-                      hintText: '읽고 싶은 책을 알려주세요',
-                      hintStyle: TextStyle(
-                        color: Colors.black.withOpacity(0.4),
-                        fontSize: 16,
-                        fontFamily: 'SUITE',
-                        fontWeight: FontWeight.w500,
+            Expanded(
+              child: Container(
+                height: 44,
+                padding: const EdgeInsets.symmetric(horizontal: 15),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(22),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: controller,
+                        decoration: InputDecoration(
+                          fillColor: Colors.transparent,
+                          hintText: '읽고 싶은 책을 알려주세요',
+                          hintStyle: TextStyle(
+                            color: Colors.black.withOpacity(0.4),
+                            fontSize: 16,
+                            fontFamily: 'SUITE',
+                            fontWeight: FontWeight.w500,
+                          ),
+                          border: InputBorder.none,
+                        ),
                       ),
-                      border: InputBorder.none,
                     ),
-                  ),
+                    GestureDetector(
+                      onTap: () {
+                        // 검색어가 입력되었을 때만 검색 결과 화면 표시
+                        if (controller.text.isNotEmpty) {
+                          onSearch();
+                          controller.clear(); // 검색 후 텍스트 필드 비우기
+                        }
+                      },
+                      child: Icon(
+                        Icons.search,
+                        color: Colors.black.withOpacity(0.4),
+                        size: 20,
+                      ),
+                    ),
+                  ],
                 ),
-                GestureDetector(
-                  onTap: onSearch,
-                  child: Icon(
-                    Icons.search,
-                    color: Colors.black.withOpacity(0.4),
-                    size: 20,
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
+          ],
         ),
       ],
     );
