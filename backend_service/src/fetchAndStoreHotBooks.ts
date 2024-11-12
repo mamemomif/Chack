@@ -1,122 +1,132 @@
-// fetchAndStoreHotBooks.ts
-import * as dotenv from "dotenv";
-import { isAxiosError } from "axios";
 import axios from "axios";
 import { initializeFirebase } from "./firebase";
 import * as admin from "firebase-admin";
+import { logger } from "firebase-functions/v2";
+import {
+  ApiConfig,
+  Book,
+  HotBooksDocument,
+  HotBooksApiResponse,
+  AgeGroup,
+} from "./types";
 
-dotenv.config();
-const API_KEY = process.env.LIBRARY_DATANARU_API_KEY;
 const API_URL = "http://data4library.kr/api/loanItemSrch";
 const COLLECTION_NAME = "hotBooks";
-const TIMEOUT = 240000;
+const TIMEOUT = 30000;
 
-// Firebase 초기화 및 Firestore 인스턴스 가져오기
-const { db } = initializeFirebase();
+const AGE_GROUPS: AgeGroup[] = [
+  { code: "0", name: "영유아" },
+  { code: "6", name: "유아" },
+  { code: "8", name: "초등" },
+  { code: "14", name: "청소년" },
+  { code: "20", name: "20대" },
+  { code: "30", name: "30대" },
+  { code: "40", name: "40대" },
+  { code: "50", name: "50대" },
+  { code: "60", name: "60세 이상" },
+];
 
-if (!API_KEY) {
-  throw new Error("API 키가 설정되지 않았습니다.");
-}
+function getDateRange() {
+  const end = new Date();
+  end.setDate(end.getDate() - 1);
 
-interface BookData {
-  bookname: string;
-  authors: string;
-  publisher: string;
-  publication_year: string;
-  isbn13: string;
-  addition_symbol: string;
-  vol: string;
-  class_no: string;
-  class_nm: string;
-  loan_count: string;
-  bookImageURL: string;
-  bookDtlUrl: string;
-}
+  const start = new Date(end);
+  start.setDate(start.getDate() - 7);
 
-interface BookDoc {
-  doc: BookData;
-}
-
-interface ApiResponse {
-  response: {
-    docs: BookDoc[];
+  return {
+    startDt: start.toISOString().split("T")[0],
+    endDt: end.toISOString().split("T")[0],
   };
 }
 
-function getLastWeekDate(): string {
-  const date = new Date();
-  date.setDate(date.getDate() - 7);
-  console.log("[Date] Last week date:", date);
-  return date.toISOString().split("T")[0];
-}
+export async function fetchAndStoreHotBooks(apiKey: string) {
+  const config: ApiConfig = {
+    libraryApiKey: apiKey,
+    vworldApiKey: "",
+  };
 
-function getYesterdayDate(): string {
-  const date = new Date();
-  date.setDate(date.getDate() - 1);
-  console.log("[Date] Yesterday date:", date);
-  return date.toISOString().split("T")[0];
-}
+  if (!config.libraryApiKey) {
+    throw new Error("LIBRARY_API_KEY가 설정되지 않았습니다.");
+  }
 
-export async function fetchAndStoreHotBooks() {
-  const ageGroups = ["0", "6", "8", "14", "20", "30", "40", "50", "60"];
-  const startDate = getLastWeekDate();
-  const endDate = getYesterdayDate();
+  const { startDt, endDt } = getDateRange();
+  logger.info(`[HotBooks] ${startDt} ~ ${endDt} 기간의 인기 도서 데이터 수집 시작`);
 
-  console.log("[Start] Fetching hot books data from", startDate, "to", endDate);
+  const collectedData: Record<string, HotBooksDocument> = {};
+
+  let db: admin.firestore.Firestore;
+  try {
+    const firebase = initializeFirebase();
+    if (!firebase?.db) {
+      throw new Error("[HotBooks] Firebase 초기화 실패");
+    }
+    db = firebase.db;
+    logger.info("[HotBooks] Firebase 초기화 성공");
+  } catch (error) {
+    logger.error("[HotBooks] Firebase 초기화 에러:", error);
+    throw error;
+  }
 
   try {
-    const collectedData: Record<string, BookData[]> = {};
+    for (const ageGroup of AGE_GROUPS) {
+      logger.info(`[HotBooks] ${ageGroup.name}(${ageGroup.code}) 데이터 요청`);
 
-    for (const age of ageGroups) {
-      console.log(`[Request] 연령대 ${age} 데이터 요청 시작`);
-
-      const response = await axios.get<ApiResponse>(API_URL, {
-        params: {
-          authKey: API_KEY,
-          startDt: startDate,
-          endDt: endDate,
-          age: age,
+      try {
+        const params = {
+          authKey: config.libraryApiKey,
+          startDt,
+          endDt,
+          age: ageGroup.code,
           format: "json",
           pageSize: 100,
-        },
-        timeout: TIMEOUT,
-      });
+        };
 
-      console.log(`[Response] 연령대 ${age} 응답 상태:`, response.status);
+        logger.info(`[HotBooks] API 요청: ${API_URL} ${JSON.stringify(params)}`);
 
-      if (response.data?.response?.docs) {
-        const books = response.data.response.docs.map((doc) => doc.doc);
-        collectedData[age] = books;
-
-        await db.collection(COLLECTION_NAME).doc(age).set({
-          books,
-          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        const response = await axios.get<HotBooksApiResponse>(API_URL, {
+          params,
+          timeout: TIMEOUT,
         });
 
-        console.log(`[Firestore] 연령대 ${age} 저장 완료 - ${books.length}건`);
-      } else {
-        console.log(`[Warning] 연령대 ${age}의 데이터가 없습니다.`);
+        logger.info(`[HotBooks] response: ${JSON.stringify(response.data)}`);
+
+        const books: Book[] = response.data?.response?.docs?.map(({ doc }) => ({
+          addition_symbol: doc.addition_symbol,
+          authors: doc.authors,
+          bookDtlUrl: doc.bookDtlUrl,
+          bookImageURL: doc.bookImageURL,
+          bookname: doc.bookname,
+          class_nm: doc.class_nm,
+          class_no: doc.class_no,
+          isbn13: doc.isbn13,
+          loan_count: Number(doc.loan_count),
+          publication_year: doc.publication_year,
+          publisher: doc.publisher,
+          ranking: Number(doc.ranking),
+          vol: doc.vol,
+        })) || [];
+
+        const documentData: HotBooksDocument = {
+          ageGroupName: ageGroup.name,
+          books,
+          period: { startDt, endDt },
+          updatedAt: admin.firestore.Timestamp.now(),
+        };
+
+        // 데이터 저장
+        await db.collection(COLLECTION_NAME).doc(ageGroup.code).set(documentData);
+        logger.info(`[HotBooks] ${ageGroup.name}: ${books.length}건 저장 완료`);
+      } catch (error) {
+        logger.error(`[HotBooks] ${ageGroup.name} 데이터 수집 실패:`, error);
       }
+
+      await new Promise((resolve) => setTimeout(resolve, 5000));
     }
 
-    console.log("[Complete] 연령대별 인기 도서 데이터가 모두 저장되었습니다.");
+    logger.info("[HotBooks] 모든 연령대의 인기 도서 데이터 저장 완료");
     return collectedData;
   } catch (error) {
-    if (isAxiosError(error)) {
-      console.error("[Error] API 요청 실패:", {
-        status: error.response?.status,
-        statusText: error.response?.statusText,
-        data: error.response?.data,
-        config: {
-          url: error.config?.url,
-          method: error.config?.method,
-          params: error.config?.params ? {
-            ...error.config.params,
-            authKey: "***",
-          } : undefined,
-        },
-      });
-    }
+    logger.error("[HotBooks] 전체 처리 실패:", error);
     throw error;
   }
 }
