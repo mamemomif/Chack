@@ -2,17 +2,22 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 class TimerService with WidgetsBindingObserver {
-  int duration;
-  late int _remainingTime;
+  final int pomodoroDuration; // 뽀모도로 지속 시간 (초 단위)
+  final int breakDuration; // 휴식 지속 시간 (초 단위)
+  late int duration; // 현재 타이머의 지속 시간
+  late int _remainingTime; // 남은 시간
   double progress;
   Timer? _timer;
   bool isRunning = false;
-  DateTime? _backgroundTime; // 백그라운드 전환 시간 기록
+  bool isPomodoro = true; // 뽀모도로 타이머인지 여부
 
   VoidCallback? onTick;
   VoidCallback? onComplete;
 
-  TimerService({this.duration = 60}) : _remainingTime = duration, progress = 1.0 {
+  TimerService({this.pomodoroDuration = 20 * 1, this.breakDuration = 5 * 1}) //사이클 구현 테스크를 위해서 값 임시 조정했습니다.
+      : duration = pomodoroDuration,
+        _remainingTime = pomodoroDuration,
+        progress = 1.0 {
     WidgetsBinding.instance.addObserver(this); // 라이프사이클 옵저버 추가
   }
 
@@ -31,8 +36,22 @@ class TimerService with WidgetsBindingObserver {
       } else {
         stop();
         onComplete?.call();
+        _switchTimer(); // 다음 타이머로 전환 후 시작
+        start();
       }
     });
+  }
+
+  void _switchTimer() {
+    // 타이머 종료 후 자동 전환
+    if (isPomodoro) {
+      duration = breakDuration; // 휴식 시간 설정
+    } else {
+      duration = pomodoroDuration; // 뽀모도로 시간 설정
+    }
+    _remainingTime = duration;
+    progress = 1.0;
+    isPomodoro = !isPomodoro; // 타이머 상태 전환
   }
 
   void stop() {
@@ -43,6 +62,7 @@ class TimerService with WidgetsBindingObserver {
 
   void reset() {
     stop();
+    duration = isPomodoro ? pomodoroDuration : breakDuration; // 현재 타이머에 따라 초기화
     _remainingTime = duration;
     progress = 1.0;
     onTick?.call();
@@ -52,29 +72,6 @@ class TimerService with WidgetsBindingObserver {
     final minutes = (_remainingTime ~/ 60).toString().padLeft(2, '0');
     final secs = (_remainingTime % 60).toString().padLeft(2, '0');
     return "$minutes:$secs";
-  }
-
-  // 앱 라이프사이클 상태가 변경될 때 호출
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused && isRunning) {
-      _backgroundTime = DateTime.now(); // 백그라운드로 갈 때 시간 기록
-      _timer?.cancel(); // 타이머 일시 정지
-    } else if (state == AppLifecycleState.resumed && isRunning) {
-      if (_backgroundTime != null) {
-        final now = DateTime.now();
-        final elapsedTime = now.difference(_backgroundTime!).inSeconds;
-        _remainingTime = (_remainingTime - elapsedTime).clamp(0, duration); // 남은 시간 조정
-        progress = _remainingTime / duration;
-
-        if (_remainingTime > 0) {
-          _startCountdown(); // 타이머 재시작
-        } else {
-          stop();
-          onComplete?.call();
-        }
-      }
-    }
   }
 
   void dispose() {

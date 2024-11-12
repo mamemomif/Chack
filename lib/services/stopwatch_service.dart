@@ -22,7 +22,7 @@ class StopwatchService with WidgetsBindingObserver {
   }
 
   void _startStopwatch() {
-    _timer = Timer.periodic(const Duration(milliseconds: 10), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) { // 1초 단위로 업데이트
       if (_startTime != null) {
         final now = DateTime.now();
         _elapsedTime = now.difference(_startTime!).inMilliseconds;
@@ -49,9 +49,8 @@ class StopwatchService with WidgetsBindingObserver {
 
   String formatTime() {
     final minutes = (_elapsedTime ~/ 60000).toString().padLeft(2, '0');
-    final secs = ((_elapsedTime ~/ 1000) % 60).toString().padLeft(2, '0');
-    final milliseconds = ((_elapsedTime % 1000) ~/ 10).toString().padLeft(2, '0');
-    return "$minutes:$secs.$milliseconds";
+    final seconds = ((_elapsedTime ~/ 1000) % 60).toString().padLeft(2, '0');
+    return "$minutes:$seconds";
   }
 
   // 앱 라이프사이클 상태가 변경될 때 호출
