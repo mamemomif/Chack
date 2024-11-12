@@ -52,7 +52,6 @@ class _TimerScreenState extends State<TimerScreen> {
             ],
           ),
         ),
-        const SelectBookButton(),
         const SizedBox(height: 20),
       ],
     );

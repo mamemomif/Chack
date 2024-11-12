@@ -1,3 +1,4 @@
+import 'package:chack_project/components/timer/timer_select_book_button.dart';
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -18,20 +19,44 @@ class PomodoroPage extends StatefulWidget {
 }
 
 class _PomodoroPageState extends State<PomodoroPage> {
+  String elapsedTimeText = '';
+
   @override
   void initState() {
     super.initState();
     widget.timerService.onTick = () {
-      setState(() {}); // 타이머 업데이트 시 화면 갱신
+      setState(() {
+        elapsedTimeText = widget.timerService.formatElapsedTime();
+      });
     };
     widget.timerService.onComplete = () {
-      setState(() {}); // 타이머 완료 시 화면 갱신
+      setState(() {
+        elapsedTimeText = widget.timerService.formatElapsedTime();
+      });
     };
+  }
+
+  void _toggleTimer() {
+    setState(() {
+      if (widget.timerService.isRunning) {
+        widget.timerService.stop();
+      } else {
+        widget.timerService.start();
+      }
+      elapsedTimeText = widget.timerService.formatElapsedTime();
+    });
+  }
+
+  void _resetTimer() {
+    setState(() {
+      widget.timerService.reset();
+      elapsedTimeText = widget.timerService.formatElapsedTime();
+    });
   }
 
   @override
   void dispose() {
-    widget.timerService.stop(); // 화면이 종료되면 타이머도 종료
+    widget.timerService.stop();
     super.dispose();
   }
 
@@ -39,6 +64,7 @@ class _PomodoroPageState extends State<PomodoroPage> {
   Widget build(BuildContext context) {
     final double screenWidth = MediaQuery.of(context).size.width;
     return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Align(
           alignment: Alignment.topLeft,
@@ -55,7 +81,6 @@ class _PomodoroPageState extends State<PomodoroPage> {
             ),
           ),
         ),
-        const SizedBox(height: 20),
         Expanded(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -82,11 +107,7 @@ class _PomodoroPageState extends State<PomodoroPage> {
                       IconButton(
                         icon: SvgPicture.asset(AppIcons.restartIcon),
                         iconSize: 30,
-                        onPressed: () {
-                          setState(() {
-                            widget.timerService.reset();
-                          });
-                        },
+                        onPressed: _resetTimer,
                       ),
                       const Text(
                         "다시 시작",
@@ -107,15 +128,7 @@ class _PomodoroPageState extends State<PomodoroPage> {
                           widget.timerService.isRunning ? AppIcons.pauseIcon : AppIcons.startIcon,
                         ),
                         iconSize: 30,
-                        onPressed: () {
-                          setState(() {
-                            if (widget.timerService.isRunning) {
-                              widget.timerService.stop();
-                            } else {
-                              widget.timerService.start();
-                            }
-                          });
-                        },
+                        onPressed: _toggleTimer,
                       ),
                       Text(
                         widget.timerService.isRunning ? "정지" : "시작",
@@ -131,6 +144,12 @@ class _PomodoroPageState extends State<PomodoroPage> {
                 ],
               ),
             ],
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 20),
+          child: BookSelectionWidget(
+            elapsedTimeText: elapsedTimeText,
           ),
         ),
       ],
