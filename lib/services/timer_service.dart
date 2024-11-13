@@ -65,7 +65,6 @@ class TimerService with WidgetsBindingObserver {
     stop();
     duration = isPomodoro ? pomodoroDuration : breakDuration;
     _remainingTime = duration;
-    elapsedTime = 0; // 누적 시간 초기화
     progress = 1.0;
     onTick?.call();
   }

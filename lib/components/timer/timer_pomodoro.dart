@@ -20,7 +20,7 @@ class PomodoroPage extends StatefulWidget {
 
 class _PomodoroPageState extends State<PomodoroPage> {
   String elapsedTimeText = '';
-
+  Map<String, String>? selectedBook;
   @override
   void initState() {
     super.initState();
@@ -38,6 +38,16 @@ class _PomodoroPageState extends State<PomodoroPage> {
 
   void _toggleTimer() {
     setState(() {
+      // selectedBook이 null인지 확인
+      if (selectedBook == null) {
+        // 선택된 책이 없으면 타이머가 시작되지 않도록 메시지 표시
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("먼저 기록할 도서를 선택해주세요.")),
+        );
+        return;
+      }
+
+      // selectedBook이 있을 경우에만 타이머 시작/중지
       if (widget.timerService.isRunning) {
         widget.timerService.stop();
       } else {
@@ -150,6 +160,11 @@ class _PomodoroPageState extends State<PomodoroPage> {
           padding: const EdgeInsets.symmetric(vertical: 20),
           child: BookSelectionWidget(
             elapsedTimeText: elapsedTimeText,
+              onBookSelected: (book) { // 콜백 함수 전달
+                setState(() {
+                  selectedBook = book;
+                });
+              }
           ),
         ),
       ],
