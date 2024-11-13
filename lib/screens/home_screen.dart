@@ -1,4 +1,4 @@
-import 'package:chack_project/components/pomodoro_timer.dart';
+import 'package:chack_project/screens/timer_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../components/custom_bottom_nav_bar.dart';
@@ -152,7 +152,7 @@ class _TimerTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Center(
-      child: PomodoroTimer(), // 예: 25분 타이머
+      child: TimerScreen(),
     );
   }
 }
