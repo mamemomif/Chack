@@ -32,7 +32,12 @@ class TimerService with WidgetsBindingObserver {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_remainingTime > 0) {
         _remainingTime--;
-        elapsedTime++; // 진행된 시간 누적
+
+        // 진행된 시간 누적 (Pomodoro 타이머일 경우만)
+        if (isPomodoro) {
+          elapsedTime++;
+        }
+
         progress = _remainingTime / duration;
         onTick?.call();
       } else {
@@ -75,7 +80,6 @@ class TimerService with WidgetsBindingObserver {
     final seconds = (elapsedTime % 60).toString();
 
     return '$hours시간$minutes분$seconds초';
-
   }
 
   String formatTime() {
@@ -90,3 +94,4 @@ class TimerService with WidgetsBindingObserver {
     _timer?.cancel();
   }
 }
+
