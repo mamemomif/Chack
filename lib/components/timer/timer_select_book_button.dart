@@ -1,3 +1,4 @@
+import 'package:chack_project/components/timer/timer_select_book_button.dart';
 import 'package:chack_project/components/timer/timer_select_book_menu.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -6,8 +7,12 @@ import '../../services/timer_service.dart';
 
 class BookSelectionWidget extends StatefulWidget {
   final String elapsedTimeText;
-
-  const BookSelectionWidget({Key? key, required this.elapsedTimeText}) : super(key: key);
+  final Function(Map<String, String>?) onBookSelected;
+  const BookSelectionWidget({
+    Key? key,
+    required this.elapsedTimeText,
+    required this.onBookSelected, // 생성자에서 받도록 추가
+  }) : super(key: key);
 
   @override
   _BookSelectionWidgetState createState() => _BookSelectionWidgetState();
@@ -35,6 +40,7 @@ class _BookSelectionWidgetState extends State<BookSelectionWidget> {
           setState(() {
             selectedBook = book;
           });
+          widget.onBookSelected(book); // 선택된 책을 부모에게 전달
           Navigator.pop(context);
           timerService.start();
         },
@@ -47,6 +53,7 @@ class _BookSelectionWidgetState extends State<BookSelectionWidget> {
     setState(() {
       selectedBook = null;
     });
+    widget.onBookSelected(null);
     timerService.reset();
   }
 
