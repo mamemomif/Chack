@@ -109,6 +109,7 @@ export const getLibrariesWithBook = onRequest(
 
       logger.info("[Request] Received data:", { isbn, latitude, longitude });
 
+      // 필수 파라미터 체크
       if (!isbn || !latitude || !longitude) {
         logger.error("[Error] Invalid parameters", { isbn, latitude, longitude });
         res.status(400).json({
@@ -119,6 +120,7 @@ export const getLibrariesWithBook = onRequest(
         return;
       }
 
+      // 파라미터 처리
       const isbnStr = Array.isArray(isbn) ? isbn[0] : isbn.toString();
       const latNum = parseFloat(Array.isArray(latitude) ? latitude[0] : latitude.toString());
       const lonNum = parseFloat(Array.isArray(longitude) ? longitude[0] : longitude.toString());
@@ -133,28 +135,42 @@ export const getLibrariesWithBook = onRequest(
         );
       }
 
+      // 외부 IP 확인
       const externalIp = await getExternalIP();
       logger.info("[Info] 외부 IP 주소:", externalIp);
-      logger.info("[Processing] 도서관 정보를 조회합니다...");
+      logger.info("[Processing] 가장 가까운 도서관 정보를 조회합니다...");
 
+      // 사용자 위치 객체 생성
       const userLocation: Location = {
         latitude: latNum,
         longitude: lonNum,
       };
 
+      // LibraryService 인스턴스 생성
       const libraryService = new LibraryService(
         SECRET_LIBRARY_DATANARU_API_KEY.value(),
         SECRET_VWORLD_API_KEY.value()
       );
 
-      const libraries = await libraryService.findLibrariesWithBook(isbnStr, userLocation);
+      // 가장 가까운 도서관 한 곳만 가져오기
+      const nearestLibrary = await libraryService.findNearestLibraryWithBook(isbnStr, userLocation);
 
-      logger.info("[Response] 발견된 도서관 수:", libraries.length);
+      if (!nearestLibrary) {
+        logger.info("[Response] 대출 가능한 도서관이 없습니다.");
+        res.status(404).json({
+          success: false,
+          message: "해당 도서를 소장하고 대출 가능한 도서관을 찾을 수 없습니다.",
+        });
+        return;
+      }
 
+      logger.info("[Response] 가장 가까운 도서관:", nearestLibrary.name);
+
+      // 응답 전송
       res.status(200).json({
         success: true,
         data: {
-          libraries,
+          library: nearestLibrary,
           query: {
             isbn: isbnStr,
             latitude: latNum,
