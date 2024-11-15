@@ -10,6 +10,7 @@ import '../constants/colors.dart';
 import '../constants/text_styles.dart';
 import '../screens/profile_screen.dart';
 import '../screens/bookshelf_screen.dart';
+import '../screens/search/search_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -98,10 +99,13 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             children: [
               CustomSearchBar(
-                onTap: () => Navigator.pushNamed(context, '/search'),
-                onLogoTap: () {
-                  setState(() => _currentIndex = 0);
-                  _pageController.jumpToPage(0);
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const SearchScreen(),
+                    ),
+                  );
                 },
                 onProfileTap: () {
                   Navigator.push(
