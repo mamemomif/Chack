@@ -102,6 +102,18 @@ class BookCacheService {
     await _libraryInfoBox.clear();
   }
 
+    Future<void> clearLibraryInfo(String isbn) async {
+    await _libraryInfoBox.delete(isbn);
+    await _libraryInfoBox.delete('${isbn}_timestamp');
+  }
+
+  // 모든 도서관 정보 캐시 삭제
+  Future<void> clearAllLibraryInfo() async {
+    final keys = _libraryInfoBox.keys.toList();
+    await _libraryInfoBox.deleteAll(keys);
+  }
+
+
   Future<void> dispose() async {
     await _booksBox.close();
     await _libraryInfoBox.close();

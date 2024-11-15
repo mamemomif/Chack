@@ -7,122 +7,138 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'dart:io';
 
 class LocationService {
+  static final LocationService _instance = LocationService._internal();
+  factory LocationService() => _instance;
+  LocationService._internal();
+
   final Logger _logger = Logger();
   Position? _lastPosition;
+  DateTime? _lastUpdateTime;
   final _positionController = StreamController<Position>.broadcast();
   bool _isInitialized = false;
   StreamSubscription<Position>? _positionSubscription;
 
-  Stream<Position> get positionStream => _positionController.stream;
+  // 위치 정보 캐시 유효 시간 (10분)
+  static const Duration _cacheValidDuration = Duration(minutes: 10);
 
-  Future<Position> getCurrentLocation() async {
+  Stream<Position> get positionStream => _positionController.stream;
+  Position? get lastPosition => _lastPosition;
+  bool get hasValidCache => _lastPosition != null && 
+      _lastUpdateTime != null &&
+      DateTime.now().difference(_lastUpdateTime!) < _cacheValidDuration;
+
+  Future<Position> getCurrentLocation({bool forceUpdate = false}) async {
+    // 캐시된 위치가 유효하고 강제 업데이트가 아닌 경우
+    if (!forceUpdate && hasValidCache) {
+      _logger.d('LocationService: 캐시된 위치 정보 사용 - (${_lastPosition!.latitude}, ${_lastPosition!.longitude})');
+      return _lastPosition!;
+    }
+
     _logger.d('LocationService: 현재 위치 가져오기 시도');
 
     try {
-      // 1. 위치 서비스 활성화 확인
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      _logger.d('LocationService: 위치 서비스 상태 - $serviceEnabled');
-
-      if (!serviceEnabled) {
-        _logger.w('LocationService: 위치 서비스가 비활성화되어 있음');
-        
-        if (Platform.isIOS) {
-          _logger.i('LocationService: iOS 위치 설정으로 이동 필요');
-          throw Exception('위치 서비스를 활성화해주세요. 설정 > 개인정보 보호 및 보안 > 위치 서비스에서 설정할 수 있습니다.');
-        } else {
-          serviceEnabled = await Geolocator.openLocationSettings();
-          if (!serviceEnabled) {
-            throw Exception('위치 서비스를 활성화해주세요.');
-          }
-        }
-      }
-
-      // 2. 위치 권한 확인
-      LocationPermission permission = await Geolocator.checkPermission();
-      _logger.d('LocationService: 현재 위치 권한 상태 - $permission');
-
-      // 3. 권한이 없는 경우 요청
-      if (permission == LocationPermission.denied) {
-        _logger.i('LocationService: 위치 권한 요청');
-        permission = await Geolocator.requestPermission();
-        _logger.d('LocationService: 위치 권한 요청 결과 - $permission');
-
-        if (permission == LocationPermission.denied) {
-          throw Exception('위치 권한이 거부되었습니다. 앱 설정에서 위치 권한을 허용해주세요.');
-        }
-      }
-
-      // 4. 영구적으로 거부된 경우
-      if (permission == LocationPermission.deniedForever) {
-        _logger.w('LocationService: 위치 권한이 영구적으로 거부됨');
-        throw Exception('위치 권한이 영구적으로 거부되었습니다. 앱 설정에서 위치 권한을 허용해주세요.');
-      }
-
-      // 5. 위치 정보 가져오기 시도
-      try {
-        _logger.i('LocationService: 위치 정보 가져오기 시작');
-        final position = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high,
-        ).timeout(
-          const Duration(seconds: 5),
-        );
-
-        _logger.i('LocationService: 위치 정보 가져오기 성공 - (${position.latitude}, ${position.longitude})');
-        _lastPosition = position;
-        if (!_isInitialized) {
-          _initializePositionStream();
-          _isInitialized = true;
-        }
-        _positionController.add(position);
-
-        return position;
-      } on TimeoutException {
-        _logger.w('LocationService: 위치 정보 가져오기 시간 초과, 기본 위치 사용');
-        // 시간 초과시 서울시청 좌표 반환
-        return Position(
-          longitude: 126.9779692,
-          latitude: 37.5662952,
-          timestamp: DateTime.now(),
-          accuracy: 0,
-          altitude: 0,
-          heading: 0,
-          speed: 0,
-          speedAccuracy: 0,
-          altitudeAccuracy: 0,
-          headingAccuracy: 0,
-        );
-      }
-
+      await _checkLocationServices();
+      return await _fetchPosition();
     } catch (e) {
-      _logger.e('LocationService: 위치 정보 가져오기 실패 - $e');
-      
-      // 에러 발생 시 마지막 알려진 위치 또는 기본 위치(서울시청) 반환
-      final lastPosition = await Geolocator.getLastKnownPosition();
-      if (lastPosition != null) {
-        _logger.i('LocationService: 마지막 알려진 위치 사용 - (${lastPosition.latitude}, ${lastPosition.longitude})');
-        return lastPosition;
-      }
-      
-      _logger.i('LocationService: 기본 위치(서울시청) 사용');
-      return Position(
-          longitude: 126.9779692,
-          latitude: 37.5662952,
-          timestamp: DateTime.now(),
-          accuracy: 0,
-          altitude: 0,
-          heading: 0,
-          speed: 0,
-          speedAccuracy: 0,
-          altitudeAccuracy: 0,
-          headingAccuracy: 0,
-      );
+      return await _handleLocationError(e);
     }
   }
 
-  void _initializePositionStream() {
+  Future<void> _checkLocationServices() async {
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    _logger.d('LocationService: 위치 서비스 상태 - $serviceEnabled');
+
+    if (!serviceEnabled) {
+      _logger.w('LocationService: 위치 서비스가 비활성화되어 있음');
+      if (Platform.isIOS) {
+        throw Exception('위치 서비스를 활성화해주세요. 설정 > 개인정보 보호 및 보안 > 위치 서비스에서 설정할 수 있습니다.');
+      }
+      serviceEnabled = await Geolocator.openLocationSettings();
+      if (!serviceEnabled) {
+        throw Exception('위치 서비스를 활성화해주세요.');
+      }
+    }
+
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        throw Exception('위치 권한이 거부되었습니다. 앱 설정에서 위치 권한을 허용해주세요.');
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      throw Exception('위치 권한이 영구적으로 거부되었습니다. 앱 설정에서 위치 권한을 허용해주세요.');
+    }
+  }
+
+  Future<Position> _fetchPosition() async {
+    try {
+      final position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      ).timeout(const Duration(seconds: 5));
+
+      await _updatePosition(position);
+      return position;
+    } on TimeoutException {
+      final lastKnownPosition = await Geolocator.getLastKnownPosition();
+      if (lastKnownPosition != null) {
+        await _updatePosition(lastKnownPosition);
+        return lastKnownPosition;
+      }
+      return _getDefaultPosition();
+    }
+  }
+
+  Future<void> _updatePosition(Position position) async {
+    _lastPosition = position;
+    _lastUpdateTime = DateTime.now();
+    _positionController.add(position);
+
+    if (!_isInitialized) {
+      await _initializePositionStream();
+      _isInitialized = true;
+    }
+
+    _logger.i('LocationService: 위치 정보 업데이트 - (${position.latitude}, ${position.longitude})');
+  }
+
+  Future<Position> _handleLocationError(dynamic error) async {
+    _logger.e('LocationService: 위치 정보 가져오기 실패 - $error');
+    
+    if (_lastPosition != null) {
+      return _lastPosition!;
+    }
+    
+    final lastKnownPosition = await Geolocator.getLastKnownPosition();
+    if (lastKnownPosition != null) {
+      await _updatePosition(lastKnownPosition);
+      return lastKnownPosition;
+    }
+    
+    return _getDefaultPosition();
+  }
+
+  Position _getDefaultPosition() {
+    _logger.i('LocationService: 기본 위치(서울시청) 사용');
+    return Position(
+      longitude: 126.9779692,
+      latitude: 37.5662952,
+      timestamp: DateTime.now(),
+      accuracy: 0,
+      altitude: 0,
+      heading: 0,
+      speed: 0,
+      speedAccuracy: 0,
+      altitudeAccuracy: 0,
+      headingAccuracy: 0,
+    );
+  }
+
+  Future<void> _initializePositionStream() async {
     _logger.d('LocationService: 위치 스트림 초기화');
     
-    _positionSubscription?.cancel();
+    await _positionSubscription?.cancel();
     
     const locationSettings = LocationSettings(
       accuracy: LocationAccuracy.high,
@@ -132,16 +148,32 @@ class LocationService {
     _positionSubscription = Geolocator.getPositionStream(
       locationSettings: locationSettings,
     ).listen(
-      (Position position) {
-        _logger.i('LocationService: 새로운 위치 업데이트 - (${position.latitude}, ${position.longitude})');
-        _lastPosition = position;
-        _positionController.add(position);
+      (Position position) async {
+        if (_shouldUpdatePosition(position)) {
+          await _updatePosition(position);
+        }
       },
       onError: (error) {
         _logger.e('LocationService: 위치 스트림 에러 - $error');
       },
       cancelOnError: false,
     );
+  }
+
+  bool _shouldUpdatePosition(Position newPosition) {
+    if (_lastPosition == null) return true;
+
+    final distance = Geolocator.distanceBetween(
+      _lastPosition!.latitude,
+      _lastPosition!.longitude,
+      newPosition.latitude,
+      newPosition.longitude,
+    );
+    
+    final timeSinceLastUpdate = DateTime.now().difference(_lastUpdateTime!);
+    
+    // 100m 이상 이동했거나 마지막 업데이트로부터 10분이 지났을 때
+    return distance >= 100 || timeSinceLastUpdate >= _cacheValidDuration;
   }
 
   Future<void> dispose() async {

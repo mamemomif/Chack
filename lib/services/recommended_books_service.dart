@@ -114,29 +114,32 @@ class RecommendedBooksService {
   ) async {
     if (isbn.isEmpty) return null;
 
+    // 캐시된 정보가 있고 위치가 크게 변하지 않았다면 캐시 사용
     final cachedInfo = await _cacheService.getCachedLibraryInfo(isbn);
-    if (cachedInfo != null) {
-      _logger.i("Using cached library info for ISBN $isbn");
-      return cachedInfo;
-    }
+    if (cachedInfo != null && cachedInfo['latitude'] != null && cachedInfo['longitude'] != null) {
+      final cachedLat = cachedInfo['latitude'] as double;
+      final cachedLng = cachedInfo['longitude'] as double;
+      
+      // 이전 위치와 현재 위치의 거리 계산
+      final distance = Geolocator.distanceBetween(
+        cachedLat,
+        cachedLng,
+        userLocation.latitude,
+        userLocation.longitude,
+      );
 
-    if (_pendingRequests.containsKey(isbn)) {
-      _logger.i("Awaiting ongoing request for ISBN $isbn");
-      return await _pendingRequests[isbn]!;
-    }
-
-    final future = _fetchLibraryWithRetry(isbn, userLocation);
-    _pendingRequests[isbn] = future;
-
-    try {
-      final library = await future;
-      if (library != null) {
-        await _cacheService.cacheLibraryInfo(isbn, {'library': library});
+      // 100m 이내면 캐시 사용
+      if (distance < 100) {
+        _logger.i("Using cached library info for ISBN $isbn");
+        return cachedInfo['library'];
       }
-      return library;
-    } finally {
-      _pendingRequests.remove(isbn);
     }
+
+    return _fetchLibraryWithRetry(isbn, userLocation);
+  }
+
+  Future<void> clearLibraryCache(String isbn) async {
+    await _cacheService.clearLibraryInfo(isbn);
   }
 
   Future<Map<String, dynamic>?> _fetchLibraryWithRetry(
@@ -144,7 +147,7 @@ class RecommendedBooksService {
     Position userLocation,
   ) async {
     int attempts = 0;
-
+    
     while (attempts < _maxRetries) {
       try {
         final url = Uri.parse(
@@ -159,7 +162,17 @@ class RecommendedBooksService {
           final jsonResponse = json.decode(response.body);
 
           if (jsonResponse['success'] && jsonResponse['data']['library'] != null) {
-            return Map<String, dynamic>.from(jsonResponse['data']['library']);
+            final libraryData = Map<String, dynamic>.from(jsonResponse['data']['library']);
+            
+            // 캐시에 현재 위치 정보도 함께 저장
+            await _cacheService.cacheLibraryInfo(isbn, {
+              'library': libraryData,
+              'latitude': userLocation.latitude,
+              'longitude': userLocation.longitude,
+              'timestamp': DateTime.now().millisecondsSinceEpoch,
+            });
+
+            return libraryData;
           }
         }
 
@@ -172,15 +185,13 @@ class RecommendedBooksService {
         }
 
         return null;
-      } on TimeoutException {
+      } catch (e) {
+        _logger.w("Error fetching library info for ISBN $isbn", e);
         attempts++;
         if (attempts < _maxRetries) {
           await Future.delayed(_retryDelay * attempts);
           continue;
         }
-        throw TimeoutException('Library info request timed out after $_maxRetries attempts');
-      } catch (e, stackTrace) {
-        _logger.w("Error fetching library info for ISBN $isbn", e, stackTrace);
         return null;
       }
     }

@@ -78,29 +78,56 @@ class BookRecommendationProvider with ChangeNotifier {
 
   Future<void> _initializeLocation() async {
     try {
-      //첫 위치 정보 가져오기
+      // 첫 위치 정보 가져오기
       _currentPosition = await _locationService.getCurrentLocation();
-      _logger.i("Current location aquired: Latitude: ${_currentPosition!.latitude}, Longitude: ${_currentPosition!.longitude}");
+      _logger.i("Current location acquired: (${_currentPosition!.latitude}, ${_currentPosition!.longitude})");
 
       if (_currentPosition != null && _books.isNotEmpty) {
         await _updateLibraryInfo();
       }
 
+      // 위치 변경 리스너 설정
       _locationService.positionStream.listen(
-        (position) {
+        (position) async {
           if (_shouldUpdateLocation(position)) {
             _currentPosition = position;
-            _logger.i("Location updated: Latitude: ${position.latitude}, Longitude: ${position.longitude}");
-            _updateLibraryInfo();
+            _logger.i("Location updated: (${position.latitude}, ${position.longitude})");
+            // 위치가 변경되면 도서관 정보를 갱신하고 캐시를 초기화
+            await _clearLibraryCache();
+            await _updateLibraryInfo();
+          }
+        },
+        onError: (error) {
+          _logger.e("Location stream error", error);
+        },
+      );
+
+      // 주기적 업데이트 타이머 설정 (1시간마다)
+      _libraryUpdateTimer?.cancel();
+      _libraryUpdateTimer = Timer.periodic(
+        const Duration(hours: 1),
+        (_) async {
+          final newPosition = await _locationService.getCurrentLocation(forceUpdate: true);
+          if (newPosition != null && _shouldUpdateLocation(newPosition)) {
+            _currentPosition = newPosition;
+            await _clearLibraryCache();
+            await _updateLibraryInfo();
           }
         },
       );
+
     } catch (e, stackTrace) {
       _logger.e("Error initializing location", e, stackTrace);
-
       if (_books.isEmpty) {
         await _loadCachedBooks();
       }
+    }
+  }
+
+    Future<void> _clearLibraryCache() async {
+    // 모든 책의 도서관 정보 캐시 초기화
+    for (var book in _books) {
+      await _recommendedBooksService.clearLibraryCache(book.isbn);
     }
   }
 
@@ -152,11 +179,16 @@ class BookRecommendationProvider with ChangeNotifier {
   Future<void> _updateLibraryInfo() async {
     if (_books.isEmpty || _currentPosition == null) return;
     
+    _isLoading = true;
+    notifyListeners();
+    
     try {
       await _updateLibraryInfoForBooks(_books);
-      notifyListeners();
     } catch (e, stackTrace) {
       _logger.e("Error updating library info", e, stackTrace);
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 
@@ -173,15 +205,23 @@ class BookRecommendationProvider with ChangeNotifier {
               ? '대출 가능'
               : '대출 불가';
 
-          double distanceKm = libraryInfo['distance'] / 1000;
-          book.closestLibrary =
-              '${libraryInfo['name']} (${distanceKm.toStringAsFixed(1)}km)';
+          final distance = libraryInfo['distance'];
+          final name = libraryInfo['name'];
+          
+          if (distance != null && name != null) {
+            final distanceKm = (distance as num).toDouble() / 1000;
+            book.closestLibrary = '$name (${distanceKm.toStringAsFixed(1)}km)';
+          } else {
+            book.closestLibrary = name ?? '주변 도서관 정보 없음';
+          }
         } else {
           book.availability = '정보 없음';
           book.closestLibrary = '주변 도서관 정보 없음';
         }
       } catch (e) {
         _logger.w("Failed to update library info for book ${book.isbn}", e);
+        book.availability = '정보 없음';
+        book.closestLibrary = '주변 도서관 정보 없음';
       }
     }).toList();
 
