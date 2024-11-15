@@ -1,124 +1,189 @@
-import 'dart:convert';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:http/http.dart' as http;
-import '../models/book_model.dart';
-import '../models/api_exception.dart';
-import 'library_service.dart';
+// services/recommended_books_service.dart
 
-// To print log
-import 'dart:developer' as developer;
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:geolocator/geolocator.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:logger/logger.dart';
+import 'dart:async';
+
+import '../models/api_exception.dart';
+import '../models/book_model.dart';
+import 'book_cache_service.dart';
+import '../utils/book_data_normalizer.dart';
 
 class RecommendedBooksService {
-  final LibraryService _libraryService = LibraryService();
-  final String baseUrl = "http://data4library.kr/api";
-  final String authKey = dotenv.env['LIBRARY_DATANARU_API_KEY']!;
+  final String libraryServiceUrl = "https://getlibrarieswithbook-m3ebrnkf5q-du.a.run.app";
+  final http.Client httpClient;
+  final BookCacheService _cacheService;
+  final Logger _logger = Logger();
+  final Map<String, Future<Map<String, dynamic>?>> _pendingRequests = {};
 
-  Future<List<Book>> fetchRecommendedBooks(Position userLocation) async {
+  static const int _maxRetries = 3;
+  static const Duration _retryDelay = Duration(seconds: 2);
+
+  RecommendedBooksService({
+    http.Client? httpClient,
+    required BookCacheService cacheService,
+  })  : httpClient = httpClient ?? http.Client(),
+        _cacheService = cacheService;
+
+  Future<List<Book>> fetchRecommendedBooks(
+    String age,
+    int pageSize, {
+    int? page,
+  }) async {
     try {
-      developer.log('추천 도서 검색 시작');
+      _logger.i("Fetching recommended books for age group $age, page $page");
 
-      final DateTime yesterday = DateTime.now().subtract(const Duration(days: 1));
-      final String searchDt = "${yesterday.year}-${yesterday.month.toString().padLeft(2, '0')}-${yesterday.day.toString().padLeft(2, '0')}";
+      List<Book> cachedBooks = await _cacheService.getCachedBooks(age);
 
-      final url = Uri.parse(
-        "$baseUrl/hotTrend?"
-        "authKey=$authKey"
-        "&searchDt=$searchDt"
-        "&format=json"
+      final offset = page != null ? page * pageSize : 0;
+
+      if (cachedBooks.length >= offset + pageSize) {
+        _logger.i("Returning cached books for page $page");
+        return cachedBooks.sublist(offset, offset + pageSize);
+      }
+
+      final remaining = (offset + pageSize) - cachedBooks.length;
+
+      final newBooks = await _fetchBooksFromFirestore(
+        age,
+        remaining,
+        offset: cachedBooks.length,
       );
-      developer.log('Hot trend API request: $url');
 
-      final response = await http.get(url).timeout(
-        const Duration(seconds: 10),
-        onTimeout: () => throw ApiException('추천 도서 조회 시간 초과'),
+      cachedBooks.addAll(newBooks);
+      await _cacheService.cacheBooks(age, cachedBooks);
+
+      _logger.i("Fetched ${newBooks.length} books from Firestore for page $page");
+      return cachedBooks.length >= offset + pageSize
+          ? cachedBooks.sublist(offset, offset + pageSize)
+          : cachedBooks.sublist(offset);
+    } catch (e, stackTrace) {
+      _logger.e("Error fetching recommended books", e, stackTrace);
+      throw ApiException('도서 정보를 가져오는 중 오류가 발생했습니다.');
+    }
+  }
+
+  Future<List<Book>> _fetchBooksFromFirestore(
+    String age,
+    int limit, {
+    int offset = 0,
+  }) async {
+    final docSnapshot = await FirebaseFirestore.instance
+        .collection('hotBooks')
+        .doc(age)
+        .get();
+
+    if (!docSnapshot.exists || !docSnapshot.data()!.containsKey('books')) {
+      return [];
+    }
+
+    final List<dynamic> booksData = docSnapshot.data()!['books'] as List<dynamic>;
+    final endIndex = offset + limit;
+    final slicedBooksData = booksData.sublist(
+      offset,
+      endIndex > booksData.length ? booksData.length : endIndex,
+    );
+
+    return _convertToBooks(slicedBooksData);
+  }
+
+  // _convertToBooks 메서드를 추가하여 Firestore 데이터를 Book 객체 리스트로 변환합니다.
+  List<Book> _convertToBooks(List<dynamic> booksData) {
+    return booksData.map((bookData) {
+      final rawTitle = bookData['bookname'] ?? 'No Title';
+      final rawAuthor = bookData['authors'] ?? 'No Author';
+      final rawPublisher = bookData['publisher'] ?? '';
+
+      return Book(
+        id: bookData['id'] ?? '',
+        title: BookDataNormalizer.normalizeTitle(rawTitle),
+        author: BookDataNormalizer.normalizeAuthor(rawAuthor),
+        publisher: BookDataNormalizer.normalizePublisher(rawPublisher),
+        isbn: bookData['isbn13'] ?? '',
+        imageUrl: bookData['bookImageURL'] ?? '',
       );
+    }).toList();
+  }
 
-      developer.log('추천 도서 API 응답: ${response.body}');
+  Future<Map<String, dynamic>?> fetchLibrary(
+    String isbn,
+    Position userLocation,
+  ) async {
+    if (isbn.isEmpty) return null;
 
-      if (response.statusCode == 200) {
-        final jsonData = json.decode(response.body);
-        
-        if (!jsonData.containsKey('response') || 
-            !jsonData['response'].containsKey('results') ||
-            jsonData['response']['results'].isEmpty) {
-          throw ApiException('올바르지 않은 응답 데이터');
-        }
+    final cachedInfo = await _cacheService.getCachedLibraryInfo(isbn);
+    if (cachedInfo != null) {
+      _logger.i("Using cached library info for ISBN $isbn");
+      return cachedInfo;
+    }
 
-        final List<Book> books = [];
-        
-        for (var result in jsonData['response']['results']) {
-          final resultDate = result['result']['date'];
-          
-          if (resultDate == searchDt) {
-            final List<dynamic>? docs = result['result']['docs'];
-            
-            if (docs != null && docs.isNotEmpty) {
-              final bookFutures = docs.map((bookData) async {
-                try {
-                  final doc = bookData['doc'];
-                  final String isbn = doc['isbn13'] ?? '';
+    if (_pendingRequests.containsKey(isbn)) {
+      _logger.i("Awaiting ongoing request for ISBN $isbn");
+      return await _pendingRequests[isbn]!;
+    }
 
-                  if (isbn.isEmpty) {
-                    developer.log('ISBN 정보 없음');
-                    return null;
-                  }
+    final future = _fetchLibraryWithRetry(isbn, userLocation);
+    _pendingRequests[isbn] = future;
 
-                  // 제목 파싱 - ':'을 기준으로 앞의 책 이름만 추출
-                  final String rawTitle = doc['bookname'] ?? '제목 없음';
-                  final String title = rawTitle.split(':').first;
+    try {
+      final library = await future;
+      if (library != null) {
+        await _cacheService.cacheLibraryInfo(isbn, {'library': library});
+      }
+      return library;
+    } finally {
+      _pendingRequests.remove(isbn);
+    }
+  }
 
-                  // 저자 파싱 - '지은이:' 이후 저자명만 추출하고 ';'로 분리된 경우 첫 부분만 사용
-                  final String rawAuthor = doc['authors'] ?? '저자 미상';
-                  String author = rawAuthor.split('지은이:').last;
-                  author = author.split(';').first.trim();
+  Future<Map<String, dynamic>?> _fetchLibraryWithRetry(
+    String isbn,
+    Position userLocation,
+  ) async {
+    int attempts = 0;
 
-                  // 출판사 파싱
-                  final String publisher = doc['publisher'] ?? '출판사 미상';
-                  final String authorWithPublisher = '$author / $publisher';
+    while (attempts < _maxRetries) {
+      try {
+        final url = Uri.parse(
+          "$libraryServiceUrl?isbn=$isbn&latitude=${userLocation.latitude}&longitude=${userLocation.longitude}"
+        );
 
-                  final libraries = await _libraryService.fetchLibrariesWithBook(isbn, userLocation);
+        final response = await httpClient
+            .get(url)
+            .timeout(const Duration(seconds: 10));
 
-                  return Book(
-                    title: title,
-                    author: authorWithPublisher,
-                    publisher: doc['publisher'] ?? '출판사 미상',
-                    isbn: isbn,
-                    imageUrl: doc['bookImageURL'] ?? 'assets/images/placeholder.png',
-                    availability: libraries.isNotEmpty ? '대출 가능' : '대출 불가',
-                    closestLibrary: libraries.isNotEmpty 
-                        ? '${libraries[0]['name']} (${(libraries[0]['distance'] / 1000).toStringAsFixed(1)}km)'
-                        : '근처에 도서 없음',
-                  );
-                } catch (e) {
-                  developer.log('도서 정보 처리 중 오류 발생', error: e);
-                  return null;
-                }
-              }).toList();
+        if (response.statusCode == 200) {
+          final jsonResponse = json.decode(response.body);
 
-              books.addAll((await Future.wait(bookFutures))
-                  .where((book) => book != null)
-                  .cast<Book>()
-                  .toList());
-            }
+          if (jsonResponse['success'] && jsonResponse['data']['library'] != null) {
+            return Map<String, dynamic>.from(jsonResponse['data']['library']);
           }
         }
 
-        books.sort((a, b) {
-          if (a.availability == '대출 가능' && b.availability != '대출 가능') return -1;
-          if (a.availability != '대출 가능' && b.availability == '대출 가능') return 1;
-          return 0;
-        });
+        if (response.statusCode >= 500) {
+          attempts++;
+          if (attempts < _maxRetries) {
+            await Future.delayed(_retryDelay * attempts);
+            continue;
+          }
+        }
 
-        developer.log('검색된 도서 수: ${books.length}');
-        return books;
-      } else {
-        throw ApiException('도서 정보 조회 실패', statusCode: response.statusCode);
+        return null;
+      } on TimeoutException {
+        attempts++;
+        if (attempts < _maxRetries) {
+          await Future.delayed(_retryDelay * attempts);
+          continue;
+        }
+        throw TimeoutException('Library info request timed out after $_maxRetries attempts');
+      } catch (e, stackTrace) {
+        _logger.w("Error fetching library info for ISBN $isbn", e, stackTrace);
+        return null;
       }
-    } catch (e) {
-      developer.log('추천 도서 검색 오류', error: e);
-      if (e is ApiException) rethrow;
-      throw ApiException('도서 정보 조회 실패: $e');
     }
+    return null;
   }
 }

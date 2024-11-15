@@ -58,6 +58,7 @@ dependencies:
     #to support korean language
   flutter_localizations:
     sdk: flutter
+  logger: ^1.4.0
 
 dev_dependencies:
   flutter_test:

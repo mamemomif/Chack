@@ -1,12 +1,12 @@
 import { onRequest } from "firebase-functions/v2/https";
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import axios from "axios";
-import { fetchAndStoreHotBooks } from "./fetchAndStoreHotBooks";
-import { LibraryService } from "./libraryService";
-import { initializeFirebase } from "./firebase";
+import { fetchAndStoreHotBooks } from "./services/fetchAndStoreHotBooks";
+import { LibraryService } from "./services/libraryService";
+import { initializeFirebase } from "./config/firebase";
 import { setGlobalOptions, logger } from "firebase-functions/v2";
 import { defineSecret } from "firebase-functions/params";
-import { Location } from "./types";
+import { Location } from "./utils/types";
 
 // Secrets 정의
 const SECRET_LIBRARY_DATANARU_API_KEY = defineSecret("LIBRARY_DATANARU_API_KEY");

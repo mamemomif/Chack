@@ -1,9 +1,10 @@
 import 'package:chack_project/screens/timer_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../components/custom_bottom_nav_bar.dart';
 import '../components/custom_search_bar.dart';
-import '../components/book_recommendation_list.dart';
+import '../components/book_recommendation/book_recommendation_list.dart';
 import '../services/authentication_service.dart';
 import '../constants/colors.dart';
 import '../constants/text_styles.dart';
@@ -21,6 +22,8 @@ class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
   final PageController _pageController = PageController();
   final AuthService _authService = AuthService();
+  String? _userId;
+  String? _age;  // null일 수 있음을 명시
 
   @override
   void initState() {
@@ -33,6 +36,35 @@ class _HomeScreenState extends State<HomeScreen> {
     if (user == null) {
       if (!mounted) return;
       Navigator.pushReplacementNamed(context, '/login');
+    } else {
+      await _getUserAge(user.uid);
+    }
+  }
+
+  Future<void> _getUserAge(String uid) async {
+    try {
+      print('HomeScreen: 사용자 정보 로드 시작 - UID: $uid');
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .get();
+
+      if (userDoc.exists) {
+        final userData = userDoc.data();
+        if (userData != null && userData['age'] != null) {
+          setState(() {
+            _userId = uid;
+            _age = userData['age'].toString();  // age를 문자열로 변환
+          });
+          print('HomeScreen: 사용자 나이 그룹 로드 완료: $_age');
+        } else {
+          print('HomeScreen: 사용자 문서에 age 필드가 없음');
+        }
+      } else {
+        print('HomeScreen: 사용자 문서가 존재하지 않음');
+      }
+    } catch (e) {
+      print('HomeScreen: 사용자 정보 로드 중 오류 발생: $e');
     }
   }
 
@@ -86,11 +118,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   onPageChanged: (index) {
                     setState(() => _currentIndex = index);
                   },
-                  children: const [
-                    _HomeTab(),
-                    BookshelfScreen(), // BookshelfScreen으로 수정합니다.
-                    _TimerTab(),
-                    _StatisticsTab(),
+                  children: [
+                    _HomeTab(
+                      userId: _userId,
+                      age: _age,
+                    ),
+                    const BookshelfScreen(),
+                    const _TimerTab(),
+                    const _StatisticsTab(),
                   ],
                 ),
               ),
@@ -115,9 +150,14 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-// HomeTab 개선
 class _HomeTab extends StatelessWidget {
-  const _HomeTab();
+  final String? userId;
+  final String? age;
+
+  const _HomeTab({
+    required this.userId, 
+    required this.age,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -130,22 +170,24 @@ class _HomeTab extends StatelessWidget {
         children: [
           Padding(
             padding: EdgeInsets.symmetric(
-                horizontal: screenWidth * 0.05, vertical: 10),
-            child: Text(
-              '오늘의 추천 도서',
-              style: AppTextStyles.titleStyle.copyWith(fontSize: 18),
+              horizontal: screenWidth * 0.05,
+              vertical: 10,
             ),
           ),
-          const Expanded(
-            child: BookRecommendationList(),
-          ),
+          if (userId != null && age != null) // userId와 age가 모두 있을 때만 표시
+            SizedBox(
+              height: 170,
+              child: BookRecommendationList(
+                userId: userId!,
+                age: age!,
+              ),
+            ),
         ],
       ),
     );
   }
 }
 
-// 타이머 탭
 class _TimerTab extends StatelessWidget {
   const _TimerTab();
 
@@ -157,7 +199,6 @@ class _TimerTab extends StatelessWidget {
   }
 }
 
-// 통계 탭
 class _StatisticsTab extends StatelessWidget {
   const _StatisticsTab();
 

@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../constants/colors.dart';
 import '../constants/text_styles.dart';
-import '../components/birthdate_text_field.dart';
-import '../components/birthdate_button.dart';
+import '../components/birthday_input/birthdate_text_field.dart';
+import '../components/birthday_input/birthdate_button.dart';
 import '../services/authentication_service.dart';
 
 class CollectBirthDateScreen extends StatefulWidget {
