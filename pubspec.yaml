@@ -37,6 +37,7 @@ dependencies:
   firebase_core: ^2.32.0
   firebase_auth: ^4.15.3
   cloud_firestore: ^4.17.5
+  firebase_storage: ^11.2.0
   google_sign_in: ^6.1.6
 
   # Permission 핸들러
@@ -57,6 +58,9 @@ dependencies:
 
   # device info 패키지
   device_info_plus: ^9.1.1
+
+  # Image picker 패키지
+  image_picker: ^0.8.7+4
 
   # 캐시 등 공유 정보를 저장하기 위한 패키지
   shared_preferences: ^2.2.0
