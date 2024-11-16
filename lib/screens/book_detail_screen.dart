@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:chack_project/constants/text_styles.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../constants/icons.dart';
+import 'book_review_screen.dart';
 class BookDetailScreen extends StatelessWidget {
   final String title;
   final String author;
@@ -22,6 +23,7 @@ class BookDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        scrolledUnderElevation: 0,
         title: const Align(
           alignment: Alignment.centerLeft, // 텍스트를 좌측으로 정렬
           child: Text(
@@ -36,10 +38,9 @@ class BookDetailScreen extends StatelessWidget {
         ),
         backgroundColor: Colors.white,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
       ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 29.0, vertical: 20.0),
+        padding: const EdgeInsets.symmetric(horizontal: 25.0, vertical: 20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -62,7 +63,6 @@ class BookDetailScreen extends StatelessWidget {
                     image,
                     width: 150,
                     height: 200,
-                    fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) => const Icon(
                       Icons.book,
                       size: 150,
@@ -128,8 +128,9 @@ class BookDetailScreen extends StatelessWidget {
                     backgroundColor: Colors.grey[200],
                     foregroundColor: Colors.black,
                     elevation: 0,
+                    minimumSize: const Size(150, 50),
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 30,
+                      horizontal: 17,
                       vertical: 15,
                     ),
                     shape: RoundedRectangleBorder(
@@ -148,14 +149,25 @@ class BookDetailScreen extends StatelessWidget {
                 ),
                 ElevatedButton.icon(
                   onPressed: () {
-                    // 독후감 작성 기능 추가
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ReviewWritingScreen(
+                          title: title,
+                          author: author,
+                          publisher: publisher,
+                          image: image,
+                        ),
+                      ),
+                    );
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.black,
                     foregroundColor: Colors.white,
                     elevation: 0,
+                    minimumSize: const Size(150, 50),
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 30,
+                      horizontal: 15,
                       vertical: 15,
                     ),
                     shape: RoundedRectangleBorder(
