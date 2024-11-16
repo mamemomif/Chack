@@ -60,9 +60,6 @@ dependencies:
   # device info 패키지
   device_info_plus: ^9.1.1
 
-  # Image picker 패키지
-  image_picker: ^0.8.7+4
-
   # 캐시 등 공유 정보를 저장하기 위한 패키지
   shared_preferences: ^2.2.0
   hive: ^2.2.3
@@ -77,7 +74,6 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   logger: ^1.4.0
-  firebase_storage: ^11.6.5
 
 dev_dependencies:
   flutter_test:
