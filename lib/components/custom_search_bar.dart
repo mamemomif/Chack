@@ -1,6 +1,7 @@
 // lib/components/search_bar/custom_search_bar.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../constants/icons.dart';
 import '../constants/colors.dart';
 
@@ -18,6 +19,8 @@ class CustomSearchBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final User? currentUser = FirebaseAuth.instance.currentUser;
+
     return Container(
       width: double.infinity,
       height: 70,
@@ -85,18 +88,47 @@ class CustomSearchBar extends StatelessWidget {
             child: Hero(
               tag: 'profile_icon_tag',
               child: Container(
-                padding: const EdgeInsets.all(10),
+                width: 40,
+                height: 40,
                 decoration: BoxDecoration(
                   color: AppColors.pointColor.withOpacity(0.3),
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                child: SvgPicture.asset(
-                  AppIcons.profileIcon,
-                  colorFilter: const ColorFilter.mode(
-                    AppColors.pointColor,
-                    BlendMode.srcIn,
-                  ),
-                ),
+                child: currentUser?.photoURL != null
+                    ? Padding(
+                        padding: const EdgeInsets.all(0.5),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Image.network(
+                            currentUser!.photoURL!,
+                            width: double.infinity,
+                            height: double.infinity,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Padding(
+                                padding: const EdgeInsets.all(8),
+                                child: SvgPicture.asset(
+                                  AppIcons.profileIcon,
+                                  colorFilter: const ColorFilter.mode(
+                                    AppColors.pointColor,
+                                    BlendMode.srcIn,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      )
+                    : Padding(
+                        padding: const EdgeInsets.all(10),
+                        child: SvgPicture.asset(
+                          AppIcons.profileIcon,
+                          colorFilter: const ColorFilter.mode(
+                            AppColors.pointColor,
+                            BlendMode.srcIn,
+                          ),
+                        ),
+                      ),
               ),
             ),
           ),
