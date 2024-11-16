@@ -33,6 +33,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
     _loadUserData();
   }
 
+  // _loadUserData 메서드 수정
   Future<void> _loadUserData() async {
     setState(() => _isLoading = true);
     try {
@@ -45,6 +46,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
             _nicknameController.text = data['nickname'] ?? '';
             _selectedBirthDate =
                 data['birthDate'] != null ? DateTime.parse(data['birthDate']) : null;
+            // photoURL 필드가 없을 수 있으므로 null 처리
             _profileImageUrl = data['photoURL'];
           });
         }
@@ -56,6 +58,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
     }
   }
 
+  // _updateProfileImage 메서드 수정
   Future<void> _updateProfileImage() async {
     if (_profileImageFile == null) return;
     setState(() => _isLoading = true);
@@ -66,20 +69,25 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
         final uploadTask = await storageRef.putFile(_profileImageFile!);
         final imageUrl = await uploadTask.ref.getDownloadURL();
 
+        // 기존 문서에 photoURL 필드만 추가/업데이트
         await _firestore.collection('users').doc(user.uid).update({
           'photoURL': imageUrl,
         });
 
         setState(() => _profileImageUrl = imageUrl);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('프로필 이미지가 업데이트되었습니다.')),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('프로필 이미지가 업데이트되었습니다.')),
+          );
+        }
       }
     } catch (e) {
       print('Error uploading profile image: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('이미지 업로드 중 오류가 발생했습니다.')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('이미지 업로드 중 오류가 발생했습니다.')),
+        );
+      }
     } finally {
       setState(() => _isLoading = false);
     }
