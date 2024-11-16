@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../constants/colors.dart';
-import '../../constants/bookcover_styles.dart';
+import '../../constants/bookcover_styles.dart';  // BookCoverStyle import
 
 class SearchedBookListItem extends StatelessWidget {
   final String title;
@@ -30,8 +30,9 @@ class SearchedBookListItem extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 책 표지
-            const BookCover(
+            BookCover(
               style: BookCoverStyles.medium,
+              imageUrl: image,
             ),
             const SizedBox(width: 16),
 
@@ -45,23 +46,34 @@ class SearchedBookListItem extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
+                      fontFamily: 'SUITE',
                     ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   Text(
                     '$author / $publisher',
                     style: TextStyle(
                       fontSize: 15,
                       color: Colors.black.withOpacity(0.6),
+                      fontFamily: 'SUITE',
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      Text(
-                        library,
-                        style: const TextStyle(
-                          fontSize: 15,
-                          color: Colors.grey,
+                      Expanded(
+                        child: Text(
+                          library,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            color: Colors.grey,
+                            fontFamily: 'SUITE',
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -70,6 +82,7 @@ class SearchedBookListItem extends StatelessWidget {
                         style: const TextStyle(
                           fontSize: 15,
                           color: Colors.grey,
+                          fontFamily: 'SUITE',
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -78,6 +91,7 @@ class SearchedBookListItem extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
+                          fontFamily: 'SUITE',
                           color: availability == '대출 가능'
                               ? AppColors.pointColor
                               : AppColors.errorColor,
@@ -105,6 +119,7 @@ class SearchedBookListItem extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
+                          fontFamily: 'SUITE',
                         ),
                       ),
                     ),

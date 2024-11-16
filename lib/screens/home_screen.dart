@@ -4,7 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../components/custom_bottom_nav_bar.dart';
 import '../components/custom_search_bar.dart';
-import '../components/book_recommendation/book_recommendation_list.dart';
+import '../components/book_recommendation/book_recommendation_list.dart';
 import '../services/authentication_service.dart';
 import '../constants/colors.dart';
 import '../constants/text_styles.dart';

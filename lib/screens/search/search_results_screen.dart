@@ -1,10 +1,14 @@
+// screens/search_results_screen.dart
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 import '../../components/searched_book_list_item.dart';
 import '../../components/custom_search_bar.dart';
 import '../../constants/colors.dart';
+import '../../services/book_search_service.dart';
+import '../../models/book_search_result.dart';
 import 'search_screen.dart';
 
-class SearchResultsScreen extends StatelessWidget {
+class SearchResultsScreen extends StatefulWidget {
   final String searchText;
 
   const SearchResultsScreen({
@@ -13,70 +17,113 @@ class SearchResultsScreen extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    final List<Map<String, String>> bookList = [
-      {
-        'title': '채식주의자',
-        'author': '한강',
-        'image': 'assets/images/book_cover_1.jpg',
-        'library': '한성도서관',
-        'publisher': '창비',
-        'distance': '2.3km',
-        'availability': '대출 가능',
-      },
-      {
-        'title': '토마토 컵라면',
-        'author': '차정은',
-        'image': 'assets/images/book_cover_2.jpg',
-        'library': '중앙도서관',
-        'publisher': '부크크(bookk)',
-        'distance': '1.8km',
-        'availability': '대출 불가',
-      },
-      {
-        'title': '빛의 설계자들',
-        'author': '김성훈',
-        'publisher': '플레인아카이브',
-        'image': 'assets/images/book_cover_3.jpg',
-        'library': '서대문도서관',
-        'distance': '3.2km',
-        'availability': '대출 가능',
-      },
-      {
-        'title': '사랑과 결함',
-        'author': '예소연',
-        'publisher': '문학동네',
-        'image': 'assets/images/book_cover_4.jpg',
-        'library': '남산도서관',
-        'distance': '4.5km',
-        'availability': '대출 불가',
-      },
-      {
-        'title': '지구 끝의 온실',
-        'author': '김초엽',
-        'publisher': '자이언트북스',
-        'image': 'assets/images/book_cover_5.jpg',
-        'library': '북서울도서관',
-        'distance': '2.7km',
-        'availability': '대출 가능',
-      },
-      {
-        'title': '뼈가 자라는 여름',
-        'author': '김해경',
-        'publisher': '출판사 결',
-        'image': 'assets/images/book_cover_6.jpg',
-        'library': '강남도서관',
-        'distance': '3.1km',
-        'availability': '대출 가능',
-      },
-    ];
+  State<SearchResultsScreen> createState() => _SearchResultsScreenState();
+}
 
+class _SearchResultsScreenState extends State<SearchResultsScreen> {
+  final BookSearchService _bookSearchService = BookSearchService();
+  final List<BookSearchResult> _searchResults = [];
+  final Logger _logger = Logger();
+  bool _isLoading = false;
+  String? _error;
+  int _currentPage = 1;
+  static const int _itemsPerPage = 10;
+  final _scrollController = ScrollController();
+  
+  @override
+  void initState() {
+    super.initState();
+    _logger.i('Initializing SearchResultsScreen with query: ${widget.searchText}');
+    _searchBooks();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >= 
+        _scrollController.position.maxScrollExtent - 200) {
+      _loadMoreBooks();
+    }
+  }
+
+  Future<void> _searchBooks() async {
+    if (_isLoading) {
+      _logger.d('Search already in progress, skipping');
+      return;
+    }
+    
+    if (widget.searchText.isEmpty) {
+      _logger.w('Empty search query, skipping search');
+      setState(() {
+        _error = '검색어를 입력해주세요';
+      });
+      return;
+    }
+    
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      _logger.i('Searching books: page $_currentPage');
+      final results = await _bookSearchService.searchBooks(
+        widget.searchText,
+        start: (_currentPage - 1) * _itemsPerPage + 1,
+        display: _itemsPerPage,
+      );
+      
+      setState(() {
+        if (_currentPage == 1) {
+          _searchResults.clear();
+        }
+        _searchResults.addAll(results);
+        _isLoading = false;
+      });
+
+      _logger.i('Search completed. Total results: ${_searchResults.length}');
+    } catch (e, stackTrace) {
+      _logger.e('Error during search', e, stackTrace);
+      setState(() {
+        _error = '책 검색 중 오류가 발생했습니다.';
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _loadMoreBooks() async {
+    if (!_isLoading && _searchResults.length >= _itemsPerPage) {
+      _logger.d('Loading more books');
+      _currentPage++;
+      await _searchBooks();
+    }
+  }
+
+  Future<void> _retrySearch() async {
+    _logger.i('Retrying search');
+    setState(() {
+      _error = null;
+      _currentPage = 1;
+      _searchResults.clear();
+    });
+    await _searchBooks();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
       body: SafeArea(
         child: Column(
           children: [
             CustomSearchBar(
+              searchText: widget.searchText,
+              showBackButton: true,
               onTap: () {
                 Navigator.push(
                   context,
@@ -86,41 +133,94 @@ class SearchResultsScreen extends StatelessWidget {
                 );
               },
             ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: ListView.builder(
-                itemCount: bookList.length,
-                itemBuilder: (context, index) {
-                  final book = bookList[index];
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Column(
-                      children: [
-                        SearchedBookListItem(
-                          title: book['title']!,
-                          author: book['author']!,
-                          publisher: book['publisher']!,
-                          image: book['image']!,
-                          library: book['library']!,
-                          distance: book['distance']!,
-                          availability: book['availability']!,
+            if (_error != null)
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      Text(
+                        _error!,
+                        style: const TextStyle(
+                          color: Colors.red,
+                          fontFamily: 'SUITE',
+                          fontSize: 16,
                         ),
-                        if (index < bookList.length - 1)
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 10),
-                            child: Divider(
-                              thickness: 1,
-                              color: Colors.black.withOpacity(0.1),
-                            ),
-                          )
-                        else
-                          const SizedBox(height: 100),
-                      ],
+                      ),
+                      const SizedBox(height: 12),
+                      TextButton(
+                        onPressed: _retrySearch,
+                        child: const Text(
+                          '다시 시도',
+                          style: TextStyle(
+                            fontFamily: 'SUITE',
+                            color: AppColors.pointColor,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            else if (_searchResults.isEmpty && !_isLoading)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Text(
+                    '검색 결과가 없습니다.',
+                    style: TextStyle(
+                      fontFamily: 'SUITE',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
                     ),
-                  );
-                },
+                  ),
+                ),
+              )
+            else
+              Expanded(
+                child: ListView.builder(
+                  controller: _scrollController,
+                  itemCount: _searchResults.length + (_isLoading ? 1 : 0),
+                  itemBuilder: (context, index) {
+                    if (index == _searchResults.length) {
+                      return const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(16.0),
+                          child: CircularProgressIndicator(
+                            color: AppColors.pointColor,
+                          ),
+                        ),
+                      );
+                    }
+
+                    final book = _searchResults[index];
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Column(
+                        children: [
+                          SearchedBookListItem(
+                            title: book.title,
+                            author: book.author,
+                            publisher: book.publisher,
+                            image: book.imageUrl,
+                            library: '도서관 정보 로딩 중...',
+                            distance: '-',
+                            availability: '-',
+                          ),
+                          if (index < _searchResults.length - 1)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              child: Divider(
+                                thickness: 1,
+                                color: Colors.black.withOpacity(0.1),
+                              ),
+                            )
+                        ],
+                      ),
+                    );
+                  },
+                ),
               ),
-            ),
           ],
         ),
       ),
