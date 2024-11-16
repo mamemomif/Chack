@@ -1,12 +1,15 @@
+// components/book_recommendation/book_recommendation_card.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import '../constants/colors.dart';
-import '../constants/text_styles.dart';
-import '../constants/icons.dart';
+import '../../constants/colors.dart';
+import '../../constants/text_styles.dart';
+import '../../constants/icons.dart';
 
 class BookRecommendationCard extends StatelessWidget {
   final String title;
   final String author;
+  final String publisher;
   final String distance;
   final String availability;
   final String imageUrl;
@@ -15,6 +18,7 @@ class BookRecommendationCard extends StatelessWidget {
     Key? key,
     required this.title,
     required this.author,
+    required this.publisher,
     required this.distance,
     required this.availability,
     required this.imageUrl,
@@ -30,6 +34,7 @@ class BookRecommendationCard extends StatelessWidget {
       ),
       child: Stack(
         children: [
+          // 채크의 추천 배지
           Positioned(
             left: 20,
             top: 18,
@@ -60,12 +65,14 @@ class BookRecommendationCard extends StatelessWidget {
               ),
             ),
           ),
+          // 도서 정보
           Positioned(
             left: 20,
             top: 50,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // 도서 제목
                 SizedBox(
                   width: MediaQuery.of(context).size.width - 150,
                   child: Text(
@@ -76,11 +83,13 @@ class BookRecommendationCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 3),
+                // 저자 및 출판사
                 Text(
-                  author,
+                  '$author / $publisher',
                   style: AppTextStyles.authorLabelStyle,
                 ),
                 const SizedBox(height: 10),
+                // 가까운 도서관 및 대출 가능 여부
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -91,13 +100,17 @@ class BookRecommendationCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       availability,
-                      style: AppTextStyles.libraryLabelStyle,
+                      style: AppTextStyles.libraryLabelStyle.copyWith(
+                        color: availability == '대출 가능' ? Colors.green : Colors.red,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ],
                 ),
               ],
             ),
           ),
+          // 도서 이미지
           Positioned(
             right: 20,
             bottom: 0,
@@ -127,11 +140,11 @@ class BookRecommendationCard extends StatelessWidget {
                   fit: BoxFit.cover,
                   width: 90,
                   height: 126,
-                  errorBuilder: (context, error, stackTrace) => Image.asset(
-                    'assets/images/placeholder.png',
-                    fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Container(
                     width: 90,
                     height: 126,
+                    color: Colors.grey[300],
+                    child: const Icon(Icons.book, color: Colors.grey),
                   ),
                 ),
               ),

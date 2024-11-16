@@ -1,44 +1,53 @@
 class Book {
+  final String id;
   final String title;
   final String author;
-  final String publisher;
+  final String publisher;    // 출판사 필드 추가
   final String isbn;
+  String availability;
+  String closestLibrary;
   final String imageUrl;
-  final String availability;
-  final String closestLibrary;
+  final DateTime updatedAt;
 
   Book({
+    required this.id,
     required this.title,
     required this.author,
-    required this.publisher,
+    required this.publisher,  // 출판사 필드 필수로 변경
     required this.isbn,
+    this.availability = '정보 없음',
+    this.closestLibrary = '정보 없음',
     required this.imageUrl,
-    required this.availability,
-    required this.closestLibrary,
-  });
+    DateTime? updatedAt,
+  }) : updatedAt = updatedAt ?? DateTime.now();
 
   factory Book.fromJson(Map<String, dynamic> json) {
     return Book(
-      title: json['title'] ?? '',
-      author: json['author'] ?? '',
+      id: json['id'] ?? '',
+      title: json['title'] ?? '제목 없음',
+      author: json['author'] ?? '저자 없음',
       publisher: json['publisher'] ?? '',
       isbn: json['isbn'] ?? '',
+      availability: json['availability'] ?? '정보 없음',
+      closestLibrary: json['closestLibrary'] ?? '정보 없음',
       imageUrl: json['imageUrl'] ?? '',
-      availability: json['availability'] ?? '',
-      closestLibrary: json['closestLibrary'] ?? '',
+      updatedAt: json['updatedAt'] != null 
+          ? DateTime.parse(json['updatedAt']) 
+          : DateTime.now(),
     );
   }
 
-  // JSON으로 변환
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
       'title': title,
       'author': author,
       'publisher': publisher,
       'isbn': isbn,
-      'imageUrl': imageUrl,
       'availability': availability,
       'closestLibrary': closestLibrary,
+      'imageUrl': imageUrl,
+      'updatedAt': updatedAt.toIso8601String(),
     };
   }
 }

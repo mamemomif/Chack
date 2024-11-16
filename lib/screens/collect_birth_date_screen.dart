@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../constants/colors.dart';
 import '../constants/text_styles.dart';
-import '../components/birthdate_text_field.dart';
-import '../components/birthdate_button.dart';
+import '../components/birthday_input/birthdate_text_field.dart';
+import '../components/birthday_input/birthdate_button.dart';
 import '../services/authentication_service.dart';
 
 class CollectBirthDateScreen extends StatefulWidget {
@@ -25,7 +25,7 @@ class _CollectBirthDateScreenState extends State<CollectBirthDateScreen> {
   }
 
   bool isValidDate(String dateString) {
-    final RegExp regExp = RegExp(r'^(\d{4})\.(\d{2})\.(\d{2})$');
+    final RegExp regExp = RegExp(r'^(\d{4})\-(\d{2})\-(\d{2})$'); // '-' 사용
     final Match? match = regExp.firstMatch(dateString);
 
     if (match == null) {
@@ -78,7 +78,7 @@ class _CollectBirthDateScreenState extends State<CollectBirthDateScreen> {
   }
 
   DateTime parseDate(String dateString) {
-    final RegExp regExp = RegExp(r'^(\d{4})\.(\d{2})\.(\d{2})$');
+    final RegExp regExp = RegExp(r'^(\d{4})\-(\d{2})\-(\d{2})$');
     final Match match = regExp.firstMatch(dateString)!;
 
     final int year = int.parse(match.group(1)!);
@@ -202,7 +202,7 @@ class _CollectBirthDateScreenState extends State<CollectBirthDateScreen> {
                     flex: 7,
                     child: BirthdateTextField(
                       controller: _birthDateController,
-                      hintText: '예) 2000.01.01',
+                      hintText: '예) 2000-01-01',
                       keyboardType: TextInputType.number,
                       inputFormatters: [
                         FilteringTextInputFormatter.digitsOnly,
@@ -242,19 +242,20 @@ class _CollectBirthDateScreenState extends State<CollectBirthDateScreen> {
 }
 
 // 날짜 입력 시 자동으로 '.' 추가하는 Formatter
+// 날짜 입력 시 자동으로 '-' 추가하는 Formatter
 class _DateInputFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(
     TextEditingValue oldValue,
     TextEditingValue newValue,
   ) {
-    String digitsOnly = newValue.text.replaceAll('.', '');
+    String digitsOnly = newValue.text.replaceAll('-', '');
     String newString = '';
 
     for (int i = 0; i < digitsOnly.length; i++) {
       newString += digitsOnly[i];
       if ((i == 3 || i == 5) && i != digitsOnly.length - 1) {
-        newString += '.';
+        newString += '-';
       }
     }
 

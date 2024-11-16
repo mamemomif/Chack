@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../constants/colors.dart';
+import '../../constants/colors.dart';
 import 'package:flutter/services.dart';
-import '../constants/text_styles.dart';
+import '../../constants/text_styles.dart';
 
 class BirthdateTextField extends StatelessWidget {
   final TextEditingController controller;

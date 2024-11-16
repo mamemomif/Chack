@@ -171,6 +171,7 @@ class AuthService {
             'uid': user.uid,
             'nickname': user.displayName ?? '사용자',
             'email': user.email,
+            'photoURL': user.photoURL,
             'createdAt': FieldValue.serverTimestamp(),
           });
         }
