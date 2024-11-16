@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../constants/colors.dart';
-import '../../constants/bookcover_styles.dart';  // BookCoverStyle import
+import '../../constants/bookcover_styles.dart';
+import '../screens/book_detail_screen.dart';  // BookCoverStyle import
 
 class SearchedBookListItem extends StatelessWidget {
   final String title;
@@ -10,6 +11,7 @@ class SearchedBookListItem extends StatelessWidget {
   final String library;
   final String distance;
   final String availability;
+  final String description;
 
   const SearchedBookListItem({
     super.key,
@@ -20,6 +22,7 @@ class SearchedBookListItem extends StatelessWidget {
     required this.library,
     required this.distance,
     required this.availability,
+    required this.description, // 생성자에 추가
   });
 
   @override
@@ -103,7 +106,20 @@ class SearchedBookListItem extends StatelessWidget {
                   Align(
                     alignment: Alignment.centerRight,
                     child: ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => BookDetailScreen(
+                              title: title,
+                              author: author,
+                              publisher: publisher,
+                              image: image,
+                              description: description // 이미 검색 결과에서 얻은 설명 데이터
+                            ),
+                          ),
+                        );
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.black,
                         shadowColor: Colors.transparent,

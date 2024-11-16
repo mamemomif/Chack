@@ -206,6 +206,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                             library: '도서관 정보 로딩 중...',
                             distance: '-',
                             availability: '-',
+                            description: book.description,
                           ),
                           if (index < _searchResults.length - 1)
                             Padding(

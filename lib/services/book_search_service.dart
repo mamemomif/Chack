@@ -81,4 +81,5 @@ class BookSearchService {
       rethrow;
     }
   }
+
 }
