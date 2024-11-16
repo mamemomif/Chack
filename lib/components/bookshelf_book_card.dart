@@ -5,7 +5,16 @@ import '../constants/text_styles.dart';
 import '../constants/bookcover_styles.dart';
 
 class BookshelfBookCard extends StatelessWidget {
-  const BookshelfBookCard({super.key});
+  final String? imageUrl;
+  final String title;
+  final String author;
+
+  const BookshelfBookCard({
+    super.key,
+    this.imageUrl,
+    this.title = '책 제목',  // 기본값 설정
+    this.author = '저자',   // 기본값 설정
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +24,10 @@ class BookshelfBookCard extends StatelessWidget {
         Stack(
           clipBehavior: Clip.none,
           children: [
-            const BookCover(style: BookCoverStyles.small),
+            BookCover(
+              style: BookCoverStyles.small,
+              imageUrl: imageUrl,
+            ),
             Positioned(
               top: -6,
               right: -6,
@@ -42,15 +54,15 @@ class BookshelfBookCard extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 12),
-        const Flexible(
+        Flexible(
           child: Text(
-            '책 제목',
+            title,
             style: AppTextStyles.titleLabelStyle,
             overflow: TextOverflow.ellipsis,
           ),
         ),
         Text(
-          '저자',
+          author,
           style: AppTextStyles.authorLabelStyle,
           overflow: TextOverflow.ellipsis,
         ),
