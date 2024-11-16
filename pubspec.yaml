@@ -1,5 +1,5 @@
 name: chack_project
-description: "Chack - 채크"
+description: 'Chack - 채크'
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -32,6 +32,7 @@ dependencies:
     sdk: flutter
   # SVG 이미지 렌더링을 위한 패키지
   flutter_svg: ^2.0.9
+  image_picker: ^1.1.2
 
   # Firebase 관련 패키지
   firebase_core: ^2.32.0
@@ -70,11 +71,13 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.6
-  percent_indicator: ^4.2.2 # pub.dev에서 최신 버전 확인
+  percent_indicator:
+    ^4.2.2 # pub.dev에서 최신 버전 확인
     #to support korean language
   flutter_localizations:
     sdk: flutter
   logger: ^1.4.0
+  firebase_storage: ^11.6.5
 
 dev_dependencies:
   flutter_test:
@@ -92,12 +95,10 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
-
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
-
 
   # To add assets to your application, add an assets section, like this:
   assets:
