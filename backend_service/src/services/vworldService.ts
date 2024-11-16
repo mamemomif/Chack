@@ -1,33 +1,13 @@
-// vworldService.ts
 import axios from "axios";
 import { logger } from "firebase-functions/v2";
 import { Location, RegionCodes } from "../utils/types";
 import { calculateDistance } from "../utils/utils";
+import RegionCodeMapper from "./regionCodeMapping";
 
 export class VworldService {
   private static readonly VWORLD_BASE_URL = "https://api.vworld.kr/req/data";
   private static readonly CACHE_DURATION = 30 * 60 * 1000; // 30분
   private static readonly CACHE_DISTANCE = 100; // 100m
-
-  private static readonly REGION_MAPPING: Record<string, string> = {
-    "서울특별시": "11",
-    "부산광역시": "21",
-    "대구광역시": "22",
-    "인천광역시": "23",
-    "광주광역시": "24",
-    "대전광역시": "25",
-    "울산광역시": "26",
-    "세종특별자치시": "29",
-    "경기도": "31",
-    "강원특별자치도": "32",
-    "충청북도": "33",
-    "충청남도": "34",
-    "전라북도": "35",
-    "전라남도": "36",
-    "경상북도": "37",
-    "경상남도": "38",
-    "제주특별자치도": "39",
-  };
 
   private cache: {
     data?: RegionCodes;
@@ -55,10 +35,18 @@ export class VworldService {
         params: this.buildVworldParams(location),
         timeout: 10000,
       });
-      logger.info(`[VWorld] response: ${JSON.stringify(response.data)}`);
-      const regionCodes = this.parseVworldResponse(response.data);
-      this.cacheRegionCodes(location, regionCodes);
 
+      logger.info(`[VWorld] response: ${JSON.stringify(response.data)}`);
+
+      // RegionCodeMapper를 사용하여 변환
+      const regionCodes = RegionCodeMapper.convertToLibraryRegionCode(response.data);
+
+      // 코드 유효성 검증
+      if (!RegionCodeMapper.validateRegionCode(regionCodes)) {
+        throw new Error(`유효하지 않은 지역 코드: ${JSON.stringify(regionCodes)}`);
+      }
+
+      this.cacheRegionCodes(location, regionCodes);
       return regionCodes;
     } catch (error) {
       console.error("[VWorld] API 호출 실패:", error);
@@ -79,28 +67,6 @@ export class VworldService {
       geometry: "false",
       attribute: "true",
       size: "1",
-    };
-  }
-
-  private parseVworldResponse(responseData: any): RegionCodes {
-    if (responseData.response.status !== "OK" ||
-        !responseData.response.result?.featureCollection?.features?.[0]) {
-      throw new Error("행정구역 정보를 찾을 수 없습니다");
-    }
-
-    const properties = responseData.response.result.featureCollection.features[0].properties;
-    const vworldSido = properties.full_nm.toString().split(" ")[0];
-    const region = VworldService.REGION_MAPPING[vworldSido];
-
-    if (!region) {
-      throw new Error(`지역 코드 매핑 없음: ${vworldSido}`);
-    }
-
-    return {
-      region,
-      dtlRegion: properties.sig_cd,
-      sido: vworldSido,
-      sigungu: properties.sig_kor_nm,
     };
   }
 
