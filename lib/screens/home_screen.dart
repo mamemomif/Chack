@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../components/annual_goal_card.dart';
+import '../components/monthly_reading_card.dart';
 import '../components/custom_bottom_nav_bar.dart';
 import '../components/custom_search_bar.dart';
 import '../components/book_recommendation/book_recommendation_list.dart';
@@ -170,39 +171,66 @@ class _HomeTab extends StatelessWidget {
 
     return ColoredBox(
       color: AppColors.backgroundColor,
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (userId != null && age != null) // userId와 age가 모두 있을 때만 표시
-              SizedBox(
-                height: 170,
-                child: BookRecommendationList(
-                  userId: userId!,
-                  age: age!,
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (userId != null && age != null) // userId와 age가 모두 있을 때만 표시
+                SizedBox(
+                  height: 170,
+                  child: BookRecommendationList(
+                    userId: userId!,
+                    age: age!,
+                  ),
+                ),
+              const Padding(
+                padding: EdgeInsets.all(15),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        '홈',
+                        style: AppTextStyles.titleStyle,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            const Padding(
-              padding: EdgeInsets.all(15),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      '홈',
-                      style: AppTextStyles.titleStyle,
-                    ),
-                  ),
-                ],
+              // 연간 독서 목표 카드
+              const AnnualGoalCard(
+                progress: 0.5, // 달성률
+                remainingBooks: 9, // 남은 책 수
               ),
-            ),
-            const AnnualGoalCard(
-              progress: 0.5, // 50% 진행
-              remainingBooks: 9, // 남은 책 수
-            ),
-          ],
+              const SizedBox(height: 30),
+              // 이번 달 독서 현황 카드
+              const MonthlyReadingCard(
+                daysInMonth: 30, // 11월의 일수
+                readingDays: [
+                  1,
+                  2,
+                  4,
+                  5,
+                  6,
+                  10,
+                  11,
+                  12,
+                  13,
+                  14,
+                  15,
+                  16,
+                  17,
+                  20,
+                  21,
+                  22
+                ], // 예시: 읽은 날
+              ),
+              const SizedBox(height: 100),
+            ],
+          ),
         ),
       ),
     );
