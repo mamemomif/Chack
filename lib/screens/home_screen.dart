@@ -2,10 +2,13 @@ import 'package:chack_project/screens/timer_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import '../components/annual_goal_card.dart';
 import '../components/custom_bottom_nav_bar.dart';
 import '../components/custom_search_bar.dart';
 import '../components/book_recommendation/book_recommendation_list.dart';
 import '../services/authentication_service.dart';
+import '../constants/icons.dart';
 import '../constants/colors.dart';
 import '../constants/text_styles.dart';
 import '../screens/profile_screen.dart';
@@ -24,7 +27,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final PageController _pageController = PageController();
   final AuthService _authService = AuthService();
   String? _userId;
-  String? _age;  // null일 수 있음을 명시
+  String? _age; // null일 수 있음을 명시
 
   @override
   void initState() {
@@ -45,17 +48,15 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _getUserAge(String uid) async {
     try {
       print('HomeScreen: 사용자 정보 로드 시작 - UID: $uid');
-      final userDoc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(uid)
-          .get();
+      final userDoc =
+          await FirebaseFirestore.instance.collection('users').doc(uid).get();
 
       if (userDoc.exists) {
         final userData = userDoc.data();
         if (userData != null && userData['age'] != null) {
           setState(() {
             _userId = uid;
-            _age = userData['age'].toString();  // age를 문자열로 변환
+            _age = userData['age'].toString(); // age를 문자열로 변환
           });
           print('HomeScreen: 사용자 나이 그룹 로드 완료: $_age');
         } else {
@@ -159,7 +160,7 @@ class _HomeTab extends StatelessWidget {
   final String? age;
 
   const _HomeTab({
-    required this.userId, 
+    required this.userId,
     required this.age,
   });
 
@@ -169,24 +170,40 @@ class _HomeTab extends StatelessWidget {
 
     return ColoredBox(
       color: AppColors.backgroundColor,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: screenWidth * 0.05,
-              vertical: 10,
-            ),
-          ),
-          if (userId != null && age != null) // userId와 age가 모두 있을 때만 표시
-            SizedBox(
-              height: 170,
-              child: BookRecommendationList(
-                userId: userId!,
-                age: age!,
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (userId != null && age != null) // userId와 age가 모두 있을 때만 표시
+              SizedBox(
+                height: 170,
+                child: BookRecommendationList(
+                  userId: userId!,
+                  age: age!,
+                ),
+              ),
+            const Padding(
+              padding: EdgeInsets.all(15),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      '홈',
+                      style: AppTextStyles.titleStyle,
+                    ),
+                  ),
+                ],
               ),
             ),
-        ],
+            const AnnualGoalCard(
+              progress: 0.5, // 50% 진행
+              remainingBooks: 9, // 남은 책 수
+            ),
+          ],
+        ),
       ),
     );
   }
