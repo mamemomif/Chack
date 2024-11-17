@@ -8,6 +8,7 @@ import '../components/monthly_reading_card.dart';
 import '../components/custom_bottom_nav_bar.dart';
 import '../components/custom_search_bar.dart';
 import '../components/book_recommendation/book_recommendation_list.dart';
+import '../components/recent_book_popup.dart';
 import '../services/authentication_service.dart';
 import '../constants/icons.dart';
 import '../constants/colors.dart';
@@ -29,6 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final AuthService _authService = AuthService();
   String? _userId;
   String? _age; // null일 수 있음을 명시
+  bool _isPopupVisible = true;
 
   @override
   void initState() {
@@ -98,43 +100,57 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Scaffold(
         backgroundColor: AppColors.backgroundColor,
         body: SafeArea(
-          child: Column(
+          child: Stack(
             children: [
-              CustomSearchBar(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const SearchScreen(),
+              Column(
+                children: [
+                  CustomSearchBar(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SearchScreen(),
+                        ),
+                      );
+                    },
+                    onProfileTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ProfileScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  Expanded(
+                    child: PageView(
+                      controller: _pageController,
+                      onPageChanged: (index) {
+                        setState(() => _currentIndex = index);
+                      },
+                      children: [
+                        _HomeTab(
+                          userId: _userId,
+                          age: _age,
+                        ),
+                        const BookshelfScreen(),
+                        const _TimerTab(),
+                        const _StatisticsTab(),
+                      ],
                     ),
-                  );
-                },
-                onProfileTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const ProfileScreen(),
-                    ),
-                  );
-                },
+                  ),
+                ],
               ),
-              Expanded(
-                child: PageView(
-                  controller: _pageController,
-                  onPageChanged: (index) {
-                    setState(() => _currentIndex = index);
-                  },
-                  children: [
-                    _HomeTab(
-                      userId: _userId,
-                      age: _age,
-                    ),
-                    const BookshelfScreen(),
-                    const _TimerTab(),
-                    const _StatisticsTab(),
-                  ],
-                ),
-              ),
+              RecentBookPopup(
+                isVisible: _isPopupVisible,
+                onClose: () {
+                  setState(() {
+                    _isPopupVisible = false;
+                  });
+                },
+                imageUrl: 'https://via.placeholder.com/60x80',
+                title: '채식주의자',
+              )
             ],
           ),
         ),
@@ -226,9 +242,9 @@ class _HomeTab extends StatelessWidget {
                   20,
                   21,
                   22
-                ], // 예시: 읽은 날
+                ],
               ),
-              const SizedBox(height: 100),
+              const SizedBox(height: 200),
             ],
           ),
         ),

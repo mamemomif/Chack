@@ -41,26 +41,25 @@ class MonthlyReadingCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   const Text(
-                    '독서 기록',
+                    '11월 독서 기록',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                   const SizedBox(height: 15),
-                  // 블록 그리드
                   ConstrainedBox(
                     constraints: const BoxConstraints(
-                      maxWidth: gridWidth, // 고정된 너비 설정
+                      maxWidth: gridWidth,
                     ),
                     child: GridView.builder(
                       physics: const NeverScrollableScrollPhysics(),
                       shrinkWrap: true,
                       gridDelegate:
                           const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 7, // 한 줄에 7개
-                        crossAxisSpacing: spacing, // 가로 간격
-                        mainAxisSpacing: spacing, // 세로 간격
+                        crossAxisCount: 7,
+                        crossAxisSpacing: spacing,
+                        mainAxisSpacing: spacing,
                       ),
                       itemCount: daysInMonth,
                       itemBuilder: (context, index) {
@@ -83,7 +82,6 @@ class MonthlyReadingCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 30),
-            // 독서 시간
             const Flexible(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
