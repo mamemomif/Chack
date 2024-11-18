@@ -11,12 +11,14 @@ import '../models/api_exception.dart';
 import '../models/book_model.dart';
 import 'book_cache_service.dart';
 import '../utils/book_data_normalizer.dart';
+import 'book_search_service.dart';
 
 class RecommendedBooksService {
   final String libraryServiceUrl = "https://getlibrarieswithbook-m3ebrnkf5q-du.a.run.app";
   final http.Client httpClient;
   final BookCacheService _cacheService;
   final Logger _logger = Logger();
+  final BookSearchService _bookSearchService = BookSearchService();
   final Map<String, Future<Map<String, dynamic>?>> _pendingRequests = {};
 
   static const int _maxRetries = 3;
@@ -91,8 +93,8 @@ class RecommendedBooksService {
   }
 
   // _convertToBooks 메서드를 추가하여 Firestore 데이터를 Book 객체 리스트로 변환합니다.
-  List<Book> _convertToBooks(List<dynamic> booksData) {
-    return booksData.map((bookData) {
+  Future<List<Book>> _convertToBooks(List<dynamic> booksData) async {
+    final List<Book> books = booksData.map((bookData) {
       final rawTitle = bookData['bookname'] ?? 'No Title';
       final rawAuthor = bookData['authors'] ?? 'No Author';
       final rawPublisher = bookData['publisher'] ?? '';
@@ -106,6 +108,29 @@ class RecommendedBooksService {
         imageUrl: bookData['bookImageURL'] ?? '',
       );
     }).toList();
+
+    // 각 책의 description을 ISBN으로 로드
+    for (var book in books) {
+      final description = await _fetchDescription(book.isbn);
+      book.description = description; // description 추가
+    }
+
+    return books;
+  }
+
+  Future<String?> _fetchDescription(String isbn) async {
+    if (isbn.isEmpty) {
+      _logger.w("No ISBN provided for description fetch");
+      return null;
+    }
+
+    try {
+      final result = await _bookSearchService.searchBookByISBN(isbn);
+      return result?.description ?? '설명을 찾을 수 없습니다.';
+    } catch (e) {
+      _logger.e("Error fetching description for ISBN $isbn: $e");
+      return '설명을 찾을 수 없습니다.';
+    }
   }
 
   Future<Map<String, dynamic>?> fetchLibrary(

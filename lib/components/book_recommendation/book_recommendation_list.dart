@@ -78,6 +78,7 @@ class BookRecommendationList extends StatelessWidget {
                       distance: book.closestLibrary ?? '정보 없음',
                       availability: book.availability ?? '알 수 없음',
                       imageUrl: book.imageUrl,
+                      description: book.description ?? '이 책에 대한 설명이 없습니다.',
                     ),
                   );
                 },

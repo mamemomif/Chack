@@ -81,5 +81,40 @@ class BookSearchService {
       rethrow;
     }
   }
+  
+  Future<BookSearchResult?> searchBookByISBN(String isbn) async {
+    try {
+      final encodedISBN = Uri.encodeComponent(isbn);
+      final url = Uri.parse('$_baseUrl?query=$encodedISBN');
+      final clientId = dotenv.env['NAVER_CLIENT_ID'];
+      final clientSecret = dotenv.env['NAVER_CLIENT_SECRET'];
 
+      if (clientId == null || clientSecret == null) {
+        throw Exception('API credentials not found');
+      }
+
+      final response = await http.get(
+        url,
+        headers: {
+          'X-Naver-Client-Id': clientId,
+          'X-Naver-Client-Secret': clientSecret,
+          'Accept': 'application/json',
+        },
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(utf8.decode(response.bodyBytes));
+        if (data['items'] != null && data['items'].isNotEmpty) {
+          // 첫 번째 검색 결과를 반환
+          return BookSearchResult.fromJson(data['items'][0]);
+        }
+        return null;
+      } else {
+        throw Exception('Failed to search book by ISBN: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error searching book by ISBN: $e');
+      return null;
+    }
+  }
 }

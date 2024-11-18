@@ -4,6 +4,7 @@ class Book {
   final String author;
   final String publisher;    // 출판사 필드 추가
   final String isbn;
+  String? description;
   String availability;
   String closestLibrary;
   final String imageUrl;
@@ -15,6 +16,7 @@ class Book {
     required this.author,
     required this.publisher,  // 출판사 필드 필수로 변경
     required this.isbn,
+    this.description,
     this.availability = '정보 없음',
     this.closestLibrary = '정보 없음',
     required this.imageUrl,
@@ -28,6 +30,7 @@ class Book {
       author: json['author'] ?? '저자 없음',
       publisher: json['publisher'] ?? '',
       isbn: json['isbn'] ?? '',
+      description: json['description'],
       availability: json['availability'] ?? '정보 없음',
       closestLibrary: json['closestLibrary'] ?? '정보 없음',
       imageUrl: json['imageUrl'] ?? '',
@@ -44,6 +47,7 @@ class Book {
       'author': author,
       'publisher': publisher,
       'isbn': isbn,
+      'description': description,
       'availability': availability,
       'closestLibrary': closestLibrary,
       'imageUrl': imageUrl,
