@@ -10,9 +10,9 @@ class CustomSearchBar extends StatelessWidget {
   final VoidCallback? onTap;
   final VoidCallback? onLogoTap;
   final VoidCallback? onProfileTap;
-  final String? searchText;  // 검색어를 표시하기 위해 추가
-  final bool showBackButton;  // 뒤로가기 버튼 표시 여부
-  final VoidCallback? onBackTap;  // 뒤로가기 버튼 클릭 핸들러
+  final String? searchText; // 검색어를 표시하기 위해 추가
+  final bool showBackButton; // 뒤로가기 버튼 표시 여부
+  final VoidCallback? onBackTap; // 뒤로가기 버튼 클릭 핸들러
 
   const CustomSearchBar({
     super.key,
@@ -80,9 +80,9 @@ class CustomSearchBar extends StatelessWidget {
                     Text(
                       searchText ?? '읽고 싶은 책을 알려주세요',
                       style: TextStyle(
-                        color: searchText != null 
-                          ? Colors.black.withOpacity(0.8)
-                          : Colors.black.withOpacity(0.4),
+                        color: searchText != null
+                            ? Colors.black.withOpacity(0.8)
+                            : Colors.black.withOpacity(0.4),
                         fontSize: 16,
                         fontFamily: 'SUITE',
                         fontWeight: FontWeight.w500,
@@ -110,7 +110,7 @@ class CustomSearchBar extends StatelessWidget {
             builder: (context, snapshot) {
               final userData = snapshot.data?.data() as Map<String, dynamic>?;
               final photoURL = userData?['photoURL'] as String?;
-              
+
               return GestureDetector(
                 onTap: onProfileTap,
                 child: Hero(
@@ -120,13 +120,13 @@ class CustomSearchBar extends StatelessWidget {
                     height: 40,
                     decoration: BoxDecoration(
                       color: AppColors.pointColor.withOpacity(0.3),
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(20),
                     ),
                     child: photoURL != null
                         ? Padding(
                             padding: const EdgeInsets.all(0.5),
                             child: ClipRRect(
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(20),
                               child: Image.network(
                                 photoURL,
                                 width: double.infinity,

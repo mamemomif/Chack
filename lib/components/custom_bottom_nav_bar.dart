@@ -31,18 +31,22 @@ class CustomBottomNavigationBar extends StatelessWidget {
           _buildNavigationItem(
             icon: AppIcons.homeIcon,
             label: '홈',
+            width: 23,
           ),
           _buildNavigationItem(
             icon: AppIcons.bookShelfIcon,
             label: '서재',
+            width: 26,
           ),
           _buildNavigationItem(
             icon: AppIcons.timerIcon,
             label: '타이머',
+            width: 24,
           ),
           _buildNavigationItem(
             icon: AppIcons.statisticsIcon,
             label: '통계',
+            width: 24,
           ),
         ],
         currentIndex: currentIndex,
@@ -70,24 +74,26 @@ class CustomBottomNavigationBar extends StatelessWidget {
   BottomNavigationBarItem _buildNavigationItem({
     required String icon,
     required String label,
+    required double width,
   }) {
     return BottomNavigationBarItem(
       icon: Padding(
         padding: const EdgeInsets.only(
-          top: 15,
+          top: 7,
           bottom: 7,
         ),
         child: SvgPicture.asset(
           icon,
           colorFilter: ColorFilter.mode(
-            AppColors.subTextColor,
+            Colors.black.withOpacity(0.12),
             BlendMode.srcIn,
           ),
+          width: width,
         ),
       ),
       activeIcon: Padding(
         padding: const EdgeInsets.only(
-          top: 15,
+          top: 7,
           bottom: 7,
         ),
         child: SvgPicture.asset(
@@ -96,6 +102,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
             AppColors.pointColor,
             BlendMode.srcIn,
           ),
+          width: width,
         ),
       ),
       label: label,
