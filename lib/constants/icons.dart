@@ -12,4 +12,6 @@ class AppIcons {
   static const String restartIcon = 'assets/images/restart_icon.svg';
   static const String startIcon = 'assets/images/start_icon.svg';
   static const String profileIcon = 'assets/images/profile_icon.svg';
+  static const String bookDeleteIcon = 'assets/images/book_delete.svg';
+  static const String bookReportIcon = 'assets/images/book_report.svg';
 }
