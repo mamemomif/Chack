@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../constants/colors.dart';
 import '../constants/icons.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 class NoResultsFound extends StatelessWidget {
   final VoidCallback onRetry;
-  final String message;
+  final String searchText;
   final String buttonText;
 
   const NoResultsFound({
     Key? key,
     required this.onRetry,
-    this.message = '검색 결과가 없습니다.',
+    required this.searchText,
     this.buttonText = '다시 검색하기',
   }) : super(key: key);
 
@@ -32,14 +32,29 @@ class NoResultsFound extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
-          // 메시지 텍스트
-          Text(
-            message,
-            style: const TextStyle(
-              fontFamily: 'SUITE',
-              fontSize: 18,
-              color: Color(0xFF757575), // Grey #757575
-              fontWeight: FontWeight.w500,
+          // Rich Text를 사용한 메시지
+          Text.rich(
+            TextSpan(
+              children: [
+                TextSpan(
+                  text: '"$searchText"',
+                  style: const TextStyle(
+                    color: Color(0xFFFF5353),
+                    fontSize: 20,
+                    fontFamily: 'SUITE',
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const TextSpan(
+                  text: '와 일치하는\n항목이 없습니다.',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 20,
+                    fontFamily: 'SUITE',
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
             ),
             textAlign: TextAlign.center,
           ),
@@ -50,7 +65,7 @@ class NoResultsFound extends StatelessWidget {
             style: TextStyle(
               fontFamily: 'SUITE',
               fontSize: 14,
-              color: Color(0xFF9E9E9E), // Grey #9E9E9E
+              color: Color(0xFF9E9E9E),
             ),
             textAlign: TextAlign.center,
           ),

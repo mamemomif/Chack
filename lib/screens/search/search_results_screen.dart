@@ -169,6 +169,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
             else if (_searchResults.isEmpty && !_isLoading)
               Expanded(
                 child: NoResultsFound(
+                  searchText: widget.searchText,
                   onRetry: () {
                     Navigator.push(
                       context,
