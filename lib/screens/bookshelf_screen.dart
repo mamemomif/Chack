@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../services/bookshelf_service.dart';
 import '../services/book_search_service.dart'; // ISBN 검색 서비스
 import '../models/bookshelf_model.dart';
 import '../components/bookshelf_book_card.dart';
 import '../components/filter_bottom_sheet.dart';
 import '../screens/book_detail_screen.dart';
+import '../screens/search/search_screen.dart';
 import '../constants/colors.dart';
+import '../constants/icons.dart';
 import '../constants/text_styles.dart';
 
 class BookshelfScreen extends StatefulWidget {
@@ -22,7 +25,8 @@ class BookshelfScreen extends StatefulWidget {
 
 class _BookshelfScreenState extends State<BookshelfScreen> {
   final BookshelfService _bookshelfService = BookshelfService();
-  final BookSearchService _bookSearchService = BookSearchService(); // ISBN 검색 서비스
+  final BookSearchService _bookSearchService =
+      BookSearchService(); // ISBN 검색 서비스
   final List<String> _filterOptions = ['전체', '읽기 전', '읽는 중', '다 읽음'];
   String _selectedFilter = '전체';
 
@@ -44,10 +48,12 @@ class _BookshelfScreenState extends State<BookshelfScreen> {
     );
   }
 
-  Future<void> _navigateToDetail(BuildContext context, BookshelfBook book) async {
+  Future<void> _navigateToDetail(
+      BuildContext context, BookshelfBook book) async {
     try {
       // ISBN으로 책 설명 검색
-      final bookSearchResult = await _bookSearchService.searchBookByISBN(book.isbn);
+      final bookSearchResult =
+          await _bookSearchService.searchBookByISBN(book.isbn);
 
       if (bookSearchResult != null) {
         Navigator.push(
@@ -135,7 +141,79 @@ class _BookshelfScreenState extends State<BookshelfScreen> {
               : books.where((book) => book.status == _selectedFilter).toList();
 
           if (filteredBooks.isEmpty) {
-            return const Center(child: Text('서재가 비어있습니다.'));
+            return Center(
+                child: Column(
+              children: [
+                const SizedBox(height: 110),
+                SvgPicture.asset(
+                  AppIcons.emptyBookshelfIcon,
+                  width: 190,
+                  colorFilter: const ColorFilter.mode(
+                    AppColors.primary,
+                    BlendMode.srcIn,
+                  ),
+                ),
+                const SizedBox(height: 25),
+                const Text(
+                  '서재가 비어 있어요',
+                  style: AppTextStyles.titleStyle,
+                ),
+                const SizedBox(height: 15),
+                Text(
+                  '읽고 싶은 책을 검색하고\n서재에 책을 추가해보세요!',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    height: 1.4,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black.withOpacity(0.4),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: 140,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => SearchScreen(
+                            userId: widget.userId, // userId 전달
+                          ),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 10, horizontal: 0)),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.search_rounded,
+                          size: 20,
+                          color: Colors.white,
+                        ),
+                        SizedBox(width: 10),
+                        Text(
+                          '책 검색하기',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        SizedBox(width: 5)
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ));
           }
 
           return Padding(
