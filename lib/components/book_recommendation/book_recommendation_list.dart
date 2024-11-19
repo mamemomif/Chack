@@ -1,5 +1,3 @@
-// screens/book_recommendation_list.dart
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/book_recommendation_provider.dart';
@@ -10,7 +8,7 @@ import 'book_recommendation_card.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 class BookRecommendationList extends StatelessWidget {
-  final String userId;
+  final String userId; // 전달받은 userId
   final String age;
 
   const BookRecommendationList({
@@ -72,6 +70,8 @@ class BookRecommendationList extends StatelessWidget {
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     child: BookRecommendationCard(
+                      userId: userId, // userId 전달
+                      isbn: book.isbn, // isbn 전달
                       title: book.title,
                       author: book.author,
                       publisher: book.publisher,

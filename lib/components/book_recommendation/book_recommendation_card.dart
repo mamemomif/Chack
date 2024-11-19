@@ -6,6 +6,8 @@ import '../../constants/icons.dart';
 import '../../screens/book_detail_screen.dart';
 
 class BookRecommendationCard extends StatelessWidget {
+  final String userId; // 추가
+  final String isbn; // 추가
   final String title;
   final String author;
   final String publisher;
@@ -16,6 +18,8 @@ class BookRecommendationCard extends StatelessWidget {
 
   const BookRecommendationCard({
     Key? key,
+    required this.userId, // 추가
+    required this.isbn, // 추가
     required this.title,
     required this.author,
     required this.publisher,
@@ -33,6 +37,8 @@ class BookRecommendationCard extends StatelessWidget {
           context,
           MaterialPageRoute(
             builder: (context) => BookDetailScreen(
+              userId: userId, // userId 전달
+              isbn: isbn, // isbn 전달
               title: title,
               author: author,
               publisher: publisher,

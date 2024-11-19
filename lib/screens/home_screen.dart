@@ -29,7 +29,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final PageController _pageController = PageController();
   final AuthService _authService = AuthService();
   String? _userId;
-  String? _age; // null일 수 있음을 명시
+  String? _age;
   bool _isPopupVisible = true;
 
   @override
@@ -59,7 +59,7 @@ class _HomeScreenState extends State<HomeScreen> {
         if (userData != null && userData['age'] != null) {
           setState(() {
             _userId = uid;
-            _age = userData['age'].toString(); // age를 문자열로 변환
+            _age = userData['age'].toString();
           });
           print('HomeScreen: 사용자 나이 그룹 로드 완료: $_age');
         } else {
@@ -106,10 +106,18 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   CustomSearchBar(
                     onTap: () {
+                      if (_userId == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('로그인이 필요한 서비스입니다.')),
+                        );
+                        return;
+                      }
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const SearchScreen(),
+                          builder: (context) => SearchScreen(
+                            userId: _userId!,
+                          ),
                         ),
                       );
                     },
@@ -193,7 +201,7 @@ class _HomeTab extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (userId != null && age != null) // userId와 age가 모두 있을 때만 표시
+              if (userId != null && age != null)
                 SizedBox(
                   height: 170,
                   child: BookRecommendationList(
@@ -216,33 +224,14 @@ class _HomeTab extends StatelessWidget {
                   ],
                 ),
               ),
-              // 연간 독서 목표 카드
               const AnnualGoalCard(
-                progress: 0.5, // 달성률
-                remainingBooks: 9, // 남은 책 수
+                progress: 0.5,
+                remainingBooks: 9,
               ),
               const SizedBox(height: 30),
-              // 이번 달 독서 현황 카드
               const MonthlyReadingCard(
-                daysInMonth: 30, // 11월의 일수
-                readingDays: [
-                  1,
-                  2,
-                  4,
-                  5,
-                  6,
-                  10,
-                  11,
-                  12,
-                  13,
-                  14,
-                  15,
-                  16,
-                  17,
-                  20,
-                  21,
-                  22
-                ],
+                daysInMonth: 30,
+                readingDays: [1, 2, 4, 5, 6, 10, 11, 12, 13, 14, 15, 16, 17, 20, 21, 22],
               ),
               const SizedBox(height: 200),
             ],

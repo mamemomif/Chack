@@ -1,4 +1,3 @@
-// screens/search_results_screen.dart
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import '../../components/searched_book_list_item.dart';
@@ -9,10 +8,12 @@ import '../../models/book_search_result.dart';
 import 'search_screen.dart';
 
 class SearchResultsScreen extends StatefulWidget {
+  final String userId; // userId 추가
   final String searchText;
 
   const SearchResultsScreen({
     super.key,
+    required this.userId, // userId 추가
     required this.searchText,
   });
 
@@ -29,7 +30,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
   int _currentPage = 1;
   static const int _itemsPerPage = 10;
   final _scrollController = ScrollController();
-  
+
   @override
   void initState() {
     super.initState();
@@ -45,7 +46,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >= 
+    if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200) {
       _loadMoreBooks();
     }
@@ -56,7 +57,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
       _logger.d('Search already in progress, skipping');
       return;
     }
-    
+
     if (widget.searchText.isEmpty) {
       _logger.w('Empty search query, skipping search');
       setState(() {
@@ -64,7 +65,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
       });
       return;
     }
-    
+
     setState(() {
       _isLoading = true;
       _error = null;
@@ -77,7 +78,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
         start: (_currentPage - 1) * _itemsPerPage + 1,
         display: _itemsPerPage,
       );
-      
+
       setState(() {
         if (_currentPage == 1) {
           _searchResults.clear();
@@ -128,7 +129,9 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const SearchScreen(),
+                    builder: (context) => SearchScreen(
+                      userId: widget.userId, // userId 전달
+                    ),
                   ),
                 );
               },
@@ -199,6 +202,8 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                       child: Column(
                         children: [
                           SearchedBookListItem(
+                            userId: widget.userId, // userId 추가
+                            isbn: book.isbn ?? 'unknown', // isbn 추가
                             title: book.title,
                             author: book.author,
                             publisher: book.publisher,
@@ -206,7 +211,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                             library: '도서관 정보 로딩 중...',
                             distance: '-',
                             availability: '-',
-                            description: book.description,
+                            description: book.description ?? '설명 없음',
                           ),
                           if (index < _searchResults.length - 1)
                             Padding(

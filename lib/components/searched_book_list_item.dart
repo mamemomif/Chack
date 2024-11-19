@@ -4,6 +4,8 @@ import '../../constants/bookcover_styles.dart';
 import '../screens/book_detail_screen.dart';  // BookCoverStyle import
 
 class SearchedBookListItem extends StatelessWidget {
+  final String userId; // 추가
+  final String isbn; // 추가
   final String title;
   final String author;
   final String publisher;
@@ -15,6 +17,8 @@ class SearchedBookListItem extends StatelessWidget {
 
   const SearchedBookListItem({
     super.key,
+    required this.userId, // 추가
+    required this.isbn, // 추가
     required this.title,
     required this.author,
     required this.publisher,
@@ -111,11 +115,13 @@ class SearchedBookListItem extends StatelessWidget {
                           context,
                           MaterialPageRoute(
                             builder: (context) => BookDetailScreen(
+                              userId: userId, // userId 전달
+                              isbn: isbn, // isbn 전달
                               title: title,
                               author: author,
                               publisher: publisher,
                               image: image,
-                              description: description // 이미 검색 결과에서 얻은 설명 데이터
+                              description: description, // 검색 결과의 설명 데이터 전달
                             ),
                           ),
                         );
