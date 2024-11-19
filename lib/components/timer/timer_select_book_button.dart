@@ -131,22 +131,38 @@ class _BookSelectionWidgetState extends State<BookSelectionWidget> {
           ),
           child: Row(
             children: [
-              SvgPicture.asset('assets/images/chack_icon.svg', width: 24, height: 18),
-              const SizedBox(width: 16),
+              if (selectedBook == null)
+                SvgPicture.asset('assets/images/chack_icon.svg', width: 24, height: 18),
+              if (selectedBook == null) const SizedBox(width: 16),
               Expanded(
                 child: selectedBook == null
                     ? const Center(
-                        child: Text(
-                          '기록할 도서 선택하기',
-                          style: TextStyle(
-                            fontFamily: 'SUITE',
-                            color: AppColors.textColor,
-                            fontSize: 20,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                      )
-                    : Column(
+                  child: Text(
+                    '기록할 도서 선택하기',
+                    style: TextStyle(
+                      fontFamily: 'SUITE',
+                      color: AppColors.textColor,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                )
+                    : Row(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: Image.network(
+                        selectedBook!['imageUrl']!,
+                        width: 32,
+                        height: 49,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                        const Icon(Icons.book, size: 30, color: Colors.grey),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
@@ -183,6 +199,9 @@ class _BookSelectionWidgetState extends State<BookSelectionWidget> {
                           ),
                         ],
                       ),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(width: 16),
               if (selectedBook != null && widget.timerService.isRunning)
@@ -201,4 +220,6 @@ class _BookSelectionWidgetState extends State<BookSelectionWidget> {
       ),
     );
   }
+
+
 }
