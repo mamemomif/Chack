@@ -2,21 +2,23 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 class TimerService with WidgetsBindingObserver {
-  final int pomodoroDuration; // 뽀모도로 지속 시간 (초 단위)
-  final int breakDuration; // 휴식 지속 시간 (초 단위)
-  late int duration; // 현재 타이머의 지속 시간
-  late int _remainingTime; // 남은 시간
-  int elapsedTime = 0; // 타이머가 진행된 누적 시간
+  final int pomodoroDuration;
+  final int breakDuration;
+  late int duration;
+  late int _remainingTime;
+  int elapsedTime = 0;
   double progress;
   Timer? _timer;
   bool isRunning = false;
-  bool isPomodoro = true; // 뽀모도로 타이머인지 여부
+  bool isPomodoro = true;
 
   VoidCallback? onTick;
   VoidCallback? onComplete;
 
-  TimerService({this.pomodoroDuration = 20 * 1, this.breakDuration = 5 * 1})
-      : duration = pomodoroDuration,
+  TimerService({
+    this.pomodoroDuration = 10,  // 기본 25분
+    this.breakDuration = 5,      // 기본 5분
+  })  : duration = pomodoroDuration,
         _remainingTime = pomodoroDuration,
         progress = 1.0 {
     WidgetsBinding.instance.addObserver(this);
@@ -33,7 +35,6 @@ class TimerService with WidgetsBindingObserver {
       if (_remainingTime > 0) {
         _remainingTime--;
 
-        // 진행된 시간 누적 (Pomodoro 타이머일 경우만)
         if (isPomodoro) {
           elapsedTime++;
         }
@@ -43,7 +44,7 @@ class TimerService with WidgetsBindingObserver {
       } else {
         stop();
         onComplete?.call();
-        _switchTimer(); // 다음 타이머로 전환 후 시작
+        _switchTimer();
         start();
       }
     });
@@ -71,27 +72,23 @@ class TimerService with WidgetsBindingObserver {
     duration = isPomodoro ? pomodoroDuration : breakDuration;
     _remainingTime = duration;
     progress = 1.0;
+    elapsedTime = 0;
     onTick?.call();
   }
 
   String formatElapsedTime() {
-    final hours = (elapsedTime ~/ 3600).toString();
-    final minutes = ((elapsedTime % 3600) ~/ 60).toString();
-    final seconds = (elapsedTime % 60).toString();
-
-    return '$hours시간$minutes분$seconds초';
+    final duration = Duration(seconds: elapsedTime);
+    return '${duration.inMinutes}분 ${duration.inSeconds.remainder(60).toString().padLeft(2, '0')}초';
   }
 
   String formatTime() {
     final minutes = (_remainingTime ~/ 60).toString().padLeft(2, '0');
-    final secs = (_remainingTime % 60).toString().padLeft(2, '0');
-
-    return "$minutes:$secs";
+    final seconds = (_remainingTime % 60).toString().padLeft(2, '0');
+    return '$minutes:$seconds';
   }
 
-  void dispose() {
+  void dispose() {  // super.dispose() 제거
     WidgetsBinding.instance.removeObserver(this);
     _timer?.cancel();
   }
 }
-

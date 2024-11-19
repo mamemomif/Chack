@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
-import '../services/timer_service.dart';
+import '../services/pomodoro_service.dart';
 import '../services/stopwatch_service.dart';
 import '../components/timer/timer_pomodoro.dart';
-import '../components/timer/timer_select_book_button.dart';
-import '../components/timer/timer_stopwatch.dart';
+import '../components/timer/timer_stopwatch.dart'; // StopwatchPage import 추가
 import '../components/timer/timer_page_indicator.dart';
 
 class TimerScreen extends StatefulWidget {
-  const TimerScreen({Key? key}) : super(key: key);
+  final String userId;
+
+  const TimerScreen({
+    Key? key, 
+    required this.userId,
+  }) : super(key: key);
 
   @override
   _TimerScreenState createState() => _TimerScreenState();
@@ -41,14 +45,20 @@ class _TimerScreenState extends State<TimerScreen> {
       children: [
         const SizedBox(height: 40),
         PageIndicator(currentPageIndex: _currentPageIndex),
-        Container(
+        SizedBox(
           height: 480,
           child: PageView(
             controller: _pageController,
             onPageChanged: (index) => setState(() => _currentPageIndex = index),
             children: [
-              PomodoroPage(timerService: _timerService),
-              StopwatchPage(stopwatchService: _stopwatchService),
+              PomodoroPage(
+                timerService: _timerService,
+                userId: widget.userId,
+              ),
+              StopwatchPage(
+                stopwatchService: _stopwatchService,
+                userId: widget.userId,
+              ),
             ],
           ),
         ),

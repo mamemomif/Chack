@@ -105,16 +105,11 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _handleNavigateToTimer() {
-    if (_recentBookTitle != null) {
-      Navigator.pushNamed(
-        context,
-        '/timer',
-        arguments: {
-          'title': _recentBookTitle,
-          'imageUrl': _recentBookImageUrl,
-        },
-      );
-    }
+    setState(() {
+      _currentIndex = 2; // 타이머 탭의 인덱스
+      _pageController.jumpToPage(2);
+      _isPopupVisible = false; // 팝업 닫기
+    });
   }
 
   Future<void> _handleLogout() async {
@@ -197,7 +192,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ),
                             ),
-                        const _TimerTab(),
+                        _TimerTab(userId: _userId), // 타이머 탭
                         const _StatisticsTab(),
                       ],
                     ),
@@ -301,12 +296,31 @@ class _HomeTab extends StatelessWidget {
 }
 
 class _TimerTab extends StatelessWidget {
-  const _TimerTab();
+  final String? userId;  // userId 추가
+
+  const _TimerTab({
+    required this.userId,  // required로 설정
+  });
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: TimerScreen(),
+    if (userId == null) {
+      return const Center(
+        child: Text(
+          '로그인이 필요한 서비스입니다.',
+          style: TextStyle(
+            fontFamily: 'SUITE',
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      );
+    }
+    
+    return Center(
+      child: TimerScreen(
+        userId: userId!,  // userId 전달
+      ),
     );
   }
 }
