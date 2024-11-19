@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:chack_project/services/bookshelf_service.dart';
 import 'package:chack_project/screens/book_review_screen.dart';
 import '../../constants/icons.dart';
@@ -30,13 +31,13 @@ class BookDetailScreen extends StatefulWidget {
 
 class _BookDetailScreenState extends State<BookDetailScreen> {
   final BookshelfService _bookshelfService = BookshelfService();
-  bool _isInShelf = false; // 책이 서재에 있는지 여부
-  bool _isLoading = true; // 로딩 상태
+  bool _isInShelf = false;
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _checkBookInShelf(); // 서재에 책이 있는지 확인
+    _checkBookInShelf();
   }
 
   Future<void> _checkBookInShelf() async {
@@ -69,9 +70,11 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
       _isLoading = false;
     });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('책이 서재에 추가되었습니다.')),
-    );
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('책이 서재에 추가되었습니다.')),
+      );
+    }
   }
 
   Future<void> _removeBookFromShelf() async {
@@ -89,9 +92,67 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
       _isLoading = false;
     });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('책이 서재에서 제거되었습니다.')),
-    );
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('책이 서재에서 제거되었습니다.')),
+      );
+    }
+  }
+
+  Future<void> _navigateToReviewScreen() async {
+    if (!_isInShelf) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('먼저 책을 서재에 추가해주세요.')),
+      );
+      return;
+    }
+
+    try {
+      final bookDoc = await FirebaseFirestore.instance
+          .collection('userShelf')
+          .doc(widget.userId)
+          .collection('books')
+          .doc(widget.isbn)
+          .get();
+
+      if (!bookDoc.exists) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('서재에서 책을 찾을 수 없습니다.')),
+          );
+        }
+        return;
+      }
+
+      final bookData = bookDoc.data()!;
+
+      if (mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ReviewWritingScreen(
+              title: widget.title,
+              author: widget.author,
+              publisher: widget.publisher,
+              image: widget.image,
+              userId: widget.userId,
+              isbn: widget.isbn,
+              startedAt: (bookData['startedAt'] as Timestamp).toDate(),
+              finishedAt: bookData['finishedAt'] != null 
+                  ? (bookData['finishedAt'] as Timestamp).toDate() 
+                  : null,
+              readTime: bookData['readTime'] ?? 0,
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('책 정보를 불러오는데 실패했습니다.')),
+        );
+      }
+    }
   }
 
   @override
@@ -100,7 +161,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
       appBar: AppBar(
         scrolledUnderElevation: 0,
         title: const Align(
-          alignment: Alignment.centerLeft, // 텍스트를 좌측으로 정렬
+          alignment: Alignment.centerLeft,
           child: Text(
             '책 정보',
             style: TextStyle(
@@ -121,7 +182,6 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 책 이미지
                   Center(
                     child: Container(
                       decoration: BoxDecoration(
@@ -151,7 +211,6 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                   ),
                   const SizedBox(height: 20),
 
-                  // 제목
                   Text(
                     widget.title,
                     style: const TextStyle(
@@ -161,7 +220,6 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                     ),
                   ),
 
-                  // 저자 및 출판사 정보
                   Text(
                     '${widget.author} / ${widget.publisher}',
                     style: TextStyle(
@@ -174,7 +232,6 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
 
                   const SizedBox(height: 10),
 
-                  // 스크롤 가능한 설명
                   Expanded(
                     child: SingleChildScrollView(
                       child: Text(
@@ -191,7 +248,6 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
 
                   const SizedBox(height: 20),
 
-                  // 하단 버튼
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -223,19 +279,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                         ),
                       ),
                       ElevatedButton.icon(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ReviewWritingScreen(
-                                title: widget.title,
-                                author: widget.author,
-                                publisher: widget.publisher,
-                                image: widget.image,
-                              ),
-                            ),
-                          );
-                        },
+                        onPressed: _navigateToReviewScreen,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.black,
                           foregroundColor: Colors.white,

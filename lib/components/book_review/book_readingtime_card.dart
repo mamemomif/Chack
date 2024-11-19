@@ -2,18 +2,32 @@ import 'package:flutter/material.dart';
 import '../../constants/colors.dart';
 
 class BookReadingtimeCard extends StatelessWidget {
-  final String startDate;
-  final String endDate;
-  final String duration;
-  final String totalReadingTime;
+  final DateTime startedAt;
+  final DateTime? finishedAt;
+  final int readTime;  // 초 단위
 
   const BookReadingtimeCard({
     Key? key,
-    required this.startDate,
-    required this.endDate,
-    required this.duration,
-    required this.totalReadingTime,
+    required this.startedAt,
+    this.finishedAt,
+    required this.readTime,
   }) : super(key: key);
+
+  String _formatDate(DateTime date) {
+    return '${date.month}월 ${date.day}일';
+  }
+
+  String _formatDuration() {
+    if (finishedAt == null) return '0일';
+    return '${finishedAt!.difference(startedAt).inDays}일';
+  }
+
+  String _formatReadTime() {
+    int hours = readTime ~/ 3600;
+    int minutes = (readTime % 3600) ~/ 60;
+    int seconds = readTime % 60;
+    return '$hours시간 $minutes분 $seconds초';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +42,6 @@ class BookReadingtimeCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // 독서 시작, 완료, 소요 시간
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
@@ -46,7 +59,7 @@ class BookReadingtimeCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      startDate,
+                      _formatDate(startedAt),
                       style: const TextStyle(
                         fontWeight: FontWeight.w800,
                         fontFamily: "SUITE",
@@ -70,7 +83,7 @@ class BookReadingtimeCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      endDate,
+                      finishedAt != null ? _formatDate(finishedAt!) : '-',
                       style: const TextStyle(
                         fontWeight: FontWeight.w800,
                         fontFamily: "SUITE",
@@ -84,7 +97,7 @@ class BookReadingtimeCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     const Text(
-                      '소요 시간',
+                      '소요 일수',
                       style: TextStyle(
                         fontWeight: FontWeight.w400,
                         fontFamily: "SUITE",
@@ -94,7 +107,7 @@ class BookReadingtimeCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      duration,
+                      _formatDuration(),
                       style: const TextStyle(
                         fontWeight: FontWeight.w800,
                         fontFamily: "SUITE",
@@ -108,7 +121,6 @@ class BookReadingtimeCard extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            // 총 독서 시간
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -122,7 +134,7 @@ class BookReadingtimeCard extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  totalReadingTime,
+                  _formatReadTime(),
                   style: const TextStyle(
                     fontWeight: FontWeight.w800,
                     fontFamily: "SUITE",
