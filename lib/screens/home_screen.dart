@@ -185,7 +185,18 @@ class _HomeScreenState extends State<HomeScreen> {
                           userId: _userId,
                           age: _age,
                         ),
-                        const BookshelfScreen(),
+                        _userId != null 
+                          ? BookshelfScreen(userId: _userId!)
+                          : const Center(
+                              child: Text(
+                                '로그인이 필요한 서비스입니다.',
+                                style: TextStyle(
+                                  fontFamily: 'SUITE',
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
                         const _TimerTab(),
                         const _StatisticsTab(),
                       ],
@@ -226,7 +237,6 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 }
-
 
 class _HomeTab extends StatelessWidget {
   final String? userId;

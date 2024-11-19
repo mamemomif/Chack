@@ -1,43 +1,29 @@
+// screens/bookshelf_screen.dart
 import 'package:flutter/material.dart';
-import '../constants/colors.dart';
-import '../constants/text_styles.dart';
+import '../services/bookshelf_service.dart';
+import '../models/bookshelf_model.dart';
 import '../components/bookshelf_book_card.dart';
 import '../components/filter_bottom_sheet.dart';
+import '../constants/colors.dart';
+import '../constants/text_styles.dart';
 
 class BookshelfScreen extends StatefulWidget {
-  const BookshelfScreen({super.key});
+  final String userId;
+
+  const BookshelfScreen({
+    super.key,
+    required this.userId,
+  });
 
   @override
   State<BookshelfScreen> createState() => _BookshelfScreenState();
 }
 
-// 필터 옵션 리스트
 class _BookshelfScreenState extends State<BookshelfScreen> {
+  final BookshelfService _bookshelfService = BookshelfService();
   final List<String> _filterOptions = ['전체', '읽기 전', '읽는 중', '다 읽음'];
   String _selectedFilter = '전체';
 
-  // 샘플 책 데이터
-  final List<Map<String, String>> _books = List.generate(
-    10,
-    (index) => {
-      'title': '책 제목 $index',
-      'author': '지은이 $index',
-      'status': index % 3 == 0
-          ? '읽기 전'
-          : index % 3 == 1
-              ? '읽는 중'
-              : '다 읽음',
-    },
-  );
-
-  List<Map<String, String>> get filteredBooks {
-    if (_selectedFilter == '전체') {
-      return _books;
-    }
-    return _books.where((book) => book['status'] == _selectedFilter).toList();
-  }
-
-  // 필터 바텀시트 표시
   void _showFilterBottomSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -98,26 +84,48 @@ class _BookshelfScreenState extends State<BookshelfScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        // 책 리스트 그리드 뷰
-        child: GridView.builder(
-          itemCount: filteredBooks.length,
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3,
-            childAspectRatio: (80 / 122) * 0.9,
-            crossAxisSpacing: 14,
-            mainAxisSpacing: 20,
-          ),
-          itemBuilder: (context, index) {
-            final book = filteredBooks[index];
-            return BookshelfBookCard(
-              title: book['title']!,
-              author: book['author']!,
-              status: book['status']!,
-            );
-          },
-        ),
+      body: StreamBuilder<List<BookshelfBook>>(
+        stream: _bookshelfService.fetchBookshelf(widget.userId),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return Center(child: Text('오류가 발생했습니다: ${snapshot.error}'));
+          }
+
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          final books = snapshot.data ?? [];
+          final filteredBooks = _selectedFilter == '전체'
+              ? books
+              : books.where((book) => book.status == _selectedFilter).toList();
+
+          if (filteredBooks.isEmpty) {
+            return const Center(child: Text('서재가 비어있습니다.'));
+          }
+
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: GridView.builder(
+              itemCount: filteredBooks.length,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                childAspectRatio: (80 / 122) * 0.9,
+                crossAxisSpacing: 14,
+                mainAxisSpacing: 20,
+              ),
+              itemBuilder: (context, index) {
+                final book = filteredBooks[index];
+                return BookshelfBookCard(
+                  imageUrl: book.imageUrl,
+                  title: book.title,
+                  author: book.author,
+                  status: book.status,
+                );
+              },
+            ),
+          );
+        },
       ),
     );
   }

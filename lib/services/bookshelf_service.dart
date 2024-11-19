@@ -1,7 +1,37 @@
+// services/bookshelf_service.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../models/bookshelf_model.dart';
 
 class BookshelfService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  /// 사용자의 서재에서 책 데이터를 실시간으로 가져오기
+  Stream<List<BookshelfBook>> fetchBookshelf(String userId) {
+    return _firestore
+        .collection('userShelf')
+        .doc(userId)
+        .collection('books')
+        .orderBy('addedAt', descending: true)
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => BookshelfBook.fromFirestore(doc.data()))
+            .toList());
+  }
+
+  /// 사용자의 서재에 책이 있는지 확인
+  Future<bool> isBookInShelf({
+    required String userId,
+    required String isbn,
+  }) async {
+    final doc = await _firestore
+        .collection('userShelf')
+        .doc(userId)
+        .collection('books')
+        .doc(isbn)
+        .get();
+        
+    return doc.exists;
+  }
 
   /// 사용자의 서재에 책 추가
   Future<void> addBookToShelf({
@@ -13,57 +43,59 @@ class BookshelfService {
     required String image,
   }) async {
     final userShelfRef = _firestore
-        .collection('userShelf') // 최상위 컬렉션
-        .doc(userId) // 사용자 문서
-        .collection('books'); // 하위 컬렉션
+        .collection('userShelf')
+        .doc(userId)
+        .collection('books')
+        .doc(isbn);
 
-    await userShelfRef.doc(isbn).set({
+    await userShelfRef.set({
       'isbn': isbn,
       'title': title,
       'author': author,
       'publisher': publisher,
       'image': image,
-      'status': '읽기 전', // 초기 상태
-      'addedAt': Timestamp.now(), // 추가된 시간
-      'startedAt': null, // 읽기 시작한 시간
-      'finishedAt': null, // 읽기 완료 시간
+      'status': '읽기 전',
+      'addedAt': Timestamp.now(),
+      'startedAt': null,
+      'finishedAt': null,
     });
   }
 
-  /// 사용자의 서재에서 책 삭제
+  /// 서재에서 책 삭제
   Future<void> removeBookFromShelf({
     required String userId,
     required String isbn,
   }) async {
-    final userShelfRef = _firestore
+    await _firestore
         .collection('userShelf')
         .doc(userId)
-        .collection('books');
-
-    await userShelfRef.doc(isbn).delete();
+        .collection('books')
+        .doc(isbn)
+        .delete();
   }
 
-  /// 사용자의 서재에 책이 있는지 확인
-  Future<bool> isBookInShelf({
+  /// 책 상태 업데이트
+  Future<void> updateBookStatus({
     required String userId,
     required String isbn,
+    required String newStatus,
   }) async {
     final userShelfRef = _firestore
         .collection('userShelf')
         .doc(userId)
-        .collection('books');
-
-    final doc = await userShelfRef.doc(isbn).get();
-    return doc.exists; // 데이터가 존재하면 true 반환
-  }
-
-  /// 사용자의 서재에서 책 데이터를 실시간으로 가져오기
-  Stream<List<Map<String, dynamic>>> fetchBookshelf(String userId) {
-    return _firestore
-        .collection('userShelf')
-        .doc(userId)
         .collection('books')
-        .snapshots()
-        .map((snapshot) => snapshot.docs.map((doc) => doc.data()).toList());
+        .doc(isbn);
+
+    final Map<String, dynamic> updateData = {
+      'status': newStatus,
+    };
+
+    if (newStatus == '읽는 중') {
+      updateData['startedAt'] = Timestamp.now();
+    } else if (newStatus == '다 읽음') {
+      updateData['finishedAt'] = Timestamp.now();
+    }
+
+    await userShelfRef.update(updateData);
   }
 }
