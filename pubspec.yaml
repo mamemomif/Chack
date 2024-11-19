@@ -75,6 +75,11 @@ dependencies:
     sdk: flutter
   logger: ^1.4.0
 
+  # 통계 화면에서 필요한 패키지
+  fl_chart: ^0.50.1
+  table_calendar: ^3.0.10
+
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
