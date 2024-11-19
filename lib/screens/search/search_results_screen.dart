@@ -3,6 +3,7 @@ import 'package:logger/logger.dart';
 import '../../components/searched_book_list_item.dart';
 import '../../components/custom_search_bar.dart';
 import '../../constants/colors.dart';
+import '../../components/no_result_page.dart';
 import '../../services/book_search_service.dart';
 import '../../models/book_search_result.dart';
 import 'search_screen.dart';
@@ -166,17 +167,18 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                 ),
               )
             else if (_searchResults.isEmpty && !_isLoading)
-              const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Text(
-                    '검색 결과가 없습니다.',
-                    style: TextStyle(
-                      fontFamily: 'SUITE',
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
+              Expanded(
+                child: NoResultsFound(
+                  onRetry: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => SearchScreen(
+                          userId: widget.userId,
+                        ),
+                      ),
+                    );
+                  },
                 ),
               )
             else
