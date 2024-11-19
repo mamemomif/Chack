@@ -1,7 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../constants/colors.dart';
+import 'home_screen.dart';
 import 'login_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -15,25 +17,38 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _navigateToLogin();
+    _navigateBasedOnAuthState();
   }
 
-  Future<void> _navigateToLogin() async {
+  Future<void> _navigateBasedOnAuthState() async {
     await Future.delayed(const Duration(seconds: 2));
+    final user = FirebaseAuth.instance.currentUser;
+
     if (mounted) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const LoginScreen(),
-        ),
-      );
+      if (user != null) {
+        // 인증된 사용자가 있으면 홈 화면으로 이동
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const HomeScreen(),
+          ),
+        );
+      } else {
+        // 인증된 사용자가 없으면 로그인 화면으로 이동
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const LoginScreen(),
+          ),
+        );
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final Size screenSize = MediaQuery.of(context).size;
-    
+
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
