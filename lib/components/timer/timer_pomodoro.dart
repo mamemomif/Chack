@@ -32,9 +32,11 @@ class _PomodoroPageState extends State<PomodoroPage> {
   @override
   void initState() {
     super.initState();
+
     widget.timerService.onTick = () {
       setState(() {
-        elapsedTimeText = widget.timerService.formatElapsedTime();
+        // UI용 경과 시간만 표시
+        elapsedTimeText = widget.timerService.formatElapsedTime(widget.timerService.elapsedTimeForUI);
       });
     };
 
@@ -54,26 +56,23 @@ class _PomodoroPageState extends State<PomodoroPage> {
     };
   }
 
+
+
   Future<void> _updateReadingTime() async {
     if (selectedBook == null) return;
 
-    final sessionTime = widget.timerService.elapsedTime;
+    final sessionTime = widget.timerService.elapsedTimeForFirestore;
 
     try {
+      // Firestore에 읽은 시간 업데이트
       await _readingTimeService.updateReadingTime(
         userId: widget.userId,
         isbn: selectedBook!['isbn']!,
         elapsedSeconds: sessionTime,
       );
 
-      final updatedTotalTime = await _readingTimeService.getBookReadingTime(
-        userId: widget.userId,
-        isbn: selectedBook!['isbn']!,
-      );
-
-      setState(() {
-        _totalReadTime = updatedTotalTime;
-      });
+      // Firestore 업데이트 후 저장 시간 초기화 (UI용 시간은 유지)
+      widget.timerService.elapsedTimeForFirestore = 0;
     } catch (e) {
       print('Failed to update reading time: $e');
     }
@@ -99,7 +98,7 @@ class _PomodoroPageState extends State<PomodoroPage> {
                 }
                 setState(() {
                   widget.timerService.reset();
-                  elapsedTimeText = widget.timerService.formatElapsedTime();
+                  elapsedTimeText = widget.timerService.formatElapsedTime(widget.timerService.elapsedTimeForUI);
                 });
               },
               child: const Text('확인'),
@@ -110,7 +109,7 @@ class _PomodoroPageState extends State<PomodoroPage> {
     } else {
       setState(() {
         widget.timerService.reset();
-        elapsedTimeText = widget.timerService.formatElapsedTime();
+        elapsedTimeText = widget.timerService.formatElapsedTime(widget.timerService.elapsedTimeForUI);
       });
     }
   }
@@ -125,14 +124,17 @@ class _PomodoroPageState extends State<PomodoroPage> {
       }
 
       if (widget.timerService.isRunning) {
-        widget.timerService.stop();
+        widget.timerService.stop(); // 타이머 정지
         _updateReadingTime();
       } else {
-        widget.timerService.start();
+        widget.timerService.start(); // 타이머 시작
       }
-      elapsedTimeText = widget.timerService.formatElapsedTime();
+      // **elapsedTimeText는 타이머 정지 상태에서도 유지**
+      elapsedTimeText = widget.timerService.formatElapsedTime(widget.timerService.elapsedTimeForUI);
     });
   }
+
+
 
   Future<void> _onBookSelected(Map<String, String>? book) async {
     if (widget.timerService.isRunning) {
