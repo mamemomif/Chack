@@ -30,9 +30,9 @@ class AppTextStyles {
   );
 
   static const TextStyle labelStyle = TextStyle(
-    fontSize: 12,
+    fontSize: 14,
     fontFamily: 'SUITE',
-    fontWeight: FontWeight.w500,
+    fontWeight: FontWeight.w800,
     color: AppColors.backgroundColor,
   );
 
@@ -51,7 +51,7 @@ class AppTextStyles {
     color: Colors.black.withOpacity(0.5),
   );
 
-    static TextStyle libraryLabelStyle = TextStyle(
+  static TextStyle libraryLabelStyle = TextStyle(
     fontSize: 12,
     fontFamily: 'SUITE',
     fontWeight: FontWeight.w500,

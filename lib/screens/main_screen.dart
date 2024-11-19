@@ -40,7 +40,7 @@ class _HomeScreenState extends State<MainScreen> {
   bool _isPopupVisible = true;
   String? _recentBookImageUrl;
   String? _recentBookTitle;
-  
+
   @override
   void initState() {
     super.initState();
@@ -61,22 +61,21 @@ class _HomeScreenState extends State<MainScreen> {
 
   void _setupRecentBookListener(String userId) {
     _bookSubscription?.cancel();
-    _bookSubscription = _recentBookService
-        .watchRecentBook(userId)
-        .listen((bookData) {
-          if (!mounted) return;
-          
-          if (bookData.imageUrl != null && bookData.title != null) {
-            setState(() {
-              _recentBookImageUrl = bookData.imageUrl;
-              _recentBookTitle = bookData.title;
-              _isPopupVisible = true;
-            });
-            _logger.i('Recent book updated: ${bookData.title}');
-          }
-        }, onError: (error) {
-          _logger.e('Error in recent book stream: $error');
+    _bookSubscription =
+        _recentBookService.watchRecentBook(userId).listen((bookData) {
+      if (!mounted) return;
+
+      if (bookData.imageUrl != null && bookData.title != null) {
+        setState(() {
+          _recentBookImageUrl = bookData.imageUrl;
+          _recentBookTitle = bookData.title;
+          _isPopupVisible = true;
         });
+        _logger.i('Recent book updated: ${bookData.title}');
+      }
+    }, onError: (error) {
+      _logger.e('Error in recent book stream: $error');
+    });
   }
 
   Future<void> _getUserAge(String uid) async {
@@ -180,18 +179,18 @@ class _HomeScreenState extends State<MainScreen> {
                           userId: _userId,
                           age: _age,
                         ),
-                        _userId != null 
-                          ? BookshelfScreen(userId: _userId!)
-                          : const Center(
-                              child: Text(
-                                '로그인이 필요한 서비스입니다.',
-                                style: TextStyle(
-                                  fontFamily: 'SUITE',
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
+                        _userId != null
+                            ? BookshelfScreen(userId: _userId!)
+                            : const Center(
+                                child: Text(
+                                  '로그인이 필요한 서비스입니다.',
+                                  style: TextStyle(
+                                    fontFamily: 'SUITE',
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
                               ),
-                            ),
                         _TimerTab(userId: _userId), // 타이머 탭
                         const _StatisticsTab(),
                       ],
@@ -277,12 +276,28 @@ class _HomeTab extends StatelessWidget {
                   ],
                 ),
               ),
-              if (userId != null)
-                AnnualGoalCard(userId: userId!),
+              if (userId != null) AnnualGoalCard(userId: userId!),
               const SizedBox(height: 30),
               const MonthlyReadingCard(
                 daysInMonth: 30,
-                readingDays: [1, 2, 4, 5, 6, 10, 11, 12, 13, 14, 15, 16, 17, 20, 21, 22],
+                readingDays: [
+                  1,
+                  2,
+                  4,
+                  5,
+                  6,
+                  10,
+                  11,
+                  12,
+                  13,
+                  14,
+                  15,
+                  16,
+                  17,
+                  20,
+                  21,
+                  22
+                ],
               ),
               const SizedBox(height: 200),
             ],
@@ -294,10 +309,10 @@ class _HomeTab extends StatelessWidget {
 }
 
 class _TimerTab extends StatelessWidget {
-  final String? userId;  // userId 추가
+  final String? userId; // userId 추가
 
   const _TimerTab({
-    required this.userId,  // required로 설정
+    required this.userId, // required로 설정
   });
 
   @override
@@ -314,10 +329,10 @@ class _TimerTab extends StatelessWidget {
         ),
       );
     }
-    
+
     return Center(
       child: TimerScreen(
-        userId: userId!,  // userId 전달
+        userId: userId!, // userId 전달
       ),
     );
   }

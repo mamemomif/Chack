@@ -12,16 +12,17 @@ class BookRecommendationList extends StatefulWidget {
   final String age;
 
   const BookRecommendationList({
-    Key? key,
+    super.key,
     required this.userId,
     required this.age,
-  }) : super(key: key);
+  });
 
   @override
   State<BookRecommendationList> createState() => _BookRecommendationListState();
 }
 
-class _BookRecommendationListState extends State<BookRecommendationList> with AutomaticKeepAliveClientMixin {
+class _BookRecommendationListState extends State<BookRecommendationList>
+    with AutomaticKeepAliveClientMixin {
   late final BookRecommendationProvider provider;
   bool isInitialized = false;
 
@@ -39,13 +40,14 @@ class _BookRecommendationListState extends State<BookRecommendationList> with Au
       await Hive.initFlutter();
       final cacheService = BookCacheService();
       await cacheService.initialize();
-      
+
       provider = BookRecommendationProvider(
         age: widget.age,
-        recommendedBooksService: RecommendedBooksService(cacheService: cacheService),
+        recommendedBooksService:
+            RecommendedBooksService(cacheService: cacheService),
         locationService: LocationService(),
       );
-      
+
       isInitialized = true;
       if (mounted) setState(() {});
     }
@@ -73,7 +75,7 @@ class _BookRecommendationListState extends State<BookRecommendationList> with Au
 
           return PageView.builder(
             key: PageStorageKey('book_list_${widget.age}'),
-            itemCount: provider.hasMore 
+            itemCount: provider.hasMore
                 ? provider.books.length + 1
                 : provider.books.length,
             onPageChanged: (index) {
@@ -84,16 +86,13 @@ class _BookRecommendationListState extends State<BookRecommendationList> with Au
             itemBuilder: (context, index) {
               if (index == provider.books.length) {
                 return const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(16.0),
-                    child: CircularProgressIndicator(),
-                  ),
+                  child: CircularProgressIndicator(),
                 );
               }
 
               final book = provider.books[index];
               return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(vertical: 8),
                 child: BookRecommendationCard(
                   key: ValueKey('book_${book.isbn}'),
                   userId: widget.userId,
