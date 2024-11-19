@@ -1,9 +1,10 @@
-// screens/bookshelf_screen.dart
 import 'package:flutter/material.dart';
 import '../services/bookshelf_service.dart';
+import '../services/book_search_service.dart'; // ISBN 검색 서비스
 import '../models/bookshelf_model.dart';
 import '../components/bookshelf_book_card.dart';
 import '../components/filter_bottom_sheet.dart';
+import '../screens/book_detail_screen.dart';
 import '../constants/colors.dart';
 import '../constants/text_styles.dart';
 
@@ -21,6 +22,7 @@ class BookshelfScreen extends StatefulWidget {
 
 class _BookshelfScreenState extends State<BookshelfScreen> {
   final BookshelfService _bookshelfService = BookshelfService();
+  final BookSearchService _bookSearchService = BookSearchService(); // ISBN 검색 서비스
   final List<String> _filterOptions = ['전체', '읽기 전', '읽는 중', '다 읽음'];
   String _selectedFilter = '전체';
 
@@ -40,6 +42,38 @@ class _BookshelfScreenState extends State<BookshelfScreen> {
         },
       ),
     );
+  }
+
+  Future<void> _navigateToDetail(BuildContext context, BookshelfBook book) async {
+    try {
+      // ISBN으로 책 설명 검색
+      final bookSearchResult = await _bookSearchService.searchBookByISBN(book.isbn);
+
+      if (bookSearchResult != null) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => BookDetailScreen(
+              userId: widget.userId,
+              isbn: book.isbn,
+              title: book.title,
+              author: book.author,
+              publisher: book.publisher,
+              image: book.imageUrl,
+              description: bookSearchResult.description, // 가져온 책 설명 전달
+            ),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('책 설명을 불러올 수 없습니다.')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('책 정보를 불러오는 중 오류가 발생했습니다: $e')),
+      );
+    }
   }
 
   @override
@@ -116,11 +150,14 @@ class _BookshelfScreenState extends State<BookshelfScreen> {
               ),
               itemBuilder: (context, index) {
                 final book = filteredBooks[index];
-                return BookshelfBookCard(
-                  imageUrl: book.imageUrl,
-                  title: book.title,
-                  author: book.author,
-                  status: book.status,
+                return GestureDetector(
+                  onTap: () => _navigateToDetail(context, book), // 상세 페이지 이동
+                  child: BookshelfBookCard(
+                    imageUrl: book.imageUrl,
+                    title: book.title,
+                    author: book.author,
+                    status: book.status,
+                  ),
                 );
               },
             ),
