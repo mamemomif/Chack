@@ -88,14 +88,14 @@ class _BookSelectionWidgetState extends State<BookSelectionWidget> {
             _readingStatusSubscription?.cancel();
             _readingStatusSubscription = _readingTimeService
                 .watchBookReadingStatus(
-                  userId: widget.userId,
-                  isbn: book['isbn']!,
-                )
+              userId: widget.userId,
+              isbn: book['isbn']!,
+            )
                 .listen((status) {
-                  setState(() {
-                    _totalReadTime = Duration(seconds: status['readTime'] as int);
-                  });
-                });
+              setState(() {
+                _totalReadTime = Duration(seconds: status['readTime'] as int);
+              });
+            });
 
             widget.onBookSelected(book);
           }

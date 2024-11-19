@@ -37,55 +37,50 @@ class _StopwatchPageState extends State<StopwatchPage> {
         elapsedTimeText = widget.stopwatchService.formatTime();
       });
     };
-
-    // 주기적으로 읽은 시간 업데이트 (30초마다)
-    _updateTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
-      if (mounted && widget.stopwatchService.isRunning && selectedBook != null) {
-        _updateReadingTime();
+    widget.stopwatchService.onComplete = () async {
+      if (selectedBook != null && widget.stopwatchService.isRunning) {
+        await _updateReadingTime();
       }
-    });
+    };
   }
 
   Future<void> _updateReadingTime() async {
-    if (selectedBook == null) return;
-    
+    if (selectedBook == null || !mounted) return;
+
+    final sessionTime = widget.stopwatchService.getElapsedSecondsForFirestore();
+
     try {
+      // Firestore에 읽은 시간 업데이트
       await _readingTimeService.updateReadingTime(
         userId: widget.userId,
         isbn: selectedBook!['isbn']!,
-        elapsedSeconds: widget.stopwatchService.elapsedTime,
+        elapsedSeconds: sessionTime,
       );
-      
-      final updatedTotalTime = await _readingTimeService.getBookReadingTime(
-        userId: widget.userId,
-        isbn: selectedBook!['isbn']!,
-      );
-      
-      if (mounted) {
-        setState(() {
-          _totalReadTime = updatedTotalTime;
-        });
-      }
+
+      // Firestore 업데이트 후 저장 시간 초기화 (중복 방지)
+      widget.stopwatchService.elapsedTimeForFirestore = 0;
     } catch (e) {
       print('Failed to update reading time: $e');
     }
+    print('Firestore 업데이트 시간: $sessionTime'); // 디버깅용 로그
   }
 
   void _toggleStopwatch() {
-    if (selectedBook == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("먼저 기록할 도서를 선택해주세요.")),
-      );
-      return;
-    }
-
     setState(() {
-      if (widget.stopwatchService.isRunning) {
-        widget.stopwatchService.stop();
-        _updateReadingTime(); // 중지할 때 읽은 시간 업데이트
-      } else {
-        widget.stopwatchService.start();
+      if (selectedBook == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("먼저 기록할 도서를 선택해주세요.")),
+        );
+        return;
       }
+
+      if (widget.stopwatchService.isRunning) {
+        widget.stopwatchService.stop(); // 스톱워치 정지
+        _updateReadingTime(); // 정지 후 경과 시간 업데이트
+      } else {
+        widget.stopwatchService.start(); // 스톱워치 시작
+      }
+
       elapsedTimeText = widget.stopwatchService.formatTime();
     });
   }
@@ -106,10 +101,10 @@ class _StopwatchPageState extends State<StopwatchPage> {
               onPressed: () {
                 Navigator.pop(context);
                 if (selectedBook != null) {
-                  _updateReadingTime(); // 초기화 전 현재까지의 시간 저장
+                  _updateReadingTime(); // 경과 시간 업데이트
                 }
                 setState(() {
-                  widget.stopwatchService.reset();
+                  widget.stopwatchService.reset(); // 스톱워치 초기화
                   elapsedTimeText = widget.stopwatchService.formatTime();
                 });
               },
@@ -173,14 +168,14 @@ class _StopwatchPageState extends State<StopwatchPage> {
       // 읽은 시간 실시간 업데이트 구독
       _readingStatusSubscription = _readingTimeService
           .watchBookReadingStatus(
-            userId: widget.userId,
-            isbn: book['isbn']!,
-          )
+        userId: widget.userId,
+        isbn: book['isbn']!,
+      )
           .listen((status) {
-            setState(() {
-              _totalReadTime = Duration(seconds: status['readTime'] as int);
-            });
-          });
+        setState(() {
+          _totalReadTime = Duration(seconds: status['readTime'] as int);
+        });
+      });
     }
   }
 

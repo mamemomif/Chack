@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/pomodoro_service.dart';
 import '../services/stopwatch_service.dart';
 import '../components/timer/timer_pomodoro.dart';
-import '../components/timer/timer_stopwatch.dart';
+import '../components/timer/timer_stopwatch.dart'; // StopwatchPage import 추가
 import '../components/timer/timer_page_indicator.dart';
 
 class TimerScreen extends StatefulWidget {
@@ -41,33 +41,29 @@ class _TimerScreenState extends State<TimerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      resizeToAvoidBottomInset: true, // 키보드가 올라올 때 레이아웃 조정
-      body: Column(
-        children: [
-          const SizedBox(height: 40),
-          // 페이지 인디케이터
-          PageIndicator(currentPageIndex: _currentPageIndex),
-          // 페이지 뷰 영역 (확장 가능)
-          Expanded(
-            child: PageView(
-              controller: _pageController,
-              onPageChanged: (index) => setState(() => _currentPageIndex = index),
-              children: [
-                PomodoroPage(
-                  timerService: _timerService,
-                  userId: widget.userId,
-                ),
-                StopwatchPage(
-                  stopwatchService: _stopwatchService,
-                  userId: widget.userId,
-                ),
-              ],
-            ),
+    return Column(
+      children: [
+        const SizedBox(height: 40),
+        PageIndicator(currentPageIndex: _currentPageIndex),
+        SizedBox(
+          height: 480,
+          child: PageView(
+            controller: _pageController,
+            onPageChanged: (index) => setState(() => _currentPageIndex = index),
+            children: [
+              PomodoroPage(
+                timerService: _timerService,
+                userId: widget.userId,
+              ),
+              StopwatchPage(
+                stopwatchService: _stopwatchService,
+                userId: widget.userId,
+              ),
+            ],
           ),
-          const SizedBox(height: 20),
-        ],
-      ),
+        ),
+        const SizedBox(height: 20),
+      ],
     );
   }
 }
