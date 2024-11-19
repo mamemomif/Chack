@@ -20,14 +20,14 @@ import '../screens/profile_screen.dart';
 import '../screens/bookshelf_screen.dart';
 import '../screens/search/search_screen.dart';
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+class MainScreen extends StatefulWidget {
+  const MainScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<MainScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<MainScreen> {
   final Logger _logger = Logger();
   int _currentIndex = 0;
   final PageController _pageController = PageController();
