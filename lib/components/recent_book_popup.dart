@@ -59,6 +59,7 @@ class RecentBookPopup extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         const Text(
                           '최근에 담은 책',
@@ -70,7 +71,7 @@ class RecentBookPopup extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          title,
+                          title.length > 10 ? '${title.substring(0, 10)}...' : title,
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 20,
