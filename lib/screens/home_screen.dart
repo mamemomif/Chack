@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:logger/logger.dart';
+import 'dart:async';
 import '../components/annual_goal_card.dart';
 import '../components/monthly_reading_card.dart';
 import '../components/custom_bottom_nav_bar.dart';
@@ -10,6 +12,7 @@ import '../components/custom_search_bar.dart';
 import '../components/book_recommendation/book_recommendation_list.dart';
 import '../components/recent_book_popup.dart';
 import '../services/authentication_service.dart';
+import '../services/recent_book_service.dart';
 import '../constants/icons.dart';
 import '../constants/colors.dart';
 import '../constants/text_styles.dart';
@@ -25,32 +28,60 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final Logger _logger = Logger();
   int _currentIndex = 0;
   final PageController _pageController = PageController();
   final AuthService _authService = AuthService();
+  final RecentBookService _recentBookService = RecentBookService();
+  StreamSubscription<({String? imageUrl, String? title})>? _bookSubscription;
+
   String? _userId;
   String? _age;
   bool _isPopupVisible = true;
-
+  String? _recentBookImageUrl;
+  String? _recentBookTitle;
+  
   @override
   void initState() {
     super.initState();
-    _checkUserAuth();
+    _initializeUserData();
   }
 
-  Future<void> _checkUserAuth() async {
+  Future<void> _initializeUserData() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       if (!mounted) return;
       Navigator.pushReplacementNamed(context, '/login');
-    } else {
-      await _getUserAge(user.uid);
+      return;
     }
+
+    await _getUserAge(user.uid);
+    _setupRecentBookListener(user.uid);
+  }
+
+  void _setupRecentBookListener(String userId) {
+    _bookSubscription?.cancel();
+    _bookSubscription = _recentBookService
+        .watchRecentBook(userId)
+        .listen((bookData) {
+          if (!mounted) return;
+          
+          if (bookData.imageUrl != null && bookData.title != null) {
+            setState(() {
+              _recentBookImageUrl = bookData.imageUrl;
+              _recentBookTitle = bookData.title;
+              _isPopupVisible = true;
+            });
+            _logger.i('Recent book updated: ${bookData.title}');
+          }
+        }, onError: (error) {
+          _logger.e('Error in recent book stream: $error');
+        });
   }
 
   Future<void> _getUserAge(String uid) async {
     try {
-      print('HomeScreen: 사용자 정보 로드 시작 - UID: $uid');
+      _logger.i('HomeScreen: 사용자 정보 로드 시작 - UID: $uid');
       final userDoc =
           await FirebaseFirestore.instance.collection('users').doc(uid).get();
 
@@ -61,15 +92,28 @@ class _HomeScreenState extends State<HomeScreen> {
             _userId = uid;
             _age = userData['age'].toString();
           });
-          print('HomeScreen: 사용자 나이 그룹 로드 완료: $_age');
+          _logger.i('HomeScreen: 사용자 나이 그룹 로드 완료: $_age');
         } else {
-          print('HomeScreen: 사용자 문서에 age 필드가 없음');
+          _logger.w('HomeScreen: 사용자 문서에 age 필드가 없음');
         }
       } else {
-        print('HomeScreen: 사용자 문서가 존재하지 않음');
+        _logger.w('HomeScreen: 사용자 문서가 존재하지 않음');
       }
     } catch (e) {
-      print('HomeScreen: 사용자 정보 로드 중 오류 발생: $e');
+      _logger.e('HomeScreen: 사용자 정보 로드 중 오류 발생: $e');
+    }
+  }
+
+  void _handleNavigateToTimer() {
+    if (_recentBookTitle != null) {
+      Navigator.pushNamed(
+        context,
+        '/timer',
+        arguments: {
+          'title': _recentBookTitle,
+          'imageUrl': _recentBookImageUrl,
+        },
+      );
     }
   }
 
@@ -149,16 +193,18 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ],
               ),
-              RecentBookPopup(
-                isVisible: _isPopupVisible,
-                onClose: () {
-                  setState(() {
-                    _isPopupVisible = false;
-                  });
-                },
-                imageUrl: 'https://via.placeholder.com/60x80',
-                title: '채식주의자',
-              )
+              if (_recentBookImageUrl != null && _recentBookTitle != null)
+                RecentBookPopup(
+                  isVisible: _isPopupVisible,
+                  onClose: () {
+                    setState(() {
+                      _isPopupVisible = false;
+                    });
+                  },
+                  onTap: _handleNavigateToTimer,
+                  imageUrl: _recentBookImageUrl!,
+                  title: _recentBookTitle!,
+                ),
             ],
           ),
         ),
@@ -175,10 +221,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
+    _bookSubscription?.cancel();
     _pageController.dispose();
     super.dispose();
   }
 }
+
 
 class _HomeTab extends StatelessWidget {
   final String? userId;
