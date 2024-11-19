@@ -9,11 +9,43 @@ import 'settings/profile_settings_screen.dart';
 import 'settings/account_info_screen.dart';
 import 'settings/notification_settings_screen.dart';
 import 'settings/support_screen.dart';
-import 'settings/account_management_screen.dart';
 import 'settings/data_reset_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
+
+  Future<void> _showLogoutDialog(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('로그아웃'),
+        content: const Text('정말 로그아웃하시겠습니까?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false), // 취소
+            child: const Text('취소'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true), // 확인
+            child: const Text('확인'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        await FirebaseAuth.instance.signOut(); // Firebase 로그아웃
+        Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+      } catch (e) {
+        print('Logout Error: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('로그아웃 중 오류가 발생했습니다.')),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final List<Map<String, dynamic>> items = [
@@ -43,9 +75,9 @@ class ProfileScreen extends StatelessWidget {
       },
       {
         'icon': Icons.exit_to_app_rounded,
-        'label': '로그아웃 및 계정 삭제',
+        'label': '로그아웃',
         'isSvg': false,
-        'screen': const AccountManagementScreen(),
+        'action': () => _showLogoutDialog(context), // 로그아웃 다이얼로그 호출
       },
       {
         'icon': Icons.delete,
@@ -148,33 +180,6 @@ class ProfileScreen extends StatelessWidget {
                                     ),
                             ),
                           ),
-                          Positioned(
-                            right: 0,
-                            top: 0,
-                            child: GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const ProfileSettingsScreen(),
-                                  ),
-                                );
-                              },
-                              child: Container(
-                                width: 30,
-                                height: 30,
-                                decoration: const BoxDecoration(
-                                  color: AppColors.pointColor,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(
-                                  Icons.edit,
-                                  color: Colors.white,
-                                  size: 18,
-                                ),
-                              ),
-                            ),
-                          ),
                         ],
                       ),
                       const SizedBox(height: 15),
@@ -215,7 +220,9 @@ class ProfileScreen extends StatelessWidget {
                         final item = items[index];
                         return InkWell(
                           onTap: () {
-                            if (item['screen'] != null) {
+                            if (item['action'] != null) {
+                              item['action'](); // 로그아웃 다이얼로그 호출
+                            } else if (item['screen'] != null) {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
