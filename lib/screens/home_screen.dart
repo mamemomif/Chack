@@ -277,10 +277,8 @@ class _HomeTab extends StatelessWidget {
                   ],
                 ),
               ),
-              const AnnualGoalCard(
-                progress: 0.5,
-                remainingBooks: 9,
-              ),
+              if (userId != null)
+                AnnualGoalCard(userId: userId!),
               const SizedBox(height: 30),
               const MonthlyReadingCard(
                 daysInMonth: 30,
