@@ -253,7 +253,7 @@ class _PomodoroPageState extends State<PomodoroPage> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            widget.timerService.isRunning ? "정지" : "시작",
+                            widget.timerService.formatTime(),
                             style: const TextStyle(
                               fontFamily: "SUITE",
                               fontSize: 44,

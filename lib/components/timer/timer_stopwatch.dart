@@ -12,10 +12,10 @@ class StopwatchPage extends StatefulWidget {
   final String userId;
 
   const StopwatchPage({
-    Key? key,
+    super.key,
     required this.stopwatchService,
     required this.userId,
-  }) : super(key: key);
+  });
 
   @override
   _StopwatchPageState createState() => _StopwatchPageState();
@@ -124,22 +124,23 @@ class _StopwatchPageState extends State<StopwatchPage> {
   Future<void> _onBookSelected(Map<String, String>? book) async {
     if (widget.stopwatchService.isRunning) {
       final bool shouldSwitch = await showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('스톱워치 실행 중'),
-          content: const Text('현재 실행 중인 스톱워치가 있습니다. 도서를 변경하시겠습니까?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('취소'),
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('스톱워치 실행 중'),
+              content: const Text('현재 실행 중인 스톱워치가 있습니다. 도서를 변경하시겠습니까?'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text('취소'),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  child: const Text('확인'),
+                ),
+              ],
             ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('확인'),
-            ),
-          ],
-        ),
-      ) ?? false;
+          ) ??
+          false;
 
       if (!shouldSwitch) return;
 
@@ -196,7 +197,8 @@ class _StopwatchPageState extends State<StopwatchPage> {
         Align(
           alignment: Alignment.topLeft,
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.1, vertical: 1),
+            padding: EdgeInsets.symmetric(
+                horizontal: screenWidth * 0.1, vertical: 1),
             child: const Text(
               '스톱워치',
               style: TextStyle(
@@ -271,7 +273,7 @@ class _StopwatchPageState extends State<StopwatchPage> {
           ),
         ),
         Padding(
-          padding: const EdgeInsets.symmetric(vertical: 20),
+          padding: const EdgeInsets.symmetric(vertical: 25, horizontal: 20),
           child: BookSelectionWidget(
             elapsedTimeText: elapsedTimeText,
             onBookSelected: _onBookSelected,

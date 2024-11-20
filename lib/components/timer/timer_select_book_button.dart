@@ -137,33 +137,45 @@ class _BookSelectionWidgetState extends State<BookSelectionWidget> {
           child: Row(
             children: [
               if (selectedBook == null)
-                SvgPicture.asset('assets/images/chack_icon.svg',
-                    width: 24, height: 18),
-              if (selectedBook == null) const SizedBox(width: 16),
+                Padding(
+                  padding: const EdgeInsets.only(left: 40),
+                  child: SvgPicture.asset('assets/images/chack_icon.svg',
+                      width: 24, height: 18),
+                ),
+              if (selectedBook == null) const SizedBox(width: 15),
               Expanded(
                 child: selectedBook == null
-                    ? const Center(
-                        child: Text(
-                          '기록할 도서 선택하기',
-                          style: TextStyle(
-                            fontFamily: 'SUITE',
-                            color: AppColors.textColor,
-                            fontSize: 20,
-                            fontWeight: FontWeight.w800,
-                          ),
+                    ? Text(
+                        '기록할 도서 선택하기',
+                        style: TextStyle(
+                          fontFamily: 'SUITE',
+                          color: AppColors.textColor.withOpacity(0.5),
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
                         ),
                       )
                     : Row(
                         children: [
-                          ClipRRect(
-                            child: Image.network(
-                              selectedBook!['imageUrl']!,
-                              width: 32,
-                              height: 49,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  const Icon(Icons.book,
-                                      size: 30, color: Colors.grey),
+                          Container(
+                            decoration: BoxDecoration(
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 5),
+                                ),
+                              ],
+                            ),
+                            child: ClipRRect(
+                              child: Image.network(
+                                selectedBook!['imageUrl']!,
+                                width: 32,
+                                height: 49,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    const Icon(Icons.book,
+                                        size: 30, color: Colors.grey),
+                              ),
                             ),
                           ),
                           const SizedBox(width: 16),
@@ -181,21 +193,10 @@ class _BookSelectionWidgetState extends State<BookSelectionWidget> {
                                           fontSize: 13,
                                           color: Colors.black.withOpacity(0.4)),
                                     ),
-                                    const Spacer(),
-                                    Text(
-                                      _readingTimeService
-                                          .formatReadingTime(_totalReadTime),
-                                      style: const TextStyle(
-                                        fontFamily: 'SUITE',
-                                        fontSize: 12,
-                                        color: AppColors.pointColor,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
                                   ],
                                 ),
                                 Text(
-                                  '${_truncateText(selectedBook!["title"]!, 7)} / ${_truncateText(selectedBook!["author"]!, 7)}',
+                                  _truncateText(selectedBook!["title"]!, 8),
                                   style: const TextStyle(
                                     fontFamily: 'SUITE',
                                     color: AppColors.textColor,
@@ -203,7 +204,18 @@ class _BookSelectionWidgetState extends State<BookSelectionWidget> {
                                     fontWeight: FontWeight.w800,
                                   ),
                                 ),
+                                // Text(_truncateText(selectedBook!["author"]!, 7)),
                               ],
+                            ),
+                          ),
+                          Text(
+                            _readingTimeService
+                                .formatReadingTime(_totalReadTime),
+                            style: const TextStyle(
+                              fontFamily: 'SUITE',
+                              fontSize: 20,
+                              color: AppColors.pointColor,
+                              fontWeight: FontWeight.w800,
                             ),
                           ),
                         ],
@@ -215,7 +227,7 @@ class _BookSelectionWidgetState extends State<BookSelectionWidget> {
                   widget.elapsedTimeText,
                   style: const TextStyle(
                     fontFamily: 'SUITE',
-                    fontSize: 20,
+                    fontSize: 22,
                     color: AppColors.pointColor,
                     fontWeight: FontWeight.w800,
                   ),
