@@ -129,7 +129,6 @@ class _BookSelectionWidgetState extends State<BookSelectionWidget> {
         borderRadius: BorderRadius.circular(20),
         child: Container(
           width: double.infinity,
-          constraints: const BoxConstraints(maxWidth: 330),
           padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
           decoration: BoxDecoration(
             color: Colors.black.withOpacity(0.05),

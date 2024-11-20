@@ -9,9 +9,9 @@ class TimerScreen extends StatefulWidget {
   final String userId;
 
   const TimerScreen({
-    Key? key,
+    super.key,
     required this.userId,
-  }) : super(key: key);
+  });
 
   @override
   _TimerScreenState createState() => _TimerScreenState();
@@ -45,8 +45,7 @@ class _TimerScreenState extends State<TimerScreen> {
       children: [
         const SizedBox(height: 40),
         PageIndicator(currentPageIndex: _currentPageIndex),
-        SizedBox(
-          height: 480,
+        Expanded(
           child: PageView(
             controller: _pageController,
             onPageChanged: (index) => setState(() => _currentPageIndex = index),
@@ -62,7 +61,6 @@ class _TimerScreenState extends State<TimerScreen> {
             ],
           ),
         ),
-        const SizedBox(height: 20),
       ],
     );
   }

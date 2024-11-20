@@ -13,10 +13,10 @@ class PomodoroPage extends StatefulWidget {
   final String userId;
 
   const PomodoroPage({
-    Key? key,
+    super.key,
     required this.timerService,
     required this.userId,
-  }) : super(key: key);
+  });
 
   @override
   _PomodoroPageState createState() => _PomodoroPageState();
@@ -35,14 +35,15 @@ class _PomodoroPageState extends State<PomodoroPage> {
 
     widget.timerService.onTick = () {
       setState(() {
-        elapsedTimeText = widget.timerService.formatElapsedTime(widget.timerService.elapsedTimeForUI);
+        elapsedTimeText = widget.timerService
+            .formatElapsedTime(widget.timerService.elapsedTimeForUI);
       });
     };
 
     widget.timerService.onComplete = () async {
       if (selectedBook != null && widget.timerService.isPomodoro) {
         await _updateReadingTime();
-        
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -104,9 +105,11 @@ class _PomodoroPageState extends State<PomodoroPage> {
                   // 휴식 시간이면 포모도로 모드로 전환하기 위해 한번 더 switchTimer 호출
                   widget.timerService.reset();
                   if (!widget.timerService.isPomodoro) {
-                    widget.timerService.switchTimer();  // private 메서드 접근 가능하도록 수정 필요
+                    widget.timerService
+                        .switchTimer(); // private 메서드 접근 가능하도록 수정 필요
                   }
-                  elapsedTimeText = widget.timerService.formatElapsedTime(widget.timerService.elapsedTimeForUI);
+                  elapsedTimeText = widget.timerService
+                      .formatElapsedTime(widget.timerService.elapsedTimeForUI);
                 });
               },
               child: const Text('확인'),
@@ -118,9 +121,10 @@ class _PomodoroPageState extends State<PomodoroPage> {
       setState(() {
         widget.timerService.reset();
         if (!widget.timerService.isPomodoro) {
-          widget.timerService.switchTimer();  // private 메서드 접근 가능하도록 수정 필요
+          widget.timerService.switchTimer(); // private 메서드 접근 가능하도록 수정 필요
         }
-        elapsedTimeText = widget.timerService.formatElapsedTime(widget.timerService.elapsedTimeForUI);
+        elapsedTimeText = widget.timerService
+            .formatElapsedTime(widget.timerService.elapsedTimeForUI);
       });
     }
   }
@@ -141,31 +145,31 @@ class _PomodoroPageState extends State<PomodoroPage> {
         widget.timerService.start(); // 타이머 시작
       }
       // **elapsedTimeText는 타이머 정지 상태에서도 유지**
-      elapsedTimeText = widget.timerService.formatElapsedTime(widget.timerService.elapsedTimeForUI);
+      elapsedTimeText = widget.timerService
+          .formatElapsedTime(widget.timerService.elapsedTimeForUI);
     });
   }
-
-
 
   Future<void> _onBookSelected(Map<String, String>? book) async {
     if (widget.timerService.isRunning) {
       final bool shouldSwitch = await showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('타이머 실행 중'),
-          content: const Text('현재 실행 중인 타이머가 있습니다. 도서를 변경하시겠습니까?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('취소'),
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('타이머 실행 중'),
+              content: const Text('현재 실행 중인 타이머가 있습니다. 도서를 변경하시겠습니까?'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text('취소'),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  child: const Text('확인'),
+                ),
+              ],
             ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('확인'),
-            ),
-          ],
-        ),
-      ) ?? false;
+          ) ??
+          false;
 
       if (!shouldSwitch) return;
 
@@ -215,129 +219,128 @@ class _PomodoroPageState extends State<PomodoroPage> {
     return Scaffold(
       resizeToAvoidBottomInset: true,
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      '뽀모도로',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 24,
-                        fontWeight: FontWeight.w800,
-                        fontFamily: 'SUITE',
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      CircularPercentIndicator(
-                        radius: 114.5,
-                        lineWidth: 20.0,
-                        percent: widget.timerService.progress,
-                        center: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              widget.timerService.formatTime(),
-                              style: const TextStyle(
-                                fontFamily: "SUITE",
-                                fontSize: 44,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                            if (!widget.timerService.isPomodoro)
-                              const Text(
-                                "휴식 시간",
-                                style: TextStyle(
-                                  fontFamily: "SUITE",
-                                  fontSize: 16,
-                                  color: Colors.grey,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                          ],
-                        ),
-                        progressColor: widget.timerService.isPomodoro
-                            ? AppColors.pointColor
-                            : Colors.green,
-                        backgroundColor: Colors.grey[300]!,
-                        circularStrokeCap: CircularStrokeCap.butt,
-                        reverse: true,
-                      ),
-                    ],
+                  Text(
+                    '뽀모도로',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800,
+                      fontFamily: 'SUITE',
+                    ),
                   ),
-                  const SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Column(
+                ],
+              ),
+            ),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    CircularPercentIndicator(
+                      radius: 114.5,
+                      lineWidth: 20.0,
+                      percent: widget.timerService.progress,
+                      center: Column(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          IconButton(
-                            icon: SvgPicture.asset(AppIcons.restartIcon),
-                            iconSize: 30,
-                            onPressed: _resetTimer,
-                          ),
-                          const Text(
-                            "다시 시작",
-                            style: TextStyle(
-                              fontFamily: "SUITE",
-                              fontSize: 12,
-                              color: Colors.grey,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(width: 40),
-                      Column(
-                        children: [
-                          IconButton(
-                            icon: SvgPicture.asset(
-                              widget.timerService.isRunning
-                                  ? AppIcons.pauseIcon
-                                  : AppIcons.startIcon,
-                            ),
-                            iconSize: 30,
-                            onPressed: _toggleTimer,
-                          ),
                           Text(
                             widget.timerService.isRunning ? "정지" : "시작",
                             style: const TextStyle(
                               fontFamily: "SUITE",
-                              fontSize: 12,
-                              color: Colors.grey,
-                              fontWeight: FontWeight.w600,
+                              fontSize: 44,
+                              fontWeight: FontWeight.w800,
                             ),
                           ),
+                          if (!widget.timerService.isPomodoro)
+                            const Text(
+                              "휴식 시간",
+                              style: TextStyle(
+                                fontFamily: "SUITE",
+                                fontSize: 16,
+                                color: Colors.grey,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                         ],
                       ),
-                    ],
-                  ),
-                ],
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 20),
-                child: BookSelectionWidget(
-                  elapsedTimeText: elapsedTimeText,
-                  onBookSelected: _onBookSelected,
-                  userId: widget.userId,
-                  timerService: widget.timerService,
+                      progressColor: widget.timerService.isPomodoro
+                          ? AppColors.pointColor
+                          : Colors.green,
+                      backgroundColor: Colors.grey[300]!,
+                      circularStrokeCap: CircularStrokeCap.butt,
+                      reverse: true,
+                    ),
+                  ],
                 ),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Column(
+                      children: [
+                        IconButton(
+                          icon: SvgPicture.asset(AppIcons.restartIcon),
+                          iconSize: 30,
+                          onPressed: _resetTimer,
+                        ),
+                        const Text(
+                          "다시 시작",
+                          style: TextStyle(
+                            fontFamily: "SUITE",
+                            fontSize: 12,
+                            color: Colors.grey,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(width: 40),
+                    Column(
+                      children: [
+                        IconButton(
+                          icon: SvgPicture.asset(
+                            widget.timerService.isRunning
+                                ? AppIcons.pauseIcon
+                                : AppIcons.startIcon,
+                          ),
+                          iconSize: 30,
+                          onPressed: _toggleTimer,
+                        ),
+                        Text(
+                          widget.timerService.isRunning ? "정지" : "시작",
+                          style: const TextStyle(
+                            fontFamily: "SUITE",
+                            fontSize: 12,
+                            color: Colors.grey,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            // 바텀 네비게이션과 도서 선택 버튼 사이 간격
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 25, horizontal: 20),
+              child: BookSelectionWidget(
+                elapsedTimeText: elapsedTimeText,
+                onBookSelected: _onBookSelected,
+                userId: widget.userId,
+                timerService: widget.timerService,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
