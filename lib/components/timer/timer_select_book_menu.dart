@@ -52,17 +52,23 @@ class _BookSelectionModalState extends State<BookSelectionModal> {
   }
 
   // 책 선택 처리
-  void _handleBookSelection(BookshelfBook book) {
+  void _handleBookSelection(BookshelfBook book) async {
     setState(() {
       _selectedBookIsbn = book.isbn; // 선택된 ISBN 업데이트
     });
+
+    await _bookshelfService.updateBookStatus(
+      userId: widget.userId,
+      isbn: book.isbn,
+      newStatus: '읽는 중',
+    );
 
     widget.onBookSelected({
       'title': book.title,
       'author': book.author,
       'isbn': book.isbn,
       'imageUrl': book.imageUrl,
-      'status': book.status,
+      'status': '읽는 중',
     });
   }
 
