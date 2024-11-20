@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:chack_project/services/bookshelf_service.dart';
 import 'package:chack_project/screens/book_review_screen.dart';
 import '../../constants/icons.dart';
+import '../../constants/colors.dart';
 
 class BookDetailScreen extends StatefulWidget {
   final String userId;
@@ -181,133 +182,145 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
               children: [
                 Expanded(
                   child: SingleChildScrollView(
-                    child: Container(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 25),
-                          Center(
-                            child: Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(8.0),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.1),
-                                    blurRadius: 20,
-                                    offset: const Offset(0, 10),
-                                  ),
-                                ],
-                              ),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(8.0),
-                                child: Image.network(
-                                  widget.image,
-                                  width: 150,
-                                  height: 200,
-                                  errorBuilder: (context, error, stackTrace) =>
-                                      const Icon(
-                                    Icons.book,
-                                    size: 150,
-                                    color: Colors.grey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 25),
+                        Center(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(8.0),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.1),
+                                      blurRadius: 20,
+                                      offset: const Offset(0, 10),
+                                    ),
+                                  ],
+                                ),
+                                child: ClipRRect(
+                                  child: Image.network(
+                                    widget.image,
+                                    width: 150,
+                                    height: 200,
+                                    errorBuilder:
+                                        (context, error, stackTrace) =>
+                                            const Icon(
+                                      Icons.book,
+                                      size: 150,
+                                      color: Colors.grey,
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                          ),
-                          const SizedBox(height: 25),
-                          Container(
-                            width: double.infinity,
-                            decoration: BoxDecoration(
-                              border: BorderDirectional(
-                                bottom: BorderSide(
-                                  color: Colors.black.withOpacity(0.06),
-                                  width: 10,
+                              // 독서 상태 정보 받아와서 읽는 중일 때만 표시
+                              Transform.translate(
+                                offset: const Offset(-10, -50),
+                                child: SvgPicture.asset(
+                                  AppIcons.bookmarkIcon,
+                                  colorFilter: const ColorFilter.mode(
+                                    AppColors.pointColor,
+                                    BlendMode.srcIn,
+                                  ),
                                 ),
                               ),
-                            ),
-                            child: Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 20),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    widget.title,
-                                    style: const TextStyle(
-                                      fontFamily: "SUITE",
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.w800,
-                                    ),
-                                  ),
-                                  Text(
-                                    '${widget.author} / ${widget.publisher}',
-                                    style: TextStyle(
-                                      fontFamily: "SUITE",
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 16,
-                                      color: Colors.black.withOpacity(0.6),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 20)
-                                ],
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 25),
+                        Container(
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            border: BorderDirectional(
+                              bottom: BorderSide(
+                                color: Colors.black.withOpacity(0.06),
+                                width: 10,
                               ),
                             ),
                           ),
-                          const SizedBox(height: 30),
-                          Padding(
+                          child: Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 20),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    const Text(
-                                      '책 소개',
-                                      style: TextStyle(
-                                        fontSize: 21,
-                                        fontWeight: FontWeight.w800,
-                                      ),
-                                    ),
-                                    Row(
-                                      children: [
-                                        Icon(
-                                          Icons.info_outline_rounded,
-                                          size: 14,
-                                          color: Colors.black.withOpacity(0.2),
-                                        ),
-                                        const SizedBox(width: 5),
-                                        Text(
-                                          '네이버 도서 API에서 제공하는 정보입니다.',
-                                          style: TextStyle(
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w800,
-                                            color:
-                                                Colors.black.withOpacity(0.3),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 20),
                                 Text(
-                                  widget.description,
+                                  widget.title,
+                                  style: const TextStyle(
+                                    fontFamily: "SUITE",
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                                Text(
+                                  '${widget.author} / ${widget.publisher}',
                                   style: TextStyle(
                                     fontFamily: "SUITE",
                                     fontWeight: FontWeight.w600,
-                                    fontSize: 14,
-                                    height: 1.5,
-                                    color: Colors.black.withOpacity(0.8),
+                                    fontSize: 16,
+                                    color: Colors.black.withOpacity(0.6),
                                   ),
                                 ),
-                                const SizedBox(height: 50),
+                                const SizedBox(height: 20)
                               ],
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+                        const SizedBox(height: 30),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Text(
+                                    '책 소개',
+                                    style: TextStyle(
+                                      fontSize: 21,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        Icons.info_outline_rounded,
+                                        size: 14,
+                                        color: Colors.black.withOpacity(0.2),
+                                      ),
+                                      const SizedBox(width: 5),
+                                      Text(
+                                        '네이버 도서 API에서 제공하는 정보입니다.',
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w800,
+                                          color: Colors.black.withOpacity(0.3),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 20),
+                              Text(
+                                widget.description,
+                                style: TextStyle(
+                                  fontFamily: "SUITE",
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
+                                  height: 1.5,
+                                  color: Colors.black.withOpacity(0.8),
+                                ),
+                              ),
+                              const SizedBox(height: 50),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
