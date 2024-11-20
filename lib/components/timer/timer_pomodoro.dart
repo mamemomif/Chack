@@ -47,7 +47,7 @@ class _PomodoroPageState extends State<PomodoroPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('독서 시간이 끝났습니다. 휴식 시간이 시작됩니다!'),
-              duration: Duration(seconds: 3),
+              duration: Duration(seconds: 2),
             ),
           );
         }
@@ -55,7 +55,7 @@ class _PomodoroPageState extends State<PomodoroPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('휴식 시간이 끝났습니다. 다음 독서를 시작하세요!'),
-            duration: Duration(seconds: 3),
+            duration: Duration(seconds: 2),
           ),
         );
       }
