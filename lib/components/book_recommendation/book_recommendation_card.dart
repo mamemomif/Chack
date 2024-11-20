@@ -17,7 +17,7 @@ class BookRecommendationCard extends StatelessWidget {
   final String description;
 
   const BookRecommendationCard({
-    Key? key,
+    super.key,
     required this.userId, // 추가
     required this.isbn, // 추가
     required this.title,
@@ -27,7 +27,7 @@ class BookRecommendationCard extends StatelessWidget {
     required this.availability,
     required this.imageUrl,
     this.description = '이 책에 대한 설명이 없습니다.',
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -61,10 +61,11 @@ class BookRecommendationCard extends StatelessWidget {
               left: 20,
               top: 18,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                 decoration: BoxDecoration(
                   color: AppColors.pointColor,
-                  borderRadius: BorderRadius.circular(13),
+                  borderRadius: BorderRadius.circular(30),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -72,14 +73,13 @@ class BookRecommendationCard extends StatelessWidget {
                     SvgPicture.asset(
                       AppIcons.chackIcon,
                       height: 10,
-                      width: 10,
                       colorFilter: const ColorFilter.mode(
                         Colors.white,
                         BlendMode.srcIn,
                       ),
                     ),
                     const SizedBox(width: 6),
-                    Text(
+                    const Text(
                       '채크의 추천',
                       style: AppTextStyles.labelStyle,
                     ),
@@ -90,7 +90,7 @@ class BookRecommendationCard extends StatelessWidget {
             // 도서 정보
             Positioned(
               left: 20,
-              top: 50,
+              top: 54,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -110,7 +110,7 @@ class BookRecommendationCard extends StatelessWidget {
                     '$author / $publisher',
                     style: AppTextStyles.authorLabelStyle,
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 7),
                   // 가까운 도서관 및 대출 가능 여부
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -119,12 +119,14 @@ class BookRecommendationCard extends StatelessWidget {
                         distance,
                         style: AppTextStyles.libraryLabelStyle,
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 2),
                       Text(
                         availability,
                         style: AppTextStyles.libraryLabelStyle.copyWith(
-                          color: availability == '대출 가능' ? Colors.green : Colors.red,
-                          fontWeight: FontWeight.bold,
+                          color: availability == '대출 가능'
+                              ? Colors.green
+                              : Colors.red,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ],
@@ -134,29 +136,12 @@ class BookRecommendationCard extends StatelessWidget {
             ),
             // 도서 이미지
             Positioned(
-              right: 20,
+              right: 22,
               bottom: 0,
-              child: Container(
+              child: SizedBox(
                 width: 90,
                 height: 126,
-                decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(10),
-                    topRight: Radius.circular(10),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 4,
-                      offset: const Offset(0, -2),
-                    ),
-                  ],
-                ),
                 child: ClipRRect(
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(10),
-                    topRight: Radius.circular(10),
-                  ),
                   child: Image.network(
                     imageUrl,
                     fit: BoxFit.cover,
