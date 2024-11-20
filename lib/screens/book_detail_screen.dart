@@ -185,6 +185,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          const SizedBox(height: 25),
                           Center(
                             child: Container(
                               decoration: BoxDecoration(
@@ -213,7 +214,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                               ),
                             ),
                           ),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 25),
                           Container(
                             width: double.infinity,
                             decoration: BoxDecoration(
@@ -255,15 +256,54 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                           const SizedBox(height: 30),
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 20),
-                            child: Text(
-                              widget.description,
-                              style: TextStyle(
-                                fontFamily: "SUITE",
-                                fontWeight: FontWeight.w600,
-                                fontSize: 14,
-                                height: 1.5,
-                                color: Colors.black.withOpacity(0.8),
-                              ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text(
+                                      '책 소개',
+                                      style: TextStyle(
+                                        fontSize: 21,
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                    ),
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons.info_outline_rounded,
+                                          size: 14,
+                                          color: Colors.black.withOpacity(0.2),
+                                        ),
+                                        const SizedBox(width: 5),
+                                        Text(
+                                          '네이버 도서 API에서 제공하는 정보입니다.',
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w800,
+                                            color:
+                                                Colors.black.withOpacity(0.3),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 20),
+                                Text(
+                                  widget.description,
+                                  style: TextStyle(
+                                    fontFamily: "SUITE",
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 14,
+                                    height: 1.5,
+                                    color: Colors.black.withOpacity(0.8),
+                                  ),
+                                ),
+                                const SizedBox(height: 50),
+                              ],
                             ),
                           ),
                         ],
