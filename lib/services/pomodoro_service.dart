@@ -44,7 +44,7 @@ class TimerService with WidgetsBindingObserver {
       } else {
         stop();
         onComplete?.call();
-        _switchTimer();
+        switchTimer();
         start();
       }
     });
@@ -57,7 +57,7 @@ class TimerService with WidgetsBindingObserver {
     isRunning = false;
   }
 
-  void _switchTimer() {
+  void switchTimer() {
     if (isPomodoro) {
       duration = breakDuration;
     } else {

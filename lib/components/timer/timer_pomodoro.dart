@@ -101,7 +101,11 @@ class _PomodoroPageState extends State<PomodoroPage> {
                   _updateReadingTime();
                 }
                 setState(() {
+                  // 휴식 시간이면 포모도로 모드로 전환하기 위해 한번 더 switchTimer 호출
                   widget.timerService.reset();
+                  if (!widget.timerService.isPomodoro) {
+                    widget.timerService.switchTimer();  // private 메서드 접근 가능하도록 수정 필요
+                  }
                   elapsedTimeText = widget.timerService.formatElapsedTime(widget.timerService.elapsedTimeForUI);
                 });
               },
@@ -113,6 +117,9 @@ class _PomodoroPageState extends State<PomodoroPage> {
     } else {
       setState(() {
         widget.timerService.reset();
+        if (!widget.timerService.isPomodoro) {
+          widget.timerService.switchTimer();  // private 메서드 접근 가능하도록 수정 필요
+        }
         elapsedTimeText = widget.timerService.formatElapsedTime(widget.timerService.elapsedTimeForUI);
       });
     }
