@@ -14,12 +14,12 @@ class BookSelectionWidget extends StatefulWidget {
   final TimerService timerService;
 
   const BookSelectionWidget({
-    Key? key,
+    super.key,
     required this.elapsedTimeText,
     required this.onBookSelected,
     required this.userId,
     required this.timerService,
-  }) : super(key: key);
+  });
 
   @override
   State<BookSelectionWidget> createState() => _BookSelectionWidgetState();
@@ -40,22 +40,23 @@ class _BookSelectionWidgetState extends State<BookSelectionWidget> {
   Future<void> _showBookSelectionModal(BuildContext context) async {
     if (widget.timerService.isRunning) {
       final bool shouldSwitch = await showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('타이머 실행 중'),
-          content: const Text('현재 실행 중인 타이머가 있습니다. 도서를 변경하시겠습니까?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('취소'),
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('타이머 실행 중'),
+              content: const Text('현재 실행 중인 타이머가 있습니다. 도서를 변경하시겠습니까?'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text('취소'),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  child: const Text('확인'),
+                ),
+              ],
             ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('확인'),
-            ),
-          ],
-        ),
-      ) ?? false;
+          ) ??
+          false;
 
       if (!shouldSwitch) return;
 
@@ -75,30 +76,28 @@ class _BookSelectionWidgetState extends State<BookSelectionWidget> {
             selectedBook = book;
           });
 
-          if (book != null) {
-            final existingTime = await _readingTimeService.getBookReadingTime(
-              userId: widget.userId,
-              isbn: book['isbn']!,
-            );
+          final existingTime = await _readingTimeService.getBookReadingTime(
+            userId: widget.userId,
+            isbn: book['isbn']!,
+          );
 
+          setState(() {
+            _totalReadTime = existingTime;
+          });
+
+          _readingStatusSubscription?.cancel();
+          _readingStatusSubscription = _readingTimeService
+              .watchBookReadingStatus(
+            userId: widget.userId,
+            isbn: book['isbn']!,
+          )
+              .listen((status) {
             setState(() {
-              _totalReadTime = existingTime;
+              _totalReadTime = Duration(seconds: status['readTime'] as int);
             });
+          });
 
-            _readingStatusSubscription?.cancel();
-            _readingStatusSubscription = _readingTimeService
-                .watchBookReadingStatus(
-              userId: widget.userId,
-              isbn: book['isbn']!,
-            )
-                .listen((status) {
-              setState(() {
-                _totalReadTime = Duration(seconds: status['readTime'] as int);
-              });
-            });
-
-            widget.onBookSelected(book);
-          }
+          widget.onBookSelected(book);
           Navigator.pop(context);
         },
         onResetSelection: () {
@@ -113,6 +112,12 @@ class _BookSelectionWidgetState extends State<BookSelectionWidget> {
         currentSelectedBook: selectedBook,
       ),
     );
+  }
+
+  String _truncateText(String text, int maxLength) {
+    return text.length > maxLength
+        ? '${text.substring(0, maxLength)}...'
+        : text;
   }
 
   @override
@@ -133,76 +138,77 @@ class _BookSelectionWidgetState extends State<BookSelectionWidget> {
           child: Row(
             children: [
               if (selectedBook == null)
-                SvgPicture.asset('assets/images/chack_icon.svg', width: 24, height: 18),
+                SvgPicture.asset('assets/images/chack_icon.svg',
+                    width: 24, height: 18),
               if (selectedBook == null) const SizedBox(width: 16),
               Expanded(
                 child: selectedBook == null
                     ? const Center(
-                  child: Text(
-                    '기록할 도서 선택하기',
-                    style: TextStyle(
-                      fontFamily: 'SUITE',
-                      color: AppColors.textColor,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                )
-                    : Row(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: Image.network(
-                        selectedBook!['imageUrl']!,
-                        width: 32,
-                        height: 49,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) =>
-                        const Icon(Icons.book, size: 30, color: Colors.grey),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              const Text(
-                                '현재 기록 중인 도서',
-                                style: TextStyle(
-                                  fontFamily: 'SUITE',
-                                  fontSize: 12,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                              const Spacer(),
-                              Text(
-                                '${_readingTimeService.formatReadingTime(_totalReadTime)}',
-                                style: const TextStyle(
-                                  fontFamily: 'SUITE',
-                                  fontSize: 12,
-                                  color: AppColors.pointColor,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
+                        child: Text(
+                          '기록할 도서 선택하기',
+                          style: TextStyle(
+                            fontFamily: 'SUITE',
+                            color: AppColors.textColor,
+                            fontSize: 20,
+                            fontWeight: FontWeight.w800,
                           ),
-                          Text(
-                            '${selectedBook!["title"]!} / ${selectedBook!["author"]!}',
-                            style: const TextStyle(
-                              fontFamily: 'SUITE',
-                              color: AppColors.textColor,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w800,
+                        ),
+                      )
+                    : Row(
+                        children: [
+                          ClipRRect(
+                            child: Image.network(
+                              selectedBook!['imageUrl']!,
+                              width: 32,
+                              height: 49,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const Icon(Icons.book,
+                                      size: 30, color: Colors.grey),
                             ),
-                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Text(
+                                      '현재 기록 중인 도서',
+                                      style: TextStyle(
+                                          fontFamily: 'SUITE',
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 13,
+                                          color: Colors.black.withOpacity(0.4)),
+                                    ),
+                                    const Spacer(),
+                                    Text(
+                                      _readingTimeService
+                                          .formatReadingTime(_totalReadTime),
+                                      style: const TextStyle(
+                                        fontFamily: 'SUITE',
+                                        fontSize: 12,
+                                        color: AppColors.pointColor,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Text(
+                                  '${_truncateText(selectedBook!["title"]!, 7)} / ${_truncateText(selectedBook!["author"]!, 7)}',
+                                  style: const TextStyle(
+                                    fontFamily: 'SUITE',
+                                    color: AppColors.textColor,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),
-                    ),
-                  ],
-                ),
               ),
               const SizedBox(width: 16),
               if (selectedBook != null && widget.timerService.isRunning)
@@ -221,6 +227,4 @@ class _BookSelectionWidgetState extends State<BookSelectionWidget> {
       ),
     );
   }
-
-
 }
