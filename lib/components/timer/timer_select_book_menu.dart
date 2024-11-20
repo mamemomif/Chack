@@ -32,7 +32,7 @@ class _BookSelectionModalState extends State<BookSelectionModal> {
   @override
   void initState() {
     super.initState();
-    if(widget.currentSelectedBook != null) {
+    if (widget.currentSelectedBook != null) {
       _selectedBookIsbn = widget.currentSelectedBook!['isbn'];
     }
   }
@@ -179,15 +179,18 @@ class _BookSelectionModalState extends State<BookSelectionModal> {
 
                     return GestureDetector(
                       onTap: isCurrentBook
-                          ? null
+                          ? () {
+                              _resetSelection(); // 현재 선택된 책일 경우 선택 해제
+                            }
                           : () {
-                        setState(() {
-                          _selectedBookIsbn = isSelected ? null : book.isbn;
-                        });
-                        if (!isSelected) {
-                          _handleBookSelection(book);
-                        }
-                      },
+                              setState(() {
+                                _selectedBookIsbn =
+                                    isSelected ? null : book.isbn;
+                              });
+                              if (!isSelected) {
+                                _handleBookSelection(book);
+                              }
+                            },
                       child: Container(
                         decoration: BoxDecoration(
                           color: isSelected
@@ -283,7 +286,6 @@ class _BookSelectionModalState extends State<BookSelectionModal> {
             ),
           ),
           const SizedBox(height: 16),
-          // 선택 초기화 버튼
         ],
       ),
     );
