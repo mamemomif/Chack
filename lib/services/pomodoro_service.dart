@@ -6,7 +6,8 @@ class TimerService with WidgetsBindingObserver {
   final int breakDuration;
   late int duration;
   late int _remainingTime;
-  int elapsedTime = 0;
+  int elapsedTimeForFirestore = 0; // Firestore에 저장할 경과 시간
+  int elapsedTimeForUI = 0;        // UI에 표시할 경과 시간
   double progress;
   Timer? _timer;
   bool isRunning = false;
@@ -16,8 +17,8 @@ class TimerService with WidgetsBindingObserver {
   VoidCallback? onComplete;
 
   TimerService({
-    this.pomodoroDuration = 10,  // 기본 25분
-    this.breakDuration = 5,      // 기본 5분
+    this.pomodoroDuration = 10, // 기본 25분
+    this.breakDuration = 5,     // 기본 5분
   })  : duration = pomodoroDuration,
         _remainingTime = pomodoroDuration,
         progress = 1.0 {
@@ -34,11 +35,10 @@ class TimerService with WidgetsBindingObserver {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_remainingTime > 0) {
         _remainingTime--;
-
         if (isPomodoro) {
-          elapsedTime++;
+          elapsedTimeForFirestore++; // Firestore용 경과 시간 증가
+          elapsedTimeForUI++;        // UI용 경과 시간 증가
         }
-
         progress = _remainingTime / duration;
         onTick?.call();
       } else {
@@ -48,6 +48,13 @@ class TimerService with WidgetsBindingObserver {
         start();
       }
     });
+  }
+
+  void pause() {
+    if (!isRunning) return;
+    _timer?.cancel(); // 타이머 중단
+    _timer = null;
+    isRunning = false;
   }
 
   void _switchTimer() {
@@ -69,15 +76,15 @@ class TimerService with WidgetsBindingObserver {
 
   void reset() {
     stop();
-    duration = isPomodoro ? pomodoroDuration : breakDuration;
+    elapsedTimeForFirestore = 0;
+    elapsedTimeForUI = 0; // UI 시간도 초기화
     _remainingTime = duration;
     progress = 1.0;
-    elapsedTime = 0;
     onTick?.call();
   }
 
-  String formatElapsedTime() {
-    final duration = Duration(seconds: elapsedTime);
+  String formatElapsedTime(int elapsedSeconds) {
+    final duration = Duration(seconds: elapsedSeconds);
     return '${duration.inMinutes}분 ${duration.inSeconds.remainder(60).toString().padLeft(2, '0')}초';
   }
 
@@ -87,7 +94,7 @@ class TimerService with WidgetsBindingObserver {
     return '$minutes:$seconds';
   }
 
-  void dispose() {  // super.dispose() 제거
+  void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _timer?.cancel();
   }

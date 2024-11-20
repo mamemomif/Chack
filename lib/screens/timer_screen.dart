@@ -9,7 +9,7 @@ class TimerScreen extends StatefulWidget {
   final String userId;
 
   const TimerScreen({
-    Key? key, 
+    Key? key,
     required this.userId,
   }) : super(key: key);
 

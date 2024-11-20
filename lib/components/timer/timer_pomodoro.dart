@@ -32,9 +32,11 @@ class _PomodoroPageState extends State<PomodoroPage> {
   @override
   void initState() {
     super.initState();
+
     widget.timerService.onTick = () {
       setState(() {
-        elapsedTimeText = widget.timerService.formatElapsedTime();
+        // UI용 경과 시간만 표시
+        elapsedTimeText = widget.timerService.formatElapsedTime(widget.timerService.elapsedTimeForUI);
       });
     };
 
@@ -54,26 +56,23 @@ class _PomodoroPageState extends State<PomodoroPage> {
     };
   }
 
+
+
   Future<void> _updateReadingTime() async {
     if (selectedBook == null) return;
-    
-    final sessionTime = widget.timerService.elapsedTime;
-    
+
+    final sessionTime = widget.timerService.elapsedTimeForFirestore;
+
     try {
+      // Firestore에 읽은 시간 업데이트
       await _readingTimeService.updateReadingTime(
         userId: widget.userId,
         isbn: selectedBook!['isbn']!,
         elapsedSeconds: sessionTime,
       );
-      
-      final updatedTotalTime = await _readingTimeService.getBookReadingTime(
-        userId: widget.userId,
-        isbn: selectedBook!['isbn']!,
-      );
-      
-      setState(() {
-        _totalReadTime = updatedTotalTime;
-      });
+
+      // Firestore 업데이트 후 저장 시간 초기화 (UI용 시간은 유지)
+      widget.timerService.elapsedTimeForFirestore = 0;
     } catch (e) {
       print('Failed to update reading time: $e');
     }
@@ -95,11 +94,11 @@ class _PomodoroPageState extends State<PomodoroPage> {
               onPressed: () {
                 Navigator.pop(context);
                 if (selectedBook != null && widget.timerService.isPomodoro) {
-                  _updateReadingTime(); // 초기화 전 현재까지의 시간 저장
+                  _updateReadingTime();
                 }
                 setState(() {
                   widget.timerService.reset();
-                  elapsedTimeText = widget.timerService.formatElapsedTime();
+                  elapsedTimeText = widget.timerService.formatElapsedTime(widget.timerService.elapsedTimeForUI);
                 });
               },
               child: const Text('확인'),
@@ -110,7 +109,7 @@ class _PomodoroPageState extends State<PomodoroPage> {
     } else {
       setState(() {
         widget.timerService.reset();
-        elapsedTimeText = widget.timerService.formatElapsedTime();
+        elapsedTimeText = widget.timerService.formatElapsedTime(widget.timerService.elapsedTimeForUI);
       });
     }
   }
@@ -125,14 +124,17 @@ class _PomodoroPageState extends State<PomodoroPage> {
       }
 
       if (widget.timerService.isRunning) {
-        widget.timerService.stop();
+        widget.timerService.stop(); // 타이머 정지
         _updateReadingTime();
       } else {
-        widget.timerService.start();
+        widget.timerService.start(); // 타이머 시작
       }
-      elapsedTimeText = widget.timerService.formatElapsedTime();
+      // **elapsedTimeText는 타이머 정지 상태에서도 유지**
+      elapsedTimeText = widget.timerService.formatElapsedTime(widget.timerService.elapsedTimeForUI);
     });
   }
+
+
 
   Future<void> _onBookSelected(Map<String, String>? book) async {
     if (widget.timerService.isRunning) {
@@ -179,14 +181,14 @@ class _PomodoroPageState extends State<PomodoroPage> {
 
       _readingStatusSubscription = _readingTimeService
           .watchBookReadingStatus(
-            userId: widget.userId,
-            isbn: book['isbn']!,
-          )
+        userId: widget.userId,
+        isbn: book['isbn']!,
+      )
           .listen((status) {
-            setState(() {
-              _totalReadTime = Duration(seconds: status['readTime'] as int);
-            });
-          });
+        setState(() {
+          _totalReadTime = Duration(seconds: status['readTime'] as int);
+        });
+      });
     }
   }
 
@@ -199,133 +201,134 @@ class _PomodoroPageState extends State<PomodoroPage> {
 
   @override
   Widget build(BuildContext context) {
-    final double screenWidth = MediaQuery.of(context).size.width;
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Align(
-          alignment: Alignment.topLeft,
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.1, vertical: 1),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  '뽀모도로',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 24,
-                    fontWeight: FontWeight.w800,
-                    fontFamily: 'SUITE',
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        Expanded(
+    return Scaffold(
+      resizeToAvoidBottomInset: true,
+      body: SafeArea(
+        child: SingleChildScrollView(
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Stack(
-                alignment: Alignment.center,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      '뽀모도로',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 24,
+                        fontWeight: FontWeight.w800,
+                        fontFamily: 'SUITE',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  CircularPercentIndicator(
-                    radius: 114.5,
-                    lineWidth: 20.0,
-                    percent: widget.timerService.progress,
-                    center: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          widget.timerService.formatTime(),
-                          style: const TextStyle(
-                            fontFamily: "SUITE",
-                            fontSize: 44,
-                            fontWeight: FontWeight.w800,
-                          ),
+                  Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      CircularPercentIndicator(
+                        radius: 114.5,
+                        lineWidth: 20.0,
+                        percent: widget.timerService.progress,
+                        center: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              widget.timerService.formatTime(),
+                              style: const TextStyle(
+                                fontFamily: "SUITE",
+                                fontSize: 44,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            if (!widget.timerService.isPomodoro)
+                              const Text(
+                                "휴식 시간",
+                                style: TextStyle(
+                                  fontFamily: "SUITE",
+                                  fontSize: 16,
+                                  color: Colors.grey,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                          ],
                         ),
-                        if (!widget.timerService.isPomodoro)
+                        progressColor: widget.timerService.isPomodoro
+                            ? AppColors.pointColor
+                            : Colors.green,
+                        backgroundColor: Colors.grey[300]!,
+                        circularStrokeCap: CircularStrokeCap.butt,
+                        reverse: true,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Column(
+                        children: [
+                          IconButton(
+                            icon: SvgPicture.asset(AppIcons.restartIcon),
+                            iconSize: 30,
+                            onPressed: _resetTimer,
+                          ),
                           const Text(
-                            "휴식 시간",
+                            "다시 시작",
                             style: TextStyle(
                               fontFamily: "SUITE",
-                              fontSize: 16,
+                              fontSize: 12,
                               color: Colors.grey,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
-                      ],
-                    ),
-                    progressColor: widget.timerService.isPomodoro 
-                      ? AppColors.pointColor 
-                      : Colors.green,
-                    backgroundColor: Colors.grey[300]!,
-                    circularStrokeCap: CircularStrokeCap.butt,
-                    reverse: true,
+                        ],
+                      ),
+                      const SizedBox(width: 40),
+                      Column(
+                        children: [
+                          IconButton(
+                            icon: SvgPicture.asset(
+                              widget.timerService.isRunning
+                                  ? AppIcons.pauseIcon
+                                  : AppIcons.startIcon,
+                            ),
+                            iconSize: 30,
+                            onPressed: _toggleTimer,
+                          ),
+                          Text(
+                            widget.timerService.isRunning ? "정지" : "시작",
+                            style: const TextStyle(
+                              fontFamily: "SUITE",
+                              fontSize: 12,
+                              color: Colors.grey,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Column(
-                    children: [
-                      IconButton(
-                        icon: SvgPicture.asset(AppIcons.restartIcon),
-                        iconSize: 30,
-                        onPressed: _resetTimer,
-                      ),
-                      const Text(
-                        "다시 시작",
-                        style: TextStyle(
-                          fontFamily: "SUITE",
-                          fontSize: 12,
-                          color: Colors.grey,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(width: 40),
-                  Column(
-                    children: [
-                      IconButton(
-                        icon: SvgPicture.asset(
-                          widget.timerService.isRunning
-                              ? AppIcons.pauseIcon
-                              : AppIcons.startIcon,
-                        ),
-                        iconSize: 30,
-                        onPressed: _toggleTimer,
-                      ),
-                      Text(
-                        widget.timerService.isRunning ? "정지" : "시작",
-                        style: const TextStyle(
-                          fontFamily: "SUITE",
-                          fontSize: 12,
-                          color: Colors.grey,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                child: BookSelectionWidget(
+                  elapsedTimeText: elapsedTimeText,
+                  onBookSelected: _onBookSelected,
+                  userId: widget.userId,
+                  timerService: widget.timerService,
+                ),
               ),
             ],
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 20),
-          child: BookSelectionWidget(
-            elapsedTimeText: elapsedTimeText,
-            onBookSelected: _onBookSelected,
-            userId: widget.userId,
-            timerService: widget.timerService,
-          ),
-        ),
-      ],
+      ),
     );
   }
 }
