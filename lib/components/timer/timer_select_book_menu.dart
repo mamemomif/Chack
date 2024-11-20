@@ -168,9 +168,13 @@ class _BookSelectionModalState extends State<BookSelectionModal> {
                   itemBuilder: (context, index) {
                     final book = filteredBooks[index];
                     final isSelected = _selectedBookIsbn == book.isbn;
+                    final isCurrentBook = widget.currentSelectedBook != null &&
+                        widget.currentSelectedBook!['isbn'] == book.isbn;
 
                     return GestureDetector(
-                      onTap: () {
+                      onTap: isCurrentBook
+                          ? null
+                          : () {
                         setState(() {
                           _selectedBookIsbn = isSelected ? null : book.isbn;
                         });
