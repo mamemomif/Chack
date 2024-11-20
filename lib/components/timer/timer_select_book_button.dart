@@ -110,6 +110,7 @@ class _BookSelectionWidgetState extends State<BookSelectionWidget> {
           _readingStatusSubscription?.cancel();
         },
         userId: widget.userId,
+        currentSelectedBook: selectedBook,
       ),
     );
   }

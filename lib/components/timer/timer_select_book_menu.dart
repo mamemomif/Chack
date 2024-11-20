@@ -10,12 +10,14 @@ class BookSelectionModal extends StatefulWidget {
   final Function(Map<String, String>) onBookSelected; // 책 선택 콜백
   final VoidCallback onResetSelection; // 선택 초기화 콜백
   final String userId; // 사용자 ID
+  final Map<String, String>? currentSelectedBook;
 
   const BookSelectionModal({
     super.key,
     required this.onBookSelected,
     required this.onResetSelection,
     required this.userId,
+    this.currentSelectedBook,
   });
 
   @override
@@ -26,6 +28,14 @@ class _BookSelectionModalState extends State<BookSelectionModal> {
   final BookshelfService _bookshelfService = BookshelfService();
   String _searchQuery = ''; // 검색어 저장
   String? _selectedBookIsbn; // 선택된 책의 ISBN 저장
+
+  @override
+  void initState() {
+    super.initState();
+    if(widget.currentSelectedBook != null) {
+      _selectedBookIsbn = widget.currentSelectedBook!['isbn'];
+    }
+  }
 
   // 책 상태에 따라 색상 반환
   Color _getStatusColor(String status) {
@@ -97,7 +107,7 @@ class _BookSelectionModalState extends State<BookSelectionModal> {
               hintText: '읽고 싶은 책을 알려주세요',
               prefixIcon: const Icon(Icons.search),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(30),
                 borderSide: BorderSide.none,
               ),
               filled: true,
