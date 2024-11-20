@@ -35,7 +35,6 @@ class _PomodoroPageState extends State<PomodoroPage> {
 
     widget.timerService.onTick = () {
       setState(() {
-        // UI용 경과 시간만 표시
         elapsedTimeText = widget.timerService.formatElapsedTime(widget.timerService.elapsedTimeForUI);
       });
     };
@@ -43,20 +42,25 @@ class _PomodoroPageState extends State<PomodoroPage> {
     widget.timerService.onComplete = () async {
       if (selectedBook != null && widget.timerService.isPomodoro) {
         await _updateReadingTime();
-      }
-
-      if (!widget.timerService.isPomodoro && mounted) {
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('독서 시간이 끝났습니다. 휴식 시간이 시작됩니다!'),
+              duration: Duration(seconds: 3),
+            ),
+          );
+        }
+      } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('휴식 시간이 시작되었습니다. 잠시 쉬어가세요!'),
+            content: Text('휴식 시간이 끝났습니다. 다음 독서를 시작하세요!'),
             duration: Duration(seconds: 3),
           ),
         );
       }
     };
   }
-
-
 
   Future<void> _updateReadingTime() async {
     if (selectedBook == null) return;
