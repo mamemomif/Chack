@@ -15,7 +15,7 @@ class BookDetailScreen extends StatefulWidget {
   final String description;
 
   const BookDetailScreen({
-    Key? key,
+    super.key,
     required this.userId,
     required this.isbn,
     required this.title,
@@ -23,7 +23,7 @@ class BookDetailScreen extends StatefulWidget {
     required this.publisher,
     required this.image,
     required this.description,
-  }) : super(key: key);
+  });
 
   @override
   _BookDetailScreenState createState() => _BookDetailScreenState();
@@ -138,8 +138,8 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
               userId: widget.userId,
               isbn: widget.isbn,
               startedAt: (bookData['startedAt'] as Timestamp).toDate(),
-              finishedAt: bookData['finishedAt'] != null 
-                  ? (bookData['finishedAt'] as Timestamp).toDate() 
+              finishedAt: bookData['finishedAt'] != null
+                  ? (bookData['finishedAt'] as Timestamp).toDate()
                   : null,
               readTime: bookData['readTime'] ?? 0,
             ),
@@ -177,136 +177,168 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 25.0, vertical: 20.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
+          : Column(
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
                     child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 20,
-                            offset: const Offset(0, 10),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Center(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8.0),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.1),
+                                    blurRadius: 20,
+                                    offset: const Offset(0, 10),
+                                  ),
+                                ],
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8.0),
+                                child: Image.network(
+                                  widget.image,
+                                  width: 150,
+                                  height: 200,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      const Icon(
+                                    Icons.book,
+                                    size: 150,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          Container(
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              border: BorderDirectional(
+                                bottom: BorderSide(
+                                  color: Colors.black.withOpacity(0.06),
+                                  width: 10,
+                                ),
+                              ),
+                            ),
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 20),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    widget.title,
+                                    style: const TextStyle(
+                                      fontFamily: "SUITE",
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                  Text(
+                                    '${widget.author} / ${widget.publisher}',
+                                    style: TextStyle(
+                                      fontFamily: "SUITE",
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 16,
+                                      color: Colors.black.withOpacity(0.6),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 20)
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 30),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: Text(
+                              widget.description,
+                              style: TextStyle(
+                                fontFamily: "SUITE",
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14,
+                                height: 1.5,
+                                color: Colors.black.withOpacity(0.8),
+                              ),
+                            ),
                           ),
                         ],
                       ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8.0),
-                        child: Image.network(
-                          widget.image,
-                          width: 150,
-                          height: 200,
-                          errorBuilder: (context, error, stackTrace) => const Icon(
-                            Icons.book,
-                            size: 150,
-                            color: Colors.grey,
-                          ),
-                        ),
-                      ),
                     ),
                   ),
-                  const SizedBox(height: 20),
-
-                  Text(
-                    widget.title,
-                    style: const TextStyle(
-                      fontFamily: "SUITE",
-                      fontSize: 24,
-                      fontWeight: FontWeight.w800,
+                ),
+                Align(
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                        left: 25, right: 25, bottom: 30, top: 10),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        ElevatedButton.icon(
+                          onPressed: _isInShelf
+                              ? _removeBookFromShelf
+                              : _addBookToShelf,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.grey[200],
+                            foregroundColor: Colors.black,
+                            elevation: 0,
+                            minimumSize: const Size(160, 50),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 17,
+                              vertical: 15,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(25),
+                            ),
+                          ),
+                          icon: SvgPicture.asset(
+                            _isInShelf
+                                ? AppIcons.bookDeleteIcon
+                                : AppIcons.bookAddIcon,
+                          ),
+                          label: Text(
+                            _isInShelf ? '책장에서 빼기' : '책장에 추가하기',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              fontFamily: 'SUITE',
+                            ),
+                          ),
+                        ),
+                        ElevatedButton.icon(
+                          onPressed: _navigateToReviewScreen,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.black,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            minimumSize: const Size(170, 50),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 15,
+                              vertical: 15,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(25),
+                            ),
+                          ),
+                          icon: SvgPicture.asset(AppIcons.bookReportIcon),
+                          label: const Text(
+                            '독후감 작성하기',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              fontFamily: 'SUITE',
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-
-                  Text(
-                    '${widget.author} / ${widget.publisher}',
-                    style: TextStyle(
-                      fontFamily: "SUITE",
-                      fontWeight: FontWeight.w500,
-                      fontSize: 16,
-                      color: Colors.black.withOpacity(0.6),
-                    ),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  Expanded(
-                    child: SingleChildScrollView(
-                      child: Text(
-                        widget.description,
-                        style: const TextStyle(
-                          fontFamily: "SUITE",
-                          fontWeight: FontWeight.w700,
-                          fontSize: 16,
-                          height: 1.5,
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      ElevatedButton.icon(
-                        onPressed: _isInShelf ? _removeBookFromShelf : _addBookToShelf,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.grey[200],
-                          foregroundColor: Colors.black,
-                          elevation: 0,
-                          minimumSize: const Size(150, 50),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 17,
-                            vertical: 15,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(25),
-                          ),
-                        ),
-                        icon: SvgPicture.asset(
-                          _isInShelf ? AppIcons.bookDeleteIcon : AppIcons.bookAddIcon,
-                        ),
-                        label: Text(
-                          _isInShelf ? '책장에서 빼기' : '책장에 추가하기',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            fontFamily: 'SUITE',
-                          ),
-                        ),
-                      ),
-                      ElevatedButton.icon(
-                        onPressed: _navigateToReviewScreen,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.black,
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          minimumSize: const Size(150, 50),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 15,
-                            vertical: 15,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(25),
-                          ),
-                        ),
-                        icon: SvgPicture.asset(AppIcons.bookReportIcon),
-                        label: const Text(
-                          '독후감 작성하기',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            fontFamily: 'SUITE',
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                )
+              ],
             ),
     );
   }
