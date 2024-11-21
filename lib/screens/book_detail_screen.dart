@@ -4,8 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:chack_project/services/bookshelf_service.dart';
 import '../services/recommended_books_service.dart';
 import '../services/book_cache_service.dart';
+import '../services/library_info_service.dart';
 import 'package:chack_project/screens/book_review_screen.dart';
-import 'package:chack_project/components/library_info_components.dart';
 import '../../constants/icons.dart';
 import '../../constants/colors.dart';
 import 'dart:ui';
@@ -39,10 +39,21 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
   bool _isInShelf = false;
   bool _isLoading = true;
 
+  // LibraryInfoProvider 관련 필드 추가
+  final LibraryInfoProvider _libraryInfoProvider = LibraryInfoProvider(
+    recommendedBooksService: RecommendedBooksService(
+      cacheService: BookCacheService(),
+    ),
+  );
+  String _libraryName = '도서관 정보를 불러오는 중입니다...';
+  String _libraryDistance = '';
+  String _loanStatus = '';
+
   @override
   void initState() {
     super.initState();
     _checkBookInShelf();
+    _initializeLibraryInfo(); // LibraryInfoProvider 초기화 호출
   }
 
   Future<void> _checkBookInShelf() async {
@@ -54,6 +65,35 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
       _isInShelf = isInShelf;
       _isLoading = false;
     });
+  }
+
+  // LibraryInfoProvider 초기화
+  Future<void> _initializeLibraryInfo() async {
+    await _libraryInfoProvider.setupLocationSubscription(
+      isbn: widget.isbn,
+      onLibraryNameUpdate: (name) {
+        setState(() {
+          _libraryName = name;
+        });
+      },
+      onDistanceUpdate: (distance) {
+        setState(() {
+          _libraryDistance = distance;
+        });
+      },
+      onLoanStatusUpdate: (status) {
+        setState(() {
+          _loanStatus = status;
+        });
+      },
+      onError: (error) {
+        setState(() {
+          _libraryName = error;
+          _libraryDistance = '';
+          _loanStatus = '';
+        });
+      },
+    );
   }
 
   Future<void> _addBookToShelf() async {
@@ -158,6 +198,12 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
         );
       }
     }
+  }
+
+  @override
+  void dispose() {
+    _libraryInfoProvider.dispose(); // LibraryInfoProvider 리소스 정리
+    super.dispose();
   }
 
   @override
@@ -306,7 +352,6 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                           child: Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 20),
                             child: Expanded(
-                              // 제목과 저자 정보를 Expanded로 감싸서 남은 공간 차지
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -335,13 +380,101 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                             ),
                           ),
                         ),
-                        LibraryInfoWidget(
-                          isbn: widget.isbn,
-                          recommendedBooksService: RecommendedBooksService(
-                            cacheService: BookCacheService(),
+                        const SizedBox(
+                          height: 20,
+                        ),
+                        // LibraryInfoProvider 출력
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 15),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.05),
+                              borderRadius:
+                                  BorderRadiusDirectional.circular(15),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 25, vertical: 20),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    '근처 도서관 보유 현황',
+                                    style: TextStyle(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 3),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        _libraryName,
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 7),
+                                      Text(
+                                        '($_libraryDistance)',
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 5, horizontal: 12),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius:
+                                              BorderRadiusDirectional.circular(
+                                                  30),
+                                          border: Border.all(
+                                            color: _loanStatus == '대출 가능'
+                                                ? Colors.black.withOpacity(0.2)
+                                                : AppColors.errorColor
+                                                    .withOpacity(0.3),
+                                            width: 1,
+                                          ),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Container(
+                                              width: 10,
+                                              height: 10,
+                                              decoration: BoxDecoration(
+                                                color: _loanStatus == '대출 가능'
+                                                    ? Colors.black
+                                                        .withOpacity(0.4)
+                                                    : AppColors.errorColor,
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 7),
+                                            Text(
+                                              _loanStatus,
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w700,
+                                                color: _loanStatus == '대출 가능'
+                                                    ? Colors.black
+                                                        .withOpacity(0.5)
+                                                    : AppColors.errorColor,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
                         ),
-                        const SizedBox(height: 30),
+                        const SizedBox(height: 20),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 20),
                           child: Column(
