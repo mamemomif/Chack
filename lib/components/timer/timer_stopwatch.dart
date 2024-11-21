@@ -57,6 +57,10 @@ class _StopwatchPageState extends State<StopwatchPage> {
         elapsedSeconds: sessionTime,
       );
 
+      await widget.stopwatchService.updateDailyReadingTime(
+        userId: widget.userId,
+      );
+
       // Firestore 업데이트 후 저장 시간 초기화 (중복 방지)
       widget.stopwatchService.elapsedTimeForFirestore = 0;
     } catch (e) {

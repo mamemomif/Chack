@@ -1,4 +1,3 @@
-import 'package:chack_project/screens/timer_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -19,6 +18,8 @@ import '../constants/text_styles.dart';
 import '../screens/profile_screen.dart';
 import '../screens/bookshelf_screen.dart';
 import '../screens/search/search_screen.dart';
+import 'package:chack_project/screens/statistics_screen.dart';
+import 'package:chack_project/screens/timer_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -192,7 +193,18 @@ class _HomeScreenState extends State<MainScreen> {
                                 ),
                               ),
                         _TimerTab(userId: _userId), // 타이머 탭
-                        const _StatisticsTab(),
+                        _userId != null
+                            ? StatisticsScreen(userId: _userId!)
+                            : const Center(
+                              child: Text(
+                                '로그인이 필요한 서비스입니다.',
+                                style: TextStyle(
+                                  fontFamily: 'SUITE',
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
                       ],
                     ),
                   ),
@@ -333,27 +345,6 @@ class _TimerTab extends StatelessWidget {
     return Center(
       child: TimerScreen(
         userId: userId!, // userId 전달
-      ),
-    );
-  }
-}
-
-class _StatisticsTab extends StatelessWidget {
-  const _StatisticsTab();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: AppColors.backgroundColor,
-      child: const Center(
-        child: Text(
-          '통계',
-          style: TextStyle(
-            fontSize: 24,
-            fontFamily: 'SUITE',
-            fontWeight: FontWeight.w600,
-          ),
-        ),
       ),
     );
   }

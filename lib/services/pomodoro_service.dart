@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:chack_project/services/daily_reading_service.dart';
 
 class TimerService with WidgetsBindingObserver {
+  final DailyReadingService _dailyReadingService = DailyReadingService();
   final int pomodoroDuration;
   final int breakDuration;
   late int duration;
@@ -92,6 +94,23 @@ class TimerService with WidgetsBindingObserver {
     final minutes = (_remainingTime ~/ 60).toString().padLeft(2, '0');
     final seconds = (_remainingTime % 60).toString().padLeft(2, '0');
     return '$minutes:$seconds';
+  }
+
+  Future<void> updateDailyReadingTime({
+    required String userId,
+  }) async {
+    if (elapsedTimeForFirestore > 0) {
+      try {
+        await _dailyReadingService.updateDailyReadingTime(
+          userId: userId,
+          seconds: elapsedTimeForFirestore,
+          date: DateTime.now(),
+        );
+        elapsedTimeForFirestore = 0;  // 업데이트 후 초기화
+      } catch (e) {
+        print('Error updating daily reading time: $e');
+      }
+    }
   }
 
   void dispose() {
