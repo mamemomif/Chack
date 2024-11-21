@@ -444,7 +444,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                         lineBarsData: [
                           LineChartBarData(
                             spots: _weeklySpots,
-                            isCurved: false,
+                            isCurved: true,
                             color: AppColors.pointColor,
                             barWidth: 4,
                             dotData: FlDotData(
