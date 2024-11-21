@@ -25,6 +25,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   Map<DateTime, int> _monthlyReadingData = {};
   List<FlSpot> _weeklySpots = List.generate(7, (index) => FlSpot(index.toDouble(), 0));
   int _maxReadingTime = 0;
+  double _weeklyMaxReadingTime = 0;
   Stream<int>? _todayReadingStream;
 
   @override
@@ -42,7 +43,17 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
       if (mounted) {
         setState(() {
           _monthlyReadingData[DateTime(today.year, today.month, today.day)] = seconds;
-          _weeklySpots = List.from(_weeklySpots)..[6] = FlSpot(6, seconds / 60);
+          
+          // 오늘의 독서 시간을 주간 데이터에 반영
+          final minutesRead = seconds / 60;
+          _weeklySpots = List.from(_weeklySpots)..[6] = FlSpot(6, minutesRead);
+          
+          // 주간 최대값 업데이트
+          if (minutesRead > _weeklyMaxReadingTime) {
+            _weeklyMaxReadingTime = minutesRead;
+          }
+          
+          // 월별 캘린더용 최대값 업데이트
           if (seconds > _maxReadingTime) {
             _maxReadingTime = seconds;
           }
@@ -78,6 +89,9 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                   entry.value.seconds / 60,
                 ))
             .toList();
+
+        // 최근 7일 최대값 계산
+        _weeklyMaxReadingTime = _weeklySpots.fold(0.0, (max, spot) => spot.y > max ? spot.y : max);
       });
     }
   }
@@ -334,6 +348,23 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                     height: 250,
                     child: LineChart(
                       LineChartData(
+                        lineTouchData: LineTouchData(
+                          enabled: true,
+                          touchTooltipData: LineTouchTooltipData(
+                            tooltipBgColor: Colors.white,
+                            getTooltipItems: (List<LineBarSpot> touchedSpots) {
+                              return touchedSpots.map((LineBarSpot spot) {
+                                return LineTooltipItem(
+                                  '${spot.y.toStringAsFixed(1)}분',
+                                  const TextStyle(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                );
+                              }).toList();
+                            },
+                          ),
+                        ),
                         gridData: FlGridData(
                           show: true,
                           drawHorizontalLine: true,
@@ -398,13 +429,22 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                         minX: 0,
                         maxX: 6,
                         minY: 0,
-                        maxY: (_maxReadingTime / 60).ceil() % 30 == 0 
-                            ? (_maxReadingTime / 60).ceil().toDouble()
-                            : (((_maxReadingTime / 60).ceil() ~/ 30) + 1) * 30.0,
+                        maxY: () {
+                          final maxMinutes = _weeklySpots.fold<double>(
+                            0,
+                            (max, spot) => spot.y > max ? spot.y : max,
+                          );
+                          
+                          if (maxMinutes <= 0) {
+                            return 30.0;
+                          }
+                          
+                          return ((maxMinutes / 30).ceil() * 30.0).clamp(30.0, double.infinity);
+                        }(),
                         lineBarsData: [
                           LineChartBarData(
                             spots: _weeklySpots,
-                            isCurved: true,
+                            isCurved: false,
                             color: AppColors.pointColor,
                             barWidth: 4,
                             dotData: FlDotData(
@@ -442,6 +482,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
       ),
     );
   }
+    
 
   @override
   void dispose() {
