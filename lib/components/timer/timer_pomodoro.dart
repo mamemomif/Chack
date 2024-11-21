@@ -143,36 +143,39 @@ class _PomodoroPageState extends State<PomodoroPage> {
       }
 
       if (widget.timerService.isRunning) {
-        widget.timerService.stop(); // 타이머 정지
-        _updateReadingTime();
+        // 타이머가 멈출 때 Firestore에 업데이트하고 elapsedTimeForUI 초기화
+        widget.timerService.stop();
+        _updateReadingTime(); // Firestore에 저장
+        widget.timerService.elapsedTimeForUI = 0; // 초기화
       } else {
-        widget.timerService.start(); // 타이머 시작
+        // 타이머가 다시 시작될 때 기존 값과 중복되지 않도록 유지
+        widget.timerService.start();
       }
-      // **elapsedTimeText는 타이머 정지 상태에서도 유지**
-      elapsedTimeText = widget.timerService
-          .formatElapsedTime(widget.timerService.elapsedTimeForUI);
+
+      // UI 업데이트
+      elapsedTimeText = widget.timerService.formatElapsedTime(widget.timerService.elapsedTimeForUI);
     });
   }
 
   Future<void> _onBookSelected(Map<String, String>? book) async {
     if (widget.timerService.isRunning) {
       final bool shouldSwitch = await showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: const Text('타이머 실행 중'),
-              content: const Text('현재 실행 중인 타이머가 있습니다. 도서를 변경하시겠습니까?'),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context, false),
-                  child: const Text('취소'),
-                ),
-                TextButton(
-                  onPressed: () => Navigator.pop(context, true),
-                  child: const Text('확인'),
-                ),
-              ],
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('타이머 실행 중'),
+          content: const Text('현재 실행 중인 타이머가 있습니다. 도서를 변경하시겠습니까?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('취소'),
             ),
-          ) ??
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('확인'),
+            ),
+          ],
+        ),
+      ) ??
           false;
 
       if (!shouldSwitch) return;
