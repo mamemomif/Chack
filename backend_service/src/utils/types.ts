@@ -8,10 +8,10 @@ export interface Location {
 }
 
 export interface RegionCodes {
-  region: string;
-  dtlRegion: string;
-  sido: string;
-  sigungu: string;
+  region: string; // 광역시도 코드 (2자리)
+  dtlRegion: string; // 세부지역 코드 (5자리)
+  sido: string; // 광역시도 이름
+  sigungu: string; // 시군구 이름
 }
 
 export interface LibraryInfo {

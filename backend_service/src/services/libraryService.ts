@@ -1,13 +1,9 @@
+// libraryService.ts
 import axios from "axios";
-import {
-  Location,
-  LibraryInfo,
-  LibraryApiResponse,
-  BookAvailabilityResponse,
-  RegionCodes,
-} from "../utils/types";
+import { Location, LibraryInfo, LibraryApiResponse, BookAvailabilityResponse, RegionCodes } from "../utils/types";
 import { VworldService } from "./vworldService";
 import { calculateDistance } from "../utils/utils";
+import { RegionCodeMapper } from "./regionCodeMapping";
 
 export class LibraryService {
   private static readonly LIBRARY_BASE_URL = "http://data4library.kr/api";
@@ -23,12 +19,17 @@ export class LibraryService {
   private async searchLibraries(isbn: string, regionCodes: RegionCodes): Promise<LibraryInfo[]> {
     const url = new URL(`${LibraryService.LIBRARY_BASE_URL}/libSrchByBook`);
 
-    // 지역 코드와 세부지역 코드를 함께 사용
+    // 지역 코드 유효성 검증
+    if (!RegionCodeMapper.validateRegionCode(regionCodes)) {
+      console.error(`[Library] 유효하지 않은 지역 코드: ${RegionCodeMapper.debugRegionCode(regionCodes)}`);
+      throw new Error("유효하지 않은 지역 코드");
+    }
+
     const params = {
       authKey: this.libraryApiKey,
       isbn: isbn,
       region: regionCodes.region,
-      dtl_region: regionCodes.dtlRegion, // 세부지역 코드 추가
+      dtl_region: regionCodes.dtlRegion,
       format: "json",
     };
 
@@ -37,32 +38,22 @@ export class LibraryService {
     });
 
     try {
-      console.log(`[Library] 도서관 검색 요청: region=${regionCodes.region}, dtl_region=${regionCodes.dtlRegion}`);
+      console.log(`[Library] 도서관 검색 요청: ${RegionCodeMapper.debugRegionCode(regionCodes)}`);
       const response = await axios.get<LibraryApiResponse>(url.toString(), { timeout: 50000 });
       const libraries = response.data.response?.libs || [];
 
       if (libraries.length === 0) {
-        console.log(`[Library] 세부지역(${regionCodes.dtlRegion})에서 도서관을 찾을 수 없음. 광역시도(${regionCodes.region}) 전체 검색`);
-        // 세부지역에서 도서관을 찾지 못한 경우, 광역시도 전체에서 검색
+        console.log(`[Library] ${regionCodes.sigungu}에서 도서관을 찾을 수 없음. ${regionCodes.sido} 전체 검색`);
         return this.searchLibrariesByRegion(isbn, regionCodes.region);
       }
 
-      return libraries.map(({ lib }) => ({
-        libCode: lib.libCode,
-        name: lib.libName,
-        address: lib.address,
-        tel: lib.tel,
-        latitude: lib.latitude,
-        longitude: lib.longitude,
-      }));
+      return libraries.map(({ lib }) => this.mapLibraryResponse(lib));
     } catch (error) {
-      console.error("[Library] 도서관 검색 오류:", error);
-      // API 오류 발생 시 광역시도 전체에서 검색 시도
+      console.error(`[Library] ${regionCodes.sigungu} 도서관 검색 오류:`, error);
       return this.searchLibrariesByRegion(isbn, regionCodes.region);
     }
   }
 
-  // 광역시도 단위로만 검색하는 메서드 추가
   private async searchLibrariesByRegion(isbn: string, region: string): Promise<LibraryInfo[]> {
     const url = new URL(`${LibraryService.LIBRARY_BASE_URL}/libSrchByBook`);
     const params = {
@@ -76,17 +67,25 @@ export class LibraryService {
       url.searchParams.append(key, value);
     });
 
-    const response = await axios.get<LibraryApiResponse>(url.toString(), { timeout: 50000 });
-    const libraries = response.data.response?.libs || [];
+    try {
+      const response = await axios.get<LibraryApiResponse>(url.toString(), { timeout: 50000 });
+      const libraries = response.data.response?.libs || [];
+      return libraries.map(({ lib }) => this.mapLibraryResponse(lib));
+    } catch (error) {
+      console.error(`[Library] 광역시도(${region}) 도서관 검색 오류:`, error);
+      return [];
+    }
+  }
 
-    return libraries.map(({ lib }) => ({
+  private mapLibraryResponse(lib: any): LibraryInfo {
+    return {
       libCode: lib.libCode,
       name: lib.libName,
       address: lib.address,
       tel: lib.tel,
       latitude: lib.latitude,
       longitude: lib.longitude,
-    }));
+    };
   }
 
   private addDistanceToLibraries(libraries: LibraryInfo[], userLocation: Location): LibraryInfo[] {
@@ -154,20 +153,19 @@ export class LibraryService {
     try {
       console.log(`[Library] 도서관 검색 시작: ISBN=${isbn}`);
 
-      // 지역 코드 가져오기 (세부지역 코드 포함)
       const regionCodes = await this.vworldService.getRegionCodes(userLocation);
+      console.log(`[Library] 검색 위치: ${RegionCodeMapper.debugRegionCode(regionCodes)}`);
+
       const libraries = await this.searchLibraries(isbn, regionCodes);
 
       if (libraries.length === 0) {
-        console.log("[Library] 검색된 도서관 없음");
+        console.log(`[Library] ${regionCodes.sido}에서 검색된 도서관 없음`);
         return null;
       }
 
-      // 거리 계산 후 가장 가까운 도서관 선택
       const librariesWithDistance = this.addDistanceToLibraries(libraries, userLocation);
       const nearestLibrary = librariesWithDistance[0];
 
-      // 대출 가능 여부 확인
       const availableLibrary = await this.checkBookAvailability(nearestLibrary, isbn);
 
       if (availableLibrary) {

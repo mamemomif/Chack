@@ -1,8 +1,9 @@
+// vworldService.ts
 import axios from "axios";
 import { logger } from "firebase-functions/v2";
 import { Location, RegionCodes } from "../utils/types";
 import { calculateDistance } from "../utils/utils";
-import RegionCodeMapper from "./regionCodeMapping";
+import { RegionCodeMapper } from "./regionCodeMapping";
 
 export class VworldService {
   private static readonly VWORLD_BASE_URL = "https://api.vworld.kr/req/data";
@@ -38,15 +39,25 @@ export class VworldService {
 
       logger.info(`[VWorld] response: ${JSON.stringify(response.data)}`);
 
-      // RegionCodeMapper를 사용하여 변환
-      const regionCodes = RegionCodeMapper.convertToLibraryRegionCode(response.data);
+      // 파싱된 지역 정보 가져오기
+      const regionInfo = RegionCodeMapper.parseVWorldResponse(response.data);
+
+      // 도서관 정보나루 코드로 변환
+      const regionCodes = RegionCodeMapper.getCodeFromAddress(regionInfo.fullAddress);
+
+      if (!regionCodes) {
+        throw new Error(`지역 코드 변환 실패: ${regionInfo.fullAddress}`);
+      }
 
       // 코드 유효성 검증
       if (!RegionCodeMapper.validateRegionCode(regionCodes)) {
+        console.error(`[VWorld] 유효하지 않은 지역 코드: ${RegionCodeMapper.debugRegionCode(regionCodes)}`);
         throw new Error(`유효하지 않은 지역 코드: ${JSON.stringify(regionCodes)}`);
       }
 
       this.cacheRegionCodes(location, regionCodes);
+
+      console.log(`[VWorld] 지역 코드 변환 완료: ${RegionCodeMapper.debugRegionCode(regionCodes)}`);
       return regionCodes;
     } catch (error) {
       console.error("[VWorld] API 호출 실패:", error);
@@ -94,5 +105,24 @@ export class VworldService {
       timestamp: new Date(),
       location,
     };
+  }
+
+  // 디버그용 메서드
+  async debugLocation(location: Location): Promise<void> {
+    try {
+      const response = await axios.get(VworldService.VWORLD_BASE_URL, {
+        params: this.buildVworldParams(location),
+      });
+
+      const regionInfo = RegionCodeMapper.parseVWorldResponse(response.data);
+      console.log("[VWorld] 위치 정보:", {
+        coordinates: `${location.latitude}, ${location.longitude}`,
+        address: regionInfo.fullAddress,
+        sido: regionInfo.sido,
+        sigungu: regionInfo.sigungu,
+      });
+    } catch (error) {
+      console.error("[VWorld] 디버그 실패:", error);
+    }
   }
 }
