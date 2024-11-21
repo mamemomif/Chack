@@ -256,13 +256,15 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                                       // 독서 상태 정보 받아와서 읽는 중일 때만 표시
                                       Transform.translate(
                                         offset: const Offset(0, -70),
-                                        child: SvgPicture.asset(
+                                        child: _isInShelf
+                                        ? SvgPicture.asset(
                                           AppIcons.bookmarkIcon,
                                           colorFilter: const ColorFilter.mode(
                                             AppColors.pointColor,
                                             BlendMode.srcIn,
                                           ),
-                                        ),
+                                        )
+                                        : const SizedBox(),
                                       ),
                                     ],
                                   ),
