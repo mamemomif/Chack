@@ -81,6 +81,7 @@ class _StopwatchPageState extends State<StopwatchPage> {
       if (widget.stopwatchService.isRunning) {
         widget.stopwatchService.stop(); // 스톱워치 정지
         _updateReadingTime(); // 정지 후 경과 시간 업데이트
+        widget.stopwatchService.elapsedTimeForUI = 0;
       } else {
         widget.stopwatchService.start(); // 스톱워치 시작
       }
@@ -283,6 +284,7 @@ class _StopwatchPageState extends State<StopwatchPage> {
             onBookSelected: _onBookSelected,
             userId: widget.userId,
             timerService: widget.stopwatchService,
+            stopwatchService: widget.stopwatchService, // StopwatchService 전달
           ),
         ),
       ],

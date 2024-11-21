@@ -5,6 +5,7 @@ import '../../constants/icons.dart';
 import '../../constants/colors.dart';
 import '../../services/pomodoro_service.dart';
 import '../../services/reading_time_service.dart';
+import '../../services/stopwatch_service.dart';
 import 'timer_select_book_menu.dart';
 
 class BookSelectionWidget extends StatefulWidget {
@@ -12,13 +13,14 @@ class BookSelectionWidget extends StatefulWidget {
   final Function(Map<String, String>?) onBookSelected;
   final String userId;
   final TimerService timerService;
-
+  final StopwatchService? stopwatchService;
   const BookSelectionWidget({
     super.key,
     required this.elapsedTimeText,
     required this.onBookSelected,
     required this.userId,
     required this.timerService,
+    this.stopwatchService,
   });
 
   @override
