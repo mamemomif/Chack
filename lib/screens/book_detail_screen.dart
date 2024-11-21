@@ -260,14 +260,15 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                                       Transform.translate(
                                         offset: const Offset(0, -70),
                                         child: _isInShelf
-                                        ? SvgPicture.asset(
-                                          AppIcons.bookmarkIcon,
-                                          colorFilter: const ColorFilter.mode(
-                                            AppColors.pointColor,
-                                            BlendMode.srcIn,
-                                          ),
-                                        )
-                                        : const SizedBox(),
+                                            ? SvgPicture.asset(
+                                                AppIcons.bookmarkIcon,
+                                                colorFilter:
+                                                    const ColorFilter.mode(
+                                                  AppColors.pointColor,
+                                                  BlendMode.srcIn,
+                                                ),
+                                              )
+                                            : const SizedBox(),
                                       ),
                                     ],
                                   ),
@@ -304,42 +305,40 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                           ),
                           child: Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 20),
-                            child: Row(  // Column을 Row로 변경
-                              crossAxisAlignment: CrossAxisAlignment.start,  // 상단 정렬
-                              children: [
-                                Expanded(  // 제목과 저자 정보를 Expanded로 감싸서 남은 공간 차지
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        widget.title,
-                                        style: const TextStyle(
-                                          fontFamily: "SUITE",
-                                          fontSize: 22,
-                                          fontWeight: FontWeight.w800,
-                                        ),
-                                      ),
-                                      Text(
-                                        '${widget.author} / ${widget.publisher}',
-                                        style: TextStyle(
-                                          fontFamily: "SUITE",
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 16,
-                                          color: Colors.black.withOpacity(0.6),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 20),
-                                    ],
+                            child: Expanded(
+                              // 제목과 저자 정보를 Expanded로 감싸서 남은 공간 차지
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    widget.title,
+                                    style: const TextStyle(
+                                      fontFamily: "SUITE",
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.w800,
+                                      height: 1.3,
+                                    ),
                                   ),
-                                ),
-                                LibraryInfoWidget(  // 우측에 도서관 정보 배치
-                                  isbn: widget.isbn,
-                                  recommendedBooksService: RecommendedBooksService(  // RecommendedBookService -> RecommendedBooksService 오타 수정
-                                    cacheService: BookCacheService(),
+                                  const SizedBox(height: 5),
+                                  Text(
+                                    '${widget.author} / ${widget.publisher}',
+                                    style: TextStyle(
+                                      fontFamily: "SUITE",
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 16,
+                                      color: Colors.black.withOpacity(0.6),
+                                    ),
                                   ),
-                                ),
-                              ],
+                                  const SizedBox(height: 20),
+                                ],
+                              ),
                             ),
+                          ),
+                        ),
+                        LibraryInfoWidget(
+                          isbn: widget.isbn,
+                          recommendedBooksService: RecommendedBooksService(
+                            cacheService: BookCacheService(),
                           ),
                         ),
                         const SizedBox(height: 30),
