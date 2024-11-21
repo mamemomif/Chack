@@ -62,6 +62,8 @@ class TimerService with WidgetsBindingObserver {
   void switchTimer() {
     if (isPomodoro) {
       duration = breakDuration;
+      elapsedTimeForFirestore = 0; // Firestore 용 경과 시간 초기화
+      elapsedTimeForUI = 0;        // UI 표시 용 경과 시간 초기화
     } else {
       duration = pomodoroDuration;
     }
