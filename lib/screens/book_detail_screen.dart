@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:chack_project/services/bookshelf_service.dart';
+import '../services/recommended_books_service.dart';
+import '../services/book_cache_service.dart';
 import 'package:chack_project/screens/book_review_screen.dart';
+import 'package:chack_project/components/library_info_components.dart';
 import '../../constants/icons.dart';
 import '../../constants/colors.dart';
 import 'dart:ui';
@@ -301,27 +304,40 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                           ),
                           child: Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 20),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                            child: Row(  // Column을 Row로 변경
+                              crossAxisAlignment: CrossAxisAlignment.start,  // 상단 정렬
                               children: [
-                                Text(
-                                  widget.title,
-                                  style: const TextStyle(
-                                    fontFamily: "SUITE",
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.w800,
+                                Expanded(  // 제목과 저자 정보를 Expanded로 감싸서 남은 공간 차지
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        widget.title,
+                                        style: const TextStyle(
+                                          fontFamily: "SUITE",
+                                          fontSize: 22,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
+                                      Text(
+                                        '${widget.author} / ${widget.publisher}',
+                                        style: TextStyle(
+                                          fontFamily: "SUITE",
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 16,
+                                          color: Colors.black.withOpacity(0.6),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 20),
+                                    ],
                                   ),
                                 ),
-                                Text(
-                                  '${widget.author} / ${widget.publisher}',
-                                  style: TextStyle(
-                                    fontFamily: "SUITE",
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 16,
-                                    color: Colors.black.withOpacity(0.6),
+                                LibraryInfoWidget(  // 우측에 도서관 정보 배치
+                                  isbn: widget.isbn,
+                                  recommendedBooksService: RecommendedBooksService(  // RecommendedBookService -> RecommendedBooksService 오타 수정
+                                    cacheService: BookCacheService(),
                                   ),
                                 ),
-                                const SizedBox(height: 20)
                               ],
                             ),
                           ),

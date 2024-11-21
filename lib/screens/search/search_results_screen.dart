@@ -211,9 +211,6 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                             author: book.author,
                             publisher: book.publisher,
                             image: book.imageUrl,
-                            library: '도서관 정보 로딩 중...',
-                            distance: '-',
-                            availability: '-',
                             description: book.description ?? '설명 없음',
                           ),
                           if (index < _searchResults.length - 1)
