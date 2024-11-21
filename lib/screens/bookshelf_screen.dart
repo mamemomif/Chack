@@ -87,6 +87,7 @@ class _BookshelfScreenState extends State<BookshelfScreen> {
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
       appBar: AppBar(
+        scrolledUnderElevation: 0,
         title: Padding(
           padding: const EdgeInsets.only(left: 15),
           child: Row(
