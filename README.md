@@ -1,10 +1,9 @@
 # 📚 Welcome to CHACK Github
 
-[![GitHub Stars](https://img.shields.io/github/stars/CHACK-team/CHACK-project?style=social)](https://github.com/CHACK-team/CHACK-project)
+[![GitHub Stars](https://img.shields.io/github/stars/CHACK-team/CHACK-project?style=social)](https://github.com/ChackTeam/Chack)
 [![Flutter](https://img.shields.io/badge/Flutter-3.19.3-blue.svg)](https://flutter.dev)
 [![Dart](https://img.shields.io/badge/Dart-3.3.1-blue.svg)](https://dart.dev)
 [![Firebase](https://img.shields.io/badge/Firebase-latest-orange.svg)](https://firebase.google.com)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 ## 1. CHACK 소개
 
