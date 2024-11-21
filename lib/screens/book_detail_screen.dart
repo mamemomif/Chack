@@ -5,6 +5,7 @@ import 'package:chack_project/services/bookshelf_service.dart';
 import 'package:chack_project/screens/book_review_screen.dart';
 import '../../constants/icons.dart';
 import '../../constants/colors.dart';
+import 'dart:ui';
 
 class BookDetailScreen extends StatefulWidget {
   final String userId;
@@ -185,45 +186,81 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const SizedBox(height: 25),
-                        Center(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                        SizedBox(
+                          height: 400,
+                          width: double.infinity,
+                          child: Stack(
                             children: [
-                              Container(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(8.0),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
-                                      blurRadius: 20,
-                                      offset: const Offset(0, 10),
-                                    ),
-                                  ],
+                              // 배경에 도서 썸네일 추가
+                              Positioned(
+                                top: -50,
+                                bottom: -50,
+                                left: 0,
+                                right: 0,
+                                child: Image.network(
+                                  widget.image,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      const SizedBox(),
                                 ),
-                                child: ClipRRect(
-                                  child: Image.network(
-                                    widget.image,
-                                    width: 150,
-                                    errorBuilder:
-                                        (context, error, stackTrace) =>
-                                            const Icon(
-                                      Icons.book,
-                                      size: 150,
-                                      color: Colors.grey,
-                                    ),
+                              ),
+                              // 블러 효과
+                              Positioned(
+                                top: -50,
+                                bottom: -50,
+                                left: 0,
+                                right: 0,
+                                child: BackdropFilter(
+                                  filter:
+                                      ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                                  child: Container(
+                                    color: Colors.black.withOpacity(0.4),
                                   ),
                                 ),
                               ),
-                              // 독서 상태 정보 받아와서 읽는 중일 때만 표시
-                              Transform.translate(
-                                offset: const Offset(0, -70),
-                                child: SvgPicture.asset(
-                                  AppIcons.bookmarkIcon,
-                                  colorFilter: const ColorFilter.mode(
-                                    AppColors.pointColor,
-                                    BlendMode.srcIn,
-                                  ),
+                              Center(
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius:
+                                            BorderRadius.circular(8.0),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color:
+                                                Colors.black.withOpacity(0.1),
+                                            blurRadius: 20,
+                                            offset: const Offset(0, 10),
+                                          ),
+                                        ],
+                                      ),
+                                      child: ClipRRect(
+                                        child: Image.network(
+                                          widget.image,
+                                          width: 150,
+                                          errorBuilder:
+                                              (context, error, stackTrace) =>
+                                                  const Icon(
+                                            Icons.book,
+                                            size: 150,
+                                            color: Colors.grey,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    // 독서 상태 정보 받아와서 읽는 중일 때만 표시
+                                    Transform.translate(
+                                      offset: const Offset(0, -70),
+                                      child: SvgPicture.asset(
+                                        AppIcons.bookmarkIcon,
+                                        colorFilter: const ColorFilter.mode(
+                                          AppColors.pointColor,
+                                          BlendMode.srcIn,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],
