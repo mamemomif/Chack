@@ -217,14 +217,27 @@ class _BookSelectionWidgetState extends State<BookSelectionWidget> {
               ),
               const SizedBox(width: 16),
               if (selectedBook != null)
-                Text(
-                  '${_readingTimeService.formatReadingTime(_totalReadTime + Duration(seconds: widget.timerService.elapsedTimeForUI))}',
-                  style: const TextStyle(
-                    fontFamily: 'SUITE',
-                    fontSize: 20,
-                    color: AppColors.pointColor,
-                    fontWeight: FontWeight.w800,
+                TweenAnimationBuilder<Duration>(
+                  duration: const Duration(milliseconds: 100), // 애니메이션 지속 시간
+                  tween: Tween<Duration>(
+                    begin: Duration.zero, // 초기 상태
+                    end: _totalReadTime +
+                        (widget.timerService.isRunning
+                            ? Duration(
+                            seconds: widget.timerService.elapsedTimeForUI)
+                            : Duration.zero),
                   ),
+                  builder: (context, value, child) {
+                    return Text(
+                      _readingTimeService.formatReadingTime(value),
+                      style: const TextStyle(
+                        fontFamily: 'SUITE',
+                        fontSize: 20,
+                        color: AppColors.pointColor,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    );
+                  },
                 ),
             ],
           ),
