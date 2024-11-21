@@ -160,6 +160,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         scrolledUnderElevation: 0,
         title: const Align(
@@ -170,12 +171,13 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
               fontSize: 24,
               fontFamily: "SUITE",
               fontWeight: FontWeight.w800,
-              color: Colors.black,
+              color: Colors.white,
             ),
           ),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
         elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -187,7 +189,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         SizedBox(
-                          height: 400,
+                          height: 500,
                           width: double.infinity,
                           child: Stack(
                             children: [
@@ -218,55 +220,73 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                                   ),
                                 ),
                               ),
-                              Center(
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        borderRadius:
-                                            BorderRadius.circular(8.0),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color:
-                                                Colors.black.withOpacity(0.1),
-                                            blurRadius: 20,
-                                            offset: const Offset(0, 10),
-                                          ),
-                                        ],
-                                      ),
-                                      child: ClipRRect(
-                                        child: Image.network(
-                                          widget.image,
-                                          width: 150,
-                                          errorBuilder:
-                                              (context, error, stackTrace) =>
-                                                  const Icon(
-                                            Icons.book,
-                                            size: 150,
-                                            color: Colors.grey,
+                              Transform.translate(
+                                offset: const Offset(10, 25),
+                                child: Center(
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Container(
+                                        decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(8.0),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color:
+                                                  Colors.black.withOpacity(0.1),
+                                              blurRadius: 20,
+                                              offset: const Offset(0, 10),
+                                            ),
+                                          ],
+                                        ),
+                                        child: ClipRRect(
+                                          child: Image.network(
+                                            widget.image,
+                                            width: 170,
+                                            errorBuilder:
+                                                (context, error, stackTrace) =>
+                                                    const Icon(
+                                              Icons.book,
+                                              size: 150,
+                                              color: Colors.grey,
+                                            ),
                                           ),
                                         ),
                                       ),
-                                    ),
-                                    // 독서 상태 정보 받아와서 읽는 중일 때만 표시
-                                    Transform.translate(
-                                      offset: const Offset(0, -70),
-                                      child: SvgPicture.asset(
-                                        AppIcons.bookmarkIcon,
-                                        colorFilter: const ColorFilter.mode(
-                                          AppColors.pointColor,
-                                          BlendMode.srcIn,
+                                      // 독서 상태 정보 받아와서 읽는 중일 때만 표시
+                                      Transform.translate(
+                                        offset: const Offset(0, -70),
+                                        child: SvgPicture.asset(
+                                          AppIcons.bookmarkIcon,
+                                          colorFilter: const ColorFilter.mode(
+                                            AppColors.pointColor,
+                                            BlendMode.srcIn,
+                                          ),
                                         ),
                                       ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              Positioned(
+                                bottom: 0,
+                                left: 0,
+                                right: 0,
+                                height: 30,
+                                child: Container(
+                                  decoration: const BoxDecoration(
+                                    color: Colors.white, // 흰색 배경
+                                    borderRadius: BorderRadius.only(
+                                      topLeft: Radius.circular(30),
+                                      topRight: Radius.circular(30),
                                     ),
-                                  ],
+                                  ),
                                 ),
                               ),
                             ],
                           ),
                         ),
-                        const SizedBox(height: 25),
+                        const SizedBox(height: 5),
                         Container(
                           width: double.infinity,
                           decoration: BoxDecoration(
