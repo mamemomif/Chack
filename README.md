@@ -191,7 +191,7 @@
 ---
 
 ## 9. 문의하기
-프로젝트에 대한 문의사항이나 버그 리포트는 [Issues](https://github.com/CHACK-team/CHACK-project/issues)에 등록해주세요.
+프로젝트에 대한 문의사항이나 버그 리포트는 [Issues](https://github.com/ChackTeam/Chack/issues)에 등록해주세요.
 
 <p align="center">Made with ❤️ by CHACK Team</p>
 
