@@ -5,10 +5,10 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; // Firebase import 추가
 import '../../constants/icons.dart';
 import '../../constants/colors.dart';
+import '../constants/icons.dart';
 import '../components/book_review/book_readingtime_card.dart';
 import '../components/book_review/book_review_card.dart';
 import '../../services/book_review_service.dart';
-import '../constants/icons.dart';
 
 class ReviewWritingScreen extends StatefulWidget {
   // StatelessWidget에서 StatefulWidget으로 변경
@@ -90,66 +90,57 @@ class ReviewWritingScreenState extends State<ReviewWritingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        scrolledUnderElevation: 0,
-        title: Align(
-          alignment: Alignment.centerLeft,
-          child: Row(
-            children: [
-              const SizedBox(width: 10),
-              SvgPicture.asset(
-                AppIcons.chackIcon,
-                width: 30,
-                colorFilter: const ColorFilter.mode(
-                  Colors.white,
-                  BlendMode.srcIn,
+      body: CustomScrollView(
+        slivers: [
+          // 고정된 헤더와 이미지
+          SliverAppBar(
+            expandedHeight: 500,
+            pinned: true, // 스크롤 시 AppBar 고정
+            backgroundColor: Colors.transparent,
+            iconTheme: const IconThemeData(color: Colors.white),
+            title: Row(
+              children: [
+                const SizedBox(width: 10),
+                SvgPicture.asset(
+                  AppIcons.chackIcon,
+                  width: 30,
+                  colorFilter: const ColorFilter.mode(
+                    Colors.white,
+                    BlendMode.srcIn,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 20),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    const SizedBox(height: 10),
-                    Text(
-                      widget.title,
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.white,
+                const SizedBox(width: 20),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        widget.title,
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      '${widget.author} / ${widget.publisher}',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.white.withOpacity(0.5),
+                      const SizedBox(height: 3),
+                      Text(
+                        '${widget.author} / ${widget.publisher}',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white.withOpacity(0.5),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 책 정보 섹션
-            SizedBox(
-              height: 500,
-              width: double.infinity,
-              child: Stack(
+              ],
+            ),
+            flexibleSpace: FlexibleSpaceBar(
+              background: Stack(
                 children: [
-                  // 이미지
+                  // 배경 이미지
                   Positioned.fill(
                     child: Image.network(
                       widget.image,
@@ -167,35 +158,44 @@ class ReviewWritingScreenState extends State<ReviewWritingScreen> {
                       color: Colors.black.withOpacity(0.55),
                     ),
                   ),
-                  // 독서 정보 카드 - finishedAt 업데이트 반영
+                  // 독서 정보 카드
                   Positioned(
                     bottom: 40,
                     left: 10,
                     right: 10,
                     child: BookReadingtimeCard(
                       startedAt: widget.startedAt,
-                      finishedAt: _finishedAt, // 업데이트된 값 사용
+                      finishedAt: _finishedAt,
                       readTime: widget.readTime,
                     ),
                   ),
                 ],
               ),
             ),
+          ),
 
-            const SizedBox(height: 50),
+          // 스크롤 가능한 콘텐츠
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 20),
 
-            const SizedBox(height: 20),
+                  // 리뷰 카드 - 콜백 추가
+                  BookReviewCard(
+                    userId: widget.userId,
+                    isbn: widget.isbn,
+                    onReviewSaved: _onReviewSaved,
+                  ),
 
-            // 리뷰 카드 - 콜백 추가
-            BookReviewCard(
-              userId: widget.userId,
-              isbn: widget.isbn,
-              onReviewSaved: _onReviewSaved, // 콜백 전달
+                  const SizedBox(height: 20),
+                ],
+              ),
             ),
-
-            const SizedBox(height: 20),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
