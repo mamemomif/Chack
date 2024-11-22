@@ -220,7 +220,9 @@ class _BookshelfScreenState extends State<BookshelfScreen> {
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: GridView.builder(
-              itemCount: filteredBooks.length + 1, // 여백을 추가하기 위해 +1
+              itemCount: filteredBooks.length +
+                  (3 - filteredBooks.length % 3) % 3 +
+                  1, // 마지막 줄 여백 계산
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 3,
                 childAspectRatio: (80 / 122) * 0.9,
@@ -228,9 +230,9 @@ class _BookshelfScreenState extends State<BookshelfScreen> {
                 mainAxisSpacing: 20,
               ),
               itemBuilder: (context, index) {
-                if (index == filteredBooks.length) {
-                  // 마지막 항목으로 여백 추가
-                  return const SizedBox(height: 150);
+                if (index >= filteredBooks.length) {
+                  // 빈 공간과 하단 여백 처리
+                  return const SizedBox();
                 }
 
                 final book = filteredBooks[index];
