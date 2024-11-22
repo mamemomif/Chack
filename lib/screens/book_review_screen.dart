@@ -140,63 +140,56 @@ class ReviewWritingScreenState extends State<ReviewWritingScreen> {
         iconTheme: const IconThemeData(color: Colors.black),
       ),
       body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 책 정보 섹션
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 책 정보 섹션
+            SizedBox(
+              height: 450,
+              width: double.infinity,
+              child: Stack(
                 children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 20,
-                          offset: const Offset(0, 10),
-                        ),
-                      ],
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(8.0),
-                      child: Image.network(
-                        widget.image,
-                        width: 120,
-                        height: 150,
-                        errorBuilder: (context, error, stackTrace) =>
-                            const Icon(
-                          Icons.book,
-                          size: 80,
-                          color: Colors.grey,
-                        ),
+                  // 이미지
+                  Positioned.fill(
+                    child: Image.network(
+                      widget.image,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => const Icon(
+                        Icons.book,
+                        size: 80,
+                        color: Colors.grey,
                       ),
+                    ),
+                  ),
+                  // 검정색 반투명 상자
+                  Positioned.fill(
+                    child: Container(
+                      color: Colors.black.withOpacity(0.5),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 50),
+            ),
 
-              // 독서 정보 카드 - finishedAt 업데이트 반영
-              BookReadingtimeCard(
-                startedAt: widget.startedAt,
-                finishedAt: _finishedAt, // 업데이트된 값 사용
-                readTime: widget.readTime,
-              ),
-              const SizedBox(height: 20),
+            const SizedBox(height: 50),
 
-              // 리뷰 카드 - 콜백 추가
-              BookReviewCard(
-                userId: widget.userId,
-                isbn: widget.isbn,
-                onReviewSaved: _onReviewSaved, // 콜백 전달
-              ),
+            // 독서 정보 카드 - finishedAt 업데이트 반영
+            BookReadingtimeCard(
+              startedAt: widget.startedAt,
+              finishedAt: _finishedAt, // 업데이트된 값 사용
+              readTime: widget.readTime,
+            ),
+            const SizedBox(height: 20),
 
-              const SizedBox(height: 20),
-            ],
-          ),
+            // 리뷰 카드 - 콜백 추가
+            BookReviewCard(
+              userId: widget.userId,
+              isbn: widget.isbn,
+              onReviewSaved: _onReviewSaved, // 콜백 전달
+            ),
+
+            const SizedBox(height: 20),
+          ],
         ),
       ),
     );
