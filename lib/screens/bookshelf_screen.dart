@@ -220,7 +220,7 @@ class _BookshelfScreenState extends State<BookshelfScreen> {
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: GridView.builder(
-              itemCount: filteredBooks.length,
+              itemCount: filteredBooks.length + 1, // 여백을 추가하기 위해 +1
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 3,
                 childAspectRatio: (80 / 122) * 0.9,
@@ -228,6 +228,11 @@ class _BookshelfScreenState extends State<BookshelfScreen> {
                 mainAxisSpacing: 20,
               ),
               itemBuilder: (context, index) {
+                if (index == filteredBooks.length) {
+                  // 마지막 항목으로 여백 추가
+                  return const SizedBox(height: 150);
+                }
+
                 final book = filteredBooks[index];
                 return GestureDetector(
                   onTap: () => _navigateToDetail(context, book), // 상세 페이지 이동
