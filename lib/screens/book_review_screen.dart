@@ -164,12 +164,12 @@ class ReviewWritingScreenState extends State<ReviewWritingScreen> {
                   // 검정색 반투명 상자
                   Positioned.fill(
                     child: Container(
-                      color: Colors.black.withOpacity(0.5),
+                      color: Colors.black.withOpacity(0.55),
                     ),
                   ),
                   // 독서 정보 카드 - finishedAt 업데이트 반영
                   Positioned(
-                    bottom: 25,
+                    bottom: 40,
                     left: 10,
                     right: 10,
                     child: BookReadingtimeCard(

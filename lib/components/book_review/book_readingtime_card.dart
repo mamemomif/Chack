@@ -40,12 +40,12 @@ class BookReadingtimeCard extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const Text(
+                Text(
                   '독서 시작',
                   style: TextStyle(
-                    fontWeight: FontWeight.w400,
+                    fontWeight: FontWeight.w600,
                     fontSize: 14,
-                    color: AppColors.unreadColor,
+                    color: Colors.white.withOpacity(0.5),
                   ),
                 ),
                 Text(
@@ -53,7 +53,7 @@ class BookReadingtimeCard extends StatelessWidget {
                   style: const TextStyle(
                     fontWeight: FontWeight.w800,
                     fontSize: 20,
-                    color: AppColors.primary,
+                    color: Colors.white,
                   ),
                 ),
               ],
@@ -61,12 +61,12 @@ class BookReadingtimeCard extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const Text(
+                Text(
                   '독서 완료',
                   style: TextStyle(
-                    fontWeight: FontWeight.w400,
+                    fontWeight: FontWeight.w600,
                     fontSize: 14,
-                    color: AppColors.unreadColor,
+                    color: Colors.white.withOpacity(0.5),
                   ),
                 ),
                 Text(
@@ -74,7 +74,7 @@ class BookReadingtimeCard extends StatelessWidget {
                   style: const TextStyle(
                     fontWeight: FontWeight.w800,
                     fontSize: 20,
-                    color: AppColors.primary,
+                    color: Colors.white,
                   ),
                 ),
               ],
@@ -82,12 +82,12 @@ class BookReadingtimeCard extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const Text(
+                Text(
                   '총 독서 시간 ',
                   style: TextStyle(
-                    fontWeight: FontWeight.w400,
+                    fontWeight: FontWeight.w600,
                     fontSize: 14,
-                    color: AppColors.unreadColor,
+                    color: Colors.white.withOpacity(0.5),
                   ),
                 ),
                 Text(
@@ -95,7 +95,7 @@ class BookReadingtimeCard extends StatelessWidget {
                   style: const TextStyle(
                     fontWeight: FontWeight.w800,
                     fontSize: 20,
-                    color: AppColors.primary,
+                    color: Colors.white,
                   ),
                 ),
               ],
