@@ -170,7 +170,15 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
       }
 
       final bookData = bookDoc.data()!;
-
+      final int readTime = bookData['readTime'] ?? 0;
+      if (readTime == 0) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('아직 독서중인 도서가 아닙니다.')),
+          );
+        }
+        return;
+      }
       if (mounted) {
         Navigator.push(
           context,
