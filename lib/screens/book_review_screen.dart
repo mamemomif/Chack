@@ -94,8 +94,8 @@ class ReviewWritingScreenState extends State<ReviewWritingScreen> {
         slivers: [
           // 고정된 헤더와 이미지
           SliverAppBar(
-            expandedHeight: 500,
-            pinned: true, // 스크롤 시 AppBar 고정
+            expandedHeight: 450,
+            pinned: false, // 스크롤 시 AppBar 고정
             backgroundColor: Colors.transparent,
             iconTheme: const IconThemeData(color: Colors.white),
             title: Row(
@@ -177,12 +177,10 @@ class ReviewWritingScreenState extends State<ReviewWritingScreen> {
           // 스크롤 가능한 콘텐츠
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.symmetric(vertical: 25, horizontal: 15),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 20),
-
                   // 리뷰 카드 - 콜백 추가
                   BookReviewCard(
                     userId: widget.userId,
