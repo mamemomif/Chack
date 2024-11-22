@@ -145,7 +145,7 @@ class ReviewWritingScreenState extends State<ReviewWritingScreen> {
           children: [
             // 책 정보 섹션
             SizedBox(
-              height: 450,
+              height: 500,
               width: double.infinity,
               child: Stack(
                 children: [
@@ -167,18 +167,23 @@ class ReviewWritingScreenState extends State<ReviewWritingScreen> {
                       color: Colors.black.withOpacity(0.5),
                     ),
                   ),
+                  // 독서 정보 카드 - finishedAt 업데이트 반영
+                  Positioned(
+                    bottom: 25,
+                    left: 10,
+                    right: 10,
+                    child: BookReadingtimeCard(
+                      startedAt: widget.startedAt,
+                      finishedAt: _finishedAt, // 업데이트된 값 사용
+                      readTime: widget.readTime,
+                    ),
+                  ),
                 ],
               ),
             ),
 
             const SizedBox(height: 50),
 
-            // 독서 정보 카드 - finishedAt 업데이트 반영
-            BookReadingtimeCard(
-              startedAt: widget.startedAt,
-              finishedAt: _finishedAt, // 업데이트된 값 사용
-              readTime: widget.readTime,
-            ),
             const SizedBox(height: 20),
 
             // 리뷰 카드 - 콜백 추가
