@@ -89,6 +89,7 @@ class ReviewWritingScreenState extends State<ReviewWritingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         scrolledUnderElevation: 0,
         title: Align(
@@ -100,7 +101,7 @@ class ReviewWritingScreenState extends State<ReviewWritingScreen> {
                 AppIcons.chackIcon,
                 width: 30,
                 colorFilter: const ColorFilter.mode(
-                  Colors.black,
+                  Colors.white,
                   BlendMode.srcIn,
                 ),
               ),
@@ -110,23 +111,22 @@ class ReviewWritingScreenState extends State<ReviewWritingScreen> {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
+                    const SizedBox(height: 10),
                     Text(
                       widget.title,
                       style: const TextStyle(
                         fontSize: 22,
-                        fontFamily: "SUITE",
                         fontWeight: FontWeight.w800,
-                        color: Colors.black,
+                        color: Colors.white,
                       ),
                     ),
                     const SizedBox(height: 3),
                     Text(
                       '${widget.author} / ${widget.publisher}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
-                        fontFamily: "SUITE",
                         fontWeight: FontWeight.w500,
-                        color: Colors.grey,
+                        color: Colors.white.withOpacity(0.5),
                       ),
                     ),
                   ],
@@ -135,9 +135,9 @@ class ReviewWritingScreenState extends State<ReviewWritingScreen> {
             ],
           ),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: SingleChildScrollView(
         child: Column(
