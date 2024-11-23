@@ -82,8 +82,11 @@ class _AlertBannerState extends State<_AlertBanner>
       child: Stack(
         children: [
           Positioned.fill(
-            child: Container(
-              color: Colors.transparent,
+            child: GestureDetector(
+              onTap: () {},
+              child: Container(
+                color: Colors.transparent, // 하단 버튼 클릭 차단용 투명 배경
+              ),
             ),
           ),
           Positioned(
