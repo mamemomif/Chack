@@ -8,6 +8,7 @@ import '../services/library_info_service.dart';
 import 'package:chack_project/screens/book_review_screen.dart';
 import '../../constants/icons.dart';
 import '../../constants/colors.dart';
+import '../components/custom_alert_banner.dart';
 import 'dart:ui';
 
 class BookDetailScreen extends StatefulWidget {
@@ -61,37 +62,46 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
       userId: widget.userId,
       isbn: widget.isbn,
     );
-    setState(() {
-      _isInShelf = isInShelf;
-      _isLoading = false;
-    });
+    if (mounted) {
+      setState(() {
+        _isInShelf = isInShelf;
+        _isLoading = false;
+      });
+    }
   }
 
-  // LibraryInfoProvider 초기화
   Future<void> _initializeLibraryInfo() async {
     await _libraryInfoProvider.setupLocationSubscription(
       isbn: widget.isbn,
       onLibraryNameUpdate: (name) {
-        setState(() {
-          _libraryName = name;
-        });
+        if (mounted) {
+          setState(() {
+            _libraryName = name;
+          });
+        }
       },
       onDistanceUpdate: (distance) {
-        setState(() {
-          _libraryDistance = distance;
-        });
+        if (mounted) {
+          setState(() {
+            _libraryDistance = distance;
+          });
+        }
       },
       onLoanStatusUpdate: (status) {
-        setState(() {
-          _loanStatus = status;
-        });
+        if (mounted) {
+          setState(() {
+            _loanStatus = status;
+          });
+        }
       },
       onError: (error) {
-        setState(() {
-          _libraryName = error;
-          _libraryDistance = '';
-          _loanStatus = '';
-        });
+        if (mounted) {
+          setState(() {
+            _libraryName = error;
+            _libraryDistance = '';
+            _loanStatus = '';
+          });
+        }
       },
     );
   }
@@ -138,8 +148,10 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
     });
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('책이 서재에서 제거되었습니다.')),
+      CustomAlertBanner.show(
+        context,
+        message: '책이 서재에서 제거되었습니다.',
+        iconColor: Colors.red,
       );
     }
   }
