@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../constants/icons.dart';
 import '../constants/colors.dart';
+import '../components/custom_alert_banner.dart';
 
 class AnnualGoalCard extends StatelessWidget {
   final String userId;
@@ -58,8 +59,10 @@ class AnnualGoalCard extends StatelessWidget {
                       if (context.mounted) Navigator.of(context).pop();
                     } catch (e) {
                       if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('목표 설정 중 오류가 발생했습니다.')),
+                        CustomAlertBanner.show(
+                          context,
+                          message: '목표 설정 중 오류가 발생했습니다.',
+                          iconColor: AppColors.errorColor, // 에러 색상 적용
                         );
                       }
                     }
@@ -101,7 +104,10 @@ class AnnualGoalCard extends StatelessWidget {
         });
 
         return StreamBuilder<DocumentSnapshot>(
-          stream: FirebaseFirestore.instance.collection('users').doc(userId).snapshots(),
+          stream: FirebaseFirestore.instance
+              .collection('users')
+              .doc(userId)
+              .snapshots(),
           builder: (context, userSnapshot) {
             if (userSnapshot.hasError) {
               return const Text('오류가 발생했습니다.');

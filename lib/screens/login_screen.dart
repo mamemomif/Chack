@@ -5,13 +5,14 @@ import '../services/authentication_service.dart';
 import '../components/custom_text_field.dart';
 import '../components/primary_button.dart';
 import '../components/social_login_button.dart';
+import '../components/custom_alert_banner.dart';
 import '../constants/text_styles.dart';
 import '../constants/icons.dart';
 import '../constants/colors.dart';
 import 'signup_screen.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+  const LoginScreen({super.key});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -73,19 +74,21 @@ class _LoginScreenState extends State<LoginScreen> {
         final hasBirthDate = await _authService.isBirthDateAvailable(uid);
 
         // 등록된 생년월일이 있으면 홈 화면으로 이동
-        if(hasBirthDate) {
+        if (hasBirthDate) {
           Navigator.pushNamedAndRemoveUntil(
             context,
             '/home',
             (route) => false,
           );
-        } else { // 등록된 생년월일이 없으면 생년월일 입력 화면으로 이동
+        } else {
+          // 등록된 생년월일이 없으면 생년월일 입력 화면으로 이동
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => CollectBirthDateScreen()),
+            MaterialPageRoute(
+                builder: (context) => const CollectBirthDateScreen()),
           );
         }
-      } 
+      }
     } catch (e) {
       if (!mounted) return;
 
@@ -109,18 +112,16 @@ class _LoginScreenState extends State<LoginScreen> {
         _idController.text,
         _passwordController.text,
       );
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('인증 메일이 재발송되었습니다. 메일함을 확인해주세요.'),
-          backgroundColor: AppColors.pointColor,
-        ),
+      CustomAlertBanner.show(
+        context,
+        message: '인증 메일이 재발송되었습니다. 메일함을 확인해주세요.',
+        iconColor: AppColors.pointColor,
       );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.toString()),
-          backgroundColor: Colors.red,
-        ),
+      CustomAlertBanner.show(
+        context,
+        message: e.toString(),
+        iconColor: AppColors.errorColor,
       );
     }
   }
@@ -154,16 +155,18 @@ class _LoginScreenState extends State<LoginScreen> {
         final hasBirthDate = await _authService.isBirthDateAvailable(uid);
 
         // 등록된 생년월일이 있으면 홈 화면으로 이동
-        if(hasBirthDate) {
+        if (hasBirthDate) {
           Navigator.pushNamedAndRemoveUntil(
             context,
             '/home',
             (route) => false,
           );
-        } else { // 등록된 생년월일이 없으면 생년월일 입력 화면으로 이동
+        } else {
+          // 등록된 생년월일이 없으면 생년월일 입력 화면으로 이동
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => CollectBirthDateScreen()),
+            MaterialPageRoute(
+                builder: (context) => const CollectBirthDateScreen()),
           );
         }
       }
@@ -206,7 +209,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
+                            const Text(
                               '똑똑한 독서 습관,',
                               style: AppTextStyles.titleStyle,
                             ),
@@ -215,7 +218,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               AppIcons.chackWithIcon,
                               width: 110,
                               height: 34,
-                              colorFilter: ColorFilter.mode(
+                              colorFilter: const ColorFilter.mode(
                                 AppColors.pointColor,
                                 BlendMode.srcIn,
                               ),
@@ -301,7 +304,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       // 로그인 버튼
                       CustomButton(
                         text: '로그인하기',
-                        onPressed: _isLoading ? null : _signInWithEmailAndPassword,
+                        onPressed:
+                            _isLoading ? null : _signInWithEmailAndPassword,
                       ),
 
                       const SizedBox(height: 30),
