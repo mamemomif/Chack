@@ -126,8 +126,10 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
     });
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('책이 서재에 추가되었습니다.')),
+      CustomAlertBanner.show(
+        context,
+        message: '책이 서재에 추가되었습니다.',
+        iconColor: AppColors.pointColor,
       );
     }
   }
@@ -151,15 +153,17 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
       CustomAlertBanner.show(
         context,
         message: '책이 서재에서 제거되었습니다.',
-        iconColor: Colors.red,
+        iconColor: AppColors.pointColor,
       );
     }
   }
 
   Future<void> _navigateToReviewScreen() async {
     if (!_isInShelf) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('먼저 책을 서재에 추가해주세요.')),
+      CustomAlertBanner.show(
+        context,
+        message: '먼저 책을 서재에 추가해주세요.',
+        iconColor: AppColors.errorColor,
       );
       return;
     }
@@ -174,8 +178,10 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
 
       if (!bookDoc.exists) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('서재에서 책을 찾을 수 없습니다.')),
+          CustomAlertBanner.show(
+            context,
+            message: '서재에서 책을 찾을 수 없습니다.',
+            iconColor: AppColors.errorColor,
           );
         }
         return;
@@ -185,8 +191,10 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
       final int readTime = bookData['readTime'] ?? 0;
       if (readTime == 0) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('아직 독서중인 도서가 아닙니다.')),
+          CustomAlertBanner.show(
+            context,
+            message: '아직 독서 중의 도서가 아닙니다.',
+            iconColor: AppColors.errorColor,
           );
         }
         return;
@@ -213,8 +221,10 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('책 정보를 불러오는데 실패했습니다.')),
+        CustomAlertBanner.show(
+          context,
+          message: '책 정보를 불러오는 데에 실패했습니다.',
+          iconColor: AppColors.errorColor, // 에러 색상 설정
         );
       }
     }
