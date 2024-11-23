@@ -8,6 +8,7 @@ import '../services/library_info_service.dart';
 import 'package:chack_project/screens/book_review_screen.dart';
 import '../../constants/icons.dart';
 import '../../constants/colors.dart';
+import '../components/custom_alert_banner.dart';
 import 'dart:ui';
 
 class BookDetailScreen extends StatefulWidget {
@@ -61,37 +62,46 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
       userId: widget.userId,
       isbn: widget.isbn,
     );
-    setState(() {
-      _isInShelf = isInShelf;
-      _isLoading = false;
-    });
+    if (mounted) {
+      setState(() {
+        _isInShelf = isInShelf;
+        _isLoading = false;
+      });
+    }
   }
 
-  // LibraryInfoProvider 초기화
   Future<void> _initializeLibraryInfo() async {
     await _libraryInfoProvider.setupLocationSubscription(
       isbn: widget.isbn,
       onLibraryNameUpdate: (name) {
-        setState(() {
-          _libraryName = name;
-        });
+        if (mounted) {
+          setState(() {
+            _libraryName = name;
+          });
+        }
       },
       onDistanceUpdate: (distance) {
-        setState(() {
-          _libraryDistance = distance;
-        });
+        if (mounted) {
+          setState(() {
+            _libraryDistance = distance;
+          });
+        }
       },
       onLoanStatusUpdate: (status) {
-        setState(() {
-          _loanStatus = status;
-        });
+        if (mounted) {
+          setState(() {
+            _loanStatus = status;
+          });
+        }
       },
       onError: (error) {
-        setState(() {
-          _libraryName = error;
-          _libraryDistance = '';
-          _loanStatus = '';
-        });
+        if (mounted) {
+          setState(() {
+            _libraryName = error;
+            _libraryDistance = '';
+            _loanStatus = '';
+          });
+        }
       },
     );
   }
@@ -116,8 +126,10 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
     });
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('책이 서재에 추가되었습니다.')),
+      CustomAlertBanner.show(
+        context,
+        message: '책이 서재에 추가되었습니다.',
+        iconColor: AppColors.pointColor,
       );
     }
   }
@@ -138,16 +150,20 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
     });
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('책이 서재에서 제거되었습니다.')),
+      CustomAlertBanner.show(
+        context,
+        message: '책이 서재에서 제거되었습니다.',
+        iconColor: AppColors.pointColor,
       );
     }
   }
 
   Future<void> _navigateToReviewScreen() async {
     if (!_isInShelf) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('먼저 책을 서재에 추가해주세요.')),
+      CustomAlertBanner.show(
+        context,
+        message: '먼저 책을 서재에 추가해주세요.',
+        iconColor: AppColors.errorColor,
       );
       return;
     }
@@ -162,8 +178,10 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
 
       if (!bookDoc.exists) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('서재에서 책을 찾을 수 없습니다.')),
+          CustomAlertBanner.show(
+            context,
+            message: '서재에서 책을 찾을 수 없습니다.',
+            iconColor: AppColors.errorColor,
           );
         }
         return;
@@ -173,8 +191,10 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
       final int readTime = bookData['readTime'] ?? 0;
       if (readTime == 0) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('아직 독서중인 도서가 아닙니다.')),
+          CustomAlertBanner.show(
+            context,
+            message: '아직 독서 중의 도서가 아닙니다.',
+            iconColor: AppColors.errorColor,
           );
         }
         return;
@@ -201,8 +221,10 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('책 정보를 불러오는데 실패했습니다.')),
+        CustomAlertBanner.show(
+          context,
+          message: '책 정보를 불러오는 데에 실패했습니다.',
+          iconColor: AppColors.errorColor, // 에러 색상 설정
         );
       }
     }
