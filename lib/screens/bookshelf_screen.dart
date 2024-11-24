@@ -4,6 +4,7 @@ import '../services/bookshelf_service.dart';
 import '../services/book_search_service.dart'; // ISBN 검색 서비스
 import '../models/bookshelf_model.dart';
 import '../components/bookshelf_book_card.dart';
+import '../components/custom_alert_banner.dart';
 import '../components/filter_bottom_sheet.dart';
 import '../screens/book_detail_screen.dart';
 import '../screens/search/search_screen.dart';
@@ -71,13 +72,17 @@ class _BookshelfScreenState extends State<BookshelfScreen> {
           ),
         );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('책 설명을 불러올 수 없습니다.')),
+        CustomAlertBanner.show(
+          context,
+          message: '책 설명을 불러올 수 없습니다.',
+          iconColor: AppColors.errorColor,
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('책 정보를 불러오는 중 오류가 발생했습니다: $e')),
+      CustomAlertBanner.show(
+        context,
+        message: '책 정보를 불러오는 중 오류가 발생했습니다: $e',
+        iconColor: AppColors.errorColor,
       );
     }
   }
@@ -220,7 +225,9 @@ class _BookshelfScreenState extends State<BookshelfScreen> {
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: GridView.builder(
-              itemCount: filteredBooks.length,
+              itemCount: filteredBooks.length +
+                  (3 - filteredBooks.length % 3) % 3 +
+                  1, // 마지막 줄 여백 계산
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 3,
                 childAspectRatio: (80 / 122) * 0.9,
@@ -228,6 +235,11 @@ class _BookshelfScreenState extends State<BookshelfScreen> {
                 mainAxisSpacing: 20,
               ),
               itemBuilder: (context, index) {
+                if (index >= filteredBooks.length) {
+                  // 빈 공간과 하단 여백 처리
+                  return const SizedBox();
+                }
+
                 final book = filteredBooks[index];
                 return GestureDetector(
                   onTap: () => _navigateToDetail(context, book), // 상세 페이지 이동

@@ -7,6 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../constants/icons.dart';
 import '../../constants/colors.dart';
+import '../../components/custom_alert_banner.dart';
 
 class ProfileSettingsScreen extends StatefulWidget {
   const ProfileSettingsScreen({super.key});
@@ -44,8 +45,9 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
           final data = doc.data()!;
           setState(() {
             _nicknameController.text = data['nickname'] ?? '';
-            _selectedBirthDate =
-                data['birthDate'] != null ? DateTime.parse(data['birthDate']) : null;
+            _selectedBirthDate = data['birthDate'] != null
+                ? DateTime.parse(data['birthDate'])
+                : null;
             // photoURL 필드가 없을 수 있으므로 null 처리
             _profileImageUrl = data['photoURL'];
           });
@@ -65,7 +67,8 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
     try {
       final user = _auth.currentUser;
       if (user != null) {
-        final storageRef = _storage.ref().child('profile_images/${user.uid}.jpg');
+        final storageRef =
+            _storage.ref().child('profile_images/${user.uid}.jpg');
         final uploadTask = await storageRef.putFile(_profileImageFile!);
         final imageUrl = await uploadTask.ref.getDownloadURL();
 
@@ -76,16 +79,20 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
 
         setState(() => _profileImageUrl = imageUrl);
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('프로필 이미지가 업데이트되었습니다.')),
+          CustomAlertBanner.show(
+            context,
+            message: '프로필 이미지가 업데이트되었습니다.',
+            iconColor: AppColors.pointColor,
           );
         }
       }
     } catch (e) {
       print('Error uploading profile image: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('이미지 업로드 중 오류가 발생했습니다.')),
+        CustomAlertBanner.show(
+          context,
+          message: '이미지 업로드 중 오류가 발생했습니다.',
+          iconColor: AppColors.errorColor,
         );
       }
     } finally {
@@ -102,15 +109,20 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
           'nickname': _nicknameController.text,
           'birthDate': _selectedBirthDate?.toIso8601String(),
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('프로필 정보가 업데이트되었습니다.')),
+        CustomAlertBanner.show(
+          context,
+          message: '프로필 정보가 업데이트되었습니다.',
+          iconColor: AppColors.pointColor,
         );
+
         Navigator.pop(context);
       }
     } catch (e) {
       print('Error updating user data: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('프로필 정보 업데이트 중 오류가 발생했습니다.')),
+      CustomAlertBanner.show(
+        context,
+        message: '프로필 정보 업데이트 중 오류가 발생했습니다.',
+        iconColor: AppColors.errorColor,
       );
     } finally {
       setState(() => _isLoading = false);
@@ -163,7 +175,8 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                             color: AppColors.pointColor.withOpacity(0.3),
                             shape: BoxShape.circle,
                           ),
-                          child: _profileImageFile != null || _profileImageUrl != null
+                          child: _profileImageFile != null ||
+                                  _profileImageUrl != null
                               ? ClipRRect(
                                   borderRadius: BorderRadius.circular(60),
                                   child: _profileImageFile != null
@@ -174,18 +187,23 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                                       : Image.network(
                                           _profileImageUrl!,
                                           fit: BoxFit.cover,
-                                          loadingBuilder: (context, child, loadingProgress) {
-                                            if (loadingProgress == null) return child;
+                                          loadingBuilder: (context, child,
+                                              loadingProgress) {
+                                            if (loadingProgress == null)
+                                              return child;
                                             return const Center(
-                                              child: CircularProgressIndicator(),
+                                              child:
+                                                  CircularProgressIndicator(),
                                             );
                                           },
-                                          errorBuilder: (context, error, stackTrace) {
+                                          errorBuilder:
+                                              (context, error, stackTrace) {
                                             return Padding(
                                               padding: const EdgeInsets.all(30),
                                               child: SvgPicture.asset(
                                                 AppIcons.profileIcon,
-                                                colorFilter: const ColorFilter.mode(
+                                                colorFilter:
+                                                    const ColorFilter.mode(
                                                   AppColors.pointColor,
                                                   BlendMode.srcIn,
                                                 ),
@@ -270,7 +288,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                       builder: (context, child) {
                         return Theme(
                           data: Theme.of(context).copyWith(
-                            colorScheme: ColorScheme.light(
+                            colorScheme: const ColorScheme.light(
                               primary: AppColors.pointColor,
                             ),
                           ),

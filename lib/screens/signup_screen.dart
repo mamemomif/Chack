@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import '../services/authentication_service.dart';
 import '../components/custom_text_field.dart';
 import '../components/primary_button.dart';
+import '../components/custom_alert_banner.dart';
 import '../constants/text_styles.dart';
 import '../constants/colors.dart';
 
 class SignUpScreen extends StatefulWidget {
+  const SignUpScreen({super.key});
+
   @override
   _SignUpScreenState createState() => _SignUpScreenState();
 }
@@ -49,19 +52,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
       if (!mounted) return;
 
       // 회원가입 성공 메시지 표시
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            '인증 메일을 보냈습니다. 메일함을 확인해주세요.',
-            style: const TextStyle(fontFamily: 'SUITE'),
-          ),
-          backgroundColor: AppColors.pointColor,
-        ),
+
+      CustomAlertBanner.show(
+        context,
+        message: '인증 메일을 보냈습니다. 메일함을 확인해주세요.',
+        iconColor: AppColors.pointColor,
       );
 
       // 로그인 화면으로 이동
       Navigator.pushReplacementNamed(context, '/login');
-
     } catch (e) {
       if (!mounted) return;
 
@@ -70,14 +69,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
         _errorMessage = e.toString();
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            e.toString(),
-            style: const TextStyle(fontFamily: 'SUITE'),
-          ),
-          backgroundColor: Colors.red,
-        ),
+      CustomAlertBanner.show(
+        context,
+        message: e.toString(),
+        iconColor: AppColors.errorColor,
       );
     } finally {
       if (mounted) {
@@ -102,11 +97,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 80),
-
                   Text.rich(
                     TextSpan(
                       children: [
-                        TextSpan(
+                        const TextSpan(
                           text: '똑똑한 독서 습관,\n',
                           style: AppTextStyles.titleStyle,
                         ),
@@ -116,23 +110,20 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             color: AppColors.pointColor,
                           ),
                         ),
-                        TextSpan(
+                        const TextSpan(
                           text: '에 오신 것을 환영해요 :)',
                           style: AppTextStyles.titleStyle,
                         ),
                       ],
                     ),
                   ),
-
                   const SizedBox(height: 40),
-
                   CustomTextField(
                     hintText: '닉네임',
                     controller: _nicknameController,
                     hasError: _hasError,
                   ),
                   const SizedBox(height: 10),
-
                   CustomTextField(
                     hintText: '이메일 주소',
                     controller: _emailController,
@@ -149,7 +140,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     },
                   ),
                   const SizedBox(height: 10),
-
                   CustomTextField(
                     hintText: '비밀번호',
                     obscureText: true,
@@ -166,7 +156,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     },
                   ),
                   const SizedBox(height: 10),
-
                   CustomTextField(
                     hintText: '비밀번호 확인',
                     obscureText: true,
@@ -179,7 +168,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       return null;
                     },
                   ),
-
                   if (_hasError) ...[
                     const SizedBox(height: 16),
                     Padding(
@@ -195,14 +183,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       ),
                     ),
                   ],
-
                   const SizedBox(height: 45),
-
                   CustomButton(
                     text: _isLoading ? '로딩 중...' : '시작하기',
                     onPressed: _isLoading ? null : _register,
                   ),
-
                   const SizedBox(height: 30),
                 ],
               ),

@@ -10,6 +10,7 @@ import '../components/custom_bottom_nav_bar.dart';
 import '../components/custom_search_bar.dart';
 import '../components/book_recommendation/book_recommendation_list.dart';
 import '../components/recent_book_popup.dart';
+import '../components/custom_alert_banner.dart';
 import '../services/authentication_service.dart';
 import '../services/recent_book_service.dart';
 import '../constants/icons.dart';
@@ -119,8 +120,10 @@ class _HomeScreenState extends State<MainScreen> {
       Navigator.pushReplacementNamed(context, '/login');
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('로그아웃 중 오류가 발생했습니다: $e')),
+      CustomAlertBanner.show(
+        context,
+        message: '로그아웃 중 오류가 발생했습니다: $e',
+        iconColor: AppColors.errorColor,
       );
     }
   }
@@ -146,9 +149,12 @@ class _HomeScreenState extends State<MainScreen> {
                   CustomSearchBar(
                     onTap: () {
                       if (_userId == null) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('로그인이 필요한 서비스입니다.')),
+                        CustomAlertBanner.show(
+                          context,
+                          message: '로그인이 필요한 서비스입니다.',
+                          iconColor: AppColors.errorColor,
                         );
+
                         return;
                       }
                       Navigator.push(
@@ -196,15 +202,15 @@ class _HomeScreenState extends State<MainScreen> {
                         _userId != null
                             ? StatisticsScreen(userId: _userId!)
                             : const Center(
-                              child: Text(
-                                '로그인이 필요한 서비스입니다.',
-                                style: TextStyle(
-                                  fontFamily: 'SUITE',
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
+                                child: Text(
+                                  '로그인이 필요한 서비스입니다.',
+                                  style: TextStyle(
+                                    fontFamily: 'SUITE',
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
                               ),
-                            ),
                       ],
                     ),
                   ),

@@ -4,6 +4,7 @@ import 'package:percent_indicator/percent_indicator.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../services/reading_time_service.dart';
 import '../../components/timer/timer_select_book_button.dart';
+import '../../components/custom_alert_banner.dart';
 import '../../constants/icons.dart';
 import '../../services/pomodoro_service.dart';
 import '../../constants/colors.dart';
@@ -45,19 +46,17 @@ class _PomodoroPageState extends State<PomodoroPage> {
         await _updateReadingTime();
 
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('독서 시간이 끝났습니다. 휴식 시간이 시작됩니다!'),
-              duration: Duration(seconds: 2),
-            ),
+          CustomAlertBanner.show(
+            context,
+            message: '독서 시간이 끝났습니다. 휴식 시간이 시작됩니다!',
+            iconColor: AppColors.pointColor,
           );
         }
       } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('휴식 시간이 끝났습니다. 다음 독서를 시작하세요!'),
-            duration: Duration(seconds: 2),
-          ),
+        CustomAlertBanner.show(
+          context,
+          message: '휴식 시간이 끝났습니다. 다음 독서를 시작하세요!',
+          iconColor: AppColors.pointColor,
         );
       }
     };
@@ -136,9 +135,12 @@ class _PomodoroPageState extends State<PomodoroPage> {
   void _toggleTimer() {
     setState(() {
       if (selectedBook == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("먼저 기록할 도서를 선택해주세요.")),
+        CustomAlertBanner.show(
+          context,
+          message: '먼저 기록할 도서를 선택해주세요.',
+          iconColor: AppColors.errorColor,
         );
+
         return;
       }
 
@@ -153,29 +155,30 @@ class _PomodoroPageState extends State<PomodoroPage> {
       }
 
       // UI 업데이트
-      elapsedTimeText = widget.timerService.formatElapsedTime(widget.timerService.elapsedTimeForUI);
+      elapsedTimeText = widget.timerService
+          .formatElapsedTime(widget.timerService.elapsedTimeForUI);
     });
   }
 
   Future<void> _onBookSelected(Map<String, String>? book) async {
     if (widget.timerService.isRunning) {
       final bool shouldSwitch = await showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('타이머 실행 중'),
-          content: const Text('현재 실행 중인 타이머가 있습니다. 도서를 변경하시겠습니까?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('취소'),
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('타이머 실행 중'),
+              content: const Text('현재 실행 중인 타이머가 있습니다. 도서를 변경하시겠습니까?'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text('취소'),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  child: const Text('확인'),
+                ),
+              ],
             ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('확인'),
-            ),
-          ],
-        ),
-      ) ??
+          ) ??
           false;
 
       if (!shouldSwitch) return;
