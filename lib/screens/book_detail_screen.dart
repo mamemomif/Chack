@@ -417,7 +417,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                                 borderRadius: BorderRadius.circular(30),
                                 border: Border.all(
                                   color: _loanStatus == '대출 가능'
-                                      ? Colors.black.withOpacity(0.2)
+                                      ? AppColors.pointColor.withOpacity(0.5)
                                       : AppColors.errorColor.withOpacity(0.3),
                                   width: 1,
                                 ),
@@ -429,7 +429,8 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                                     height: 10,
                                     decoration: BoxDecoration(
                                       color: _loanStatus == '대출 가능'
-                                          ? Colors.black.withOpacity(0.4)
+                                          ? AppColors.pointColor
+                                              .withOpacity(0.7)
                                           : AppColors.errorColor,
                                       borderRadius: BorderRadius.circular(10),
                                     ),
@@ -441,7 +442,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                                       fontSize: 14,
                                       fontWeight: FontWeight.w700,
                                       color: _loanStatus == '대출 가능'
-                                          ? Colors.black.withOpacity(0.5)
+                                          ? AppColors.pointColor
                                           : AppColors.errorColor,
                                     ),
                                   ),

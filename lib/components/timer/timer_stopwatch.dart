@@ -5,6 +5,7 @@ import '../../constants/icons.dart';
 import '../../services/stopwatch_service.dart';
 import '../../services/reading_time_service.dart';
 import '../../components/timer/timer_select_book_button.dart';
+import '../../components/custom_alert_banner.dart';
 import '../../constants/colors.dart';
 
 class StopwatchPage extends StatefulWidget {
@@ -72,9 +73,12 @@ class _StopwatchPageState extends State<StopwatchPage> {
   void _toggleStopwatch() {
     setState(() {
       if (selectedBook == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("먼저 기록할 도서를 선택해주세요.")),
+        CustomAlertBanner.show(
+          context,
+          message: '먼저 기록할 도서를 선택해주세요.',
+          iconColor: AppColors.errorColor,
         );
+
         return;
       }
 

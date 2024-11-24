@@ -4,6 +4,7 @@ import '../services/bookshelf_service.dart';
 import '../services/book_search_service.dart'; // ISBN 검색 서비스
 import '../models/bookshelf_model.dart';
 import '../components/bookshelf_book_card.dart';
+import '../components/custom_alert_banner.dart';
 import '../components/filter_bottom_sheet.dart';
 import '../screens/book_detail_screen.dart';
 import '../screens/search/search_screen.dart';
@@ -71,13 +72,17 @@ class _BookshelfScreenState extends State<BookshelfScreen> {
           ),
         );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('책 설명을 불러올 수 없습니다.')),
+        CustomAlertBanner.show(
+          context,
+          message: '책 설명을 불러올 수 없습니다.',
+          iconColor: AppColors.errorColor,
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('책 정보를 불러오는 중 오류가 발생했습니다: $e')),
+      CustomAlertBanner.show(
+        context,
+        message: '책 정보를 불러오는 중 오류가 발생했습니다: $e',
+        iconColor: AppColors.errorColor,
       );
     }
   }

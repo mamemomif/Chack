@@ -6,9 +6,12 @@ import '../constants/colors.dart';
 import '../constants/text_styles.dart';
 import '../components/birthday_input/birthdate_text_field.dart';
 import '../components/birthday_input/birthdate_button.dart';
+import '../components/custom_alert_banner.dart';
 import '../services/authentication_service.dart';
 
 class CollectBirthDateScreen extends StatefulWidget {
+  const CollectBirthDateScreen({super.key});
+
   @override
   _CollectBirthDateScreenState createState() => _CollectBirthDateScreenState();
 }
@@ -123,17 +126,23 @@ class _CollectBirthDateScreenState extends State<CollectBirthDateScreen> {
     final String birthDateStr = _birthDateController.text.trim();
 
     if (birthDateStr.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('생년월일을 입력해주세요.')),
+      CustomAlertBanner.show(
+        context,
+        message: '생년월일을 입력해주세요.',
+        iconColor: AppColors.errorColor,
       );
+
       return;
     }
 
     // 생년월일 형식 및 유효성 검사
     if (!isValidDate(birthDateStr)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('올바른 생년월일을 입력해주세요.')),
+      CustomAlertBanner.show(
+        context,
+        message: '올바른 생년월일을 입력해주세요.',
+        iconColor: AppColors.errorColor,
       );
+
       return;
     }
 
@@ -144,9 +153,12 @@ class _CollectBirthDateScreenState extends State<CollectBirthDateScreen> {
     final int ageGroup = calculateAgeGroup(birthDate);
 
     if (ageGroup == -1) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('유효하지 않은 생년월일입니다.')),
+      CustomAlertBanner.show(
+        context,
+        message: '유효하지 않은 생년월일입니다.',
+        iconColor: AppColors.errorColor,
       );
+
       return;
     }
 
@@ -166,8 +178,10 @@ class _CollectBirthDateScreenState extends State<CollectBirthDateScreen> {
       );
     } catch (e) {
       print('Error: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
+      CustomAlertBanner.show(
+        context,
+        message: e.toString(),
+        iconColor: AppColors.errorColor,
       );
     } finally {
       setState(() {
@@ -190,7 +204,7 @@ class _CollectBirthDateScreenState extends State<CollectBirthDateScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 80),
-              Text(
+              const Text(
                 '생년월일을 입력해주세요.',
                 style: AppTextStyles.titleStyle,
               ),

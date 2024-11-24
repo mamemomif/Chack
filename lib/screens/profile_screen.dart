@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
+import '../components/custom_alert_banner.dart';
 import '../constants/icons.dart';
 import '../constants/colors.dart';
 import 'settings/profile_settings_screen.dart';
@@ -36,11 +36,14 @@ class ProfileScreen extends StatelessWidget {
     if (confirmed == true) {
       try {
         await FirebaseAuth.instance.signOut(); // Firebase 로그아웃
-        Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+        Navigator.of(context)
+            .pushNamedAndRemoveUntil('/login', (route) => false);
       } catch (e) {
         print('Logout Error: $e');
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('로그아웃 중 오류가 발생했습니다.')),
+        CustomAlertBanner.show(
+          context,
+          message: '로그아웃 중 오류가 발생했습니다.',
+          iconColor: AppColors.errorColor,
         );
       }
     }
@@ -148,18 +151,22 @@ class ProfileScreen extends StatelessWidget {
                                         width: double.infinity,
                                         height: double.infinity,
                                         fit: BoxFit.cover,
-                                        loadingBuilder: (context, child, loadingProgress) {
-                                          if (loadingProgress == null) return child;
+                                        loadingBuilder:
+                                            (context, child, loadingProgress) {
+                                          if (loadingProgress == null)
+                                            return child;
                                           return const Center(
                                             child: CircularProgressIndicator(),
                                           );
                                         },
-                                        errorBuilder: (context, error, stackTrace) {
+                                        errorBuilder:
+                                            (context, error, stackTrace) {
                                           return Padding(
                                             padding: const EdgeInsets.all(26),
                                             child: SvgPicture.asset(
                                               AppIcons.profileIcon,
-                                              colorFilter: const ColorFilter.mode(
+                                              colorFilter:
+                                                  const ColorFilter.mode(
                                                 AppColors.pointColor,
                                                 BlendMode.srcIn,
                                               ),
@@ -188,7 +195,8 @@ class ProfileScreen extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const ProfileSettingsScreen(),
+                              builder: (context) =>
+                                  const ProfileSettingsScreen(),
                             ),
                           );
                         },
@@ -239,7 +247,8 @@ class ProfileScreen extends StatelessWidget {
                                   horizontal: 40,
                                 ),
                                 child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
                                     Row(
                                       children: [
@@ -247,14 +256,17 @@ class ProfileScreen extends StatelessWidget {
                                           width: 38,
                                           height: 38,
                                           decoration: BoxDecoration(
-                                            color: AppColors.pointColor.withOpacity(0.3),
-                                            borderRadius: BorderRadius.circular(20),
+                                            color: AppColors.pointColor
+                                                .withOpacity(0.3),
+                                            borderRadius:
+                                                BorderRadius.circular(20),
                                           ),
                                           child: Center(
                                             child: item['isSvg']
                                                 ? SvgPicture.asset(
                                                     item['icon'],
-                                                    colorFilter: const ColorFilter.mode(
+                                                    colorFilter:
+                                                        const ColorFilter.mode(
                                                       AppColors.pointColor,
                                                       BlendMode.srcIn,
                                                     ),
