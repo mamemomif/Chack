@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.hansung.chack">
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -66,11 +67,27 @@
             android:value="2" />
     </application>
 
-    <!-- 텍스트 처리 관련 쿼리 설정 -->
+    <!-- URL, 이메일, 텍스트 처리 관련 쿼리 설정 -->
     <queries>
+        <!-- 텍스트 처리 -->
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
+        </intent>
+        <!-- 웹 URL 처리 -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="https" />
+        </intent>
+        <!-- 이메일 처리 -->
+        <intent>
+            <action android:name="android.intent.action.SEND" />
+            <data android:mimeType="*/*" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.SENDTO" />
+            <data android:scheme="mailto" />
         </intent>
     </queries>
 </manifest>

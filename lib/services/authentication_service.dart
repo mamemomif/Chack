@@ -224,4 +224,62 @@ class AuthService {
       throw '로그아웃에 실패했습니다.';
     }
   }
+
+    Future<String> findEmail({required String nickname}) async {
+    try {
+      // nickname으로 사용자 검색
+      final querySnapshot = await _firestore
+          .collection('users')
+          .where('nickname', isEqualTo: nickname)
+          .get();
+
+      if (querySnapshot.docs.isEmpty) {
+        throw '해당 닉네임으로 가입된 계정을 찾을 수 없습니다.';
+      }
+
+      // 이메일 주소 마스킹 처리 (예: te***@gmail.com)
+      final email = querySnapshot.docs.first.data()['email'] as String;
+      final maskedEmail = maskEmail(email);
+      
+      return maskedEmail;
+    } catch (e) {
+      print('Find Email Error: $e');
+      throw '아이디 찾기에 실패했습니다.';
+    }
+  }
+
+  // 이메일 마스킹 처리
+  String maskEmail(String email) {
+    final parts = email.split('@');
+    if (parts.length != 2) return email;
+
+    final username = parts[0];
+    final domain = parts[1];
+
+    if (username.length <= 2) return email;
+    return '${username.substring(0, 2)}${'*' * (username.length - 2)}@$domain';
+  }
+
+  // 비밀번호 재설정 이메일 발송
+  Future<void> sendPasswordResetEmail({required String email}) async {
+    try {
+      // 해당 이메일로 가입된 계정이 있는지 확인
+      final querySnapshot = await _firestore
+          .collection('users')
+          .where('email', isEqualTo: email)
+          .get();
+
+      if (querySnapshot.docs.isEmpty) {
+        throw '해당 이메일로 가입된 계정을 찾을 수 없습니다.';
+      }
+
+      await _auth.sendPasswordResetEmail(email: email);
+    } on FirebaseAuthException catch (e) {
+      print('Password Reset Error: ${e.code}');
+      throw _getKoreanErrorMessage(e.code);
+    } catch (e) {
+      print('Password Reset Error: $e');
+      throw '비밀번호 재설정 이메일 발송에 실패했습니다.';
+    }
+  }
 }
