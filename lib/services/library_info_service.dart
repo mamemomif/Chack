@@ -1,3 +1,5 @@
+// providers/library_info_provider.dart
+
 import 'dart:async';
 import 'package:geolocator/geolocator.dart';
 import '../services/location_service.dart';
@@ -9,7 +11,6 @@ class LibraryInfoProvider {
   final RecommendedBooksService recommendedBooksService;
   final Logger _logger = Logger();
 
-  // 멤버 변수
   StreamSubscription<Position>? _locationSubscription;
   static const double _updateDistanceThreshold = 100.0; // meters
 
@@ -25,27 +26,27 @@ class LibraryInfoProvider {
     try {
       _logger.d('LibraryInfoProvider: 위치 구독 설정 시작');
       
-      // 초기 위치 정보 가져오기
-      final initialPosition = await _locationService.getCurrentLocation();
-      await _fetchLibraryInfo(
-        isbn: isbn,
-        position: initialPosition,
-        onLibraryNameUpdate: onLibraryNameUpdate,
-        onDistanceUpdate: onDistanceUpdate,
-        onLoanStatusUpdate: onLoanStatusUpdate,
-        onError: onError,
-      );
+      // 현재 캐시된 위치 사용
+      final position = _locationService.lastPosition;
+      
+      if (position != null) {
+        await _fetchLibraryInfo(
+          isbn: isbn,
+          position: position,
+          onLibraryNameUpdate: onLibraryNameUpdate,
+          onDistanceUpdate: onDistanceUpdate,
+          onLoanStatusUpdate: onLoanStatusUpdate,
+          onError: onError,
+        );
+      }
 
-      // LocationService의 위치 스트림 구독
+      // 위치 스트림 구독 설정
       _locationSubscription = _locationService.positionStream.listen(
-        (Position position) async {
-          _logger.d('LibraryInfoProvider: 새로운 위치 업데이트 수신');
-          
-          // 위치 변경이 임계값을 초과하는 경우에만 도서관 정보 업데이트
-          if (_shouldUpdateLibraryInfo(position, initialPosition)) {
+        (Position newPosition) async {
+          if (_shouldUpdateLibraryInfo(newPosition, position ?? newPosition)) {
             await _fetchLibraryInfo(
               isbn: isbn,
-              position: position,
+              position: newPosition,
               onLibraryNameUpdate: onLibraryNameUpdate,
               onDistanceUpdate: onDistanceUpdate,
               onLoanStatusUpdate: onLoanStatusUpdate,
@@ -65,6 +66,8 @@ class LibraryInfoProvider {
   }
 
   bool _shouldUpdateLibraryInfo(Position newPosition, Position lastPosition) {
+    if (!_locationService.hasValidCache) return true;
+    
     final distance = Geolocator.distanceBetween(
       lastPosition.latitude,
       lastPosition.longitude,
