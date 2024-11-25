@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class NotificationService {
   static final _notifications = FlutterLocalNotificationsPlugin();
@@ -60,6 +62,18 @@ class NotificationService {
   }
 
   static Future<void> showReadingCompleteNotification(int seconds) async {
+    // 알림 설정 확인
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+      
+      final enabled = doc.data()?['notificationsEnabled'] ?? false;
+      if (!enabled) return;
+    }
+
     const androidDetails = AndroidNotificationDetails(
       'reading_timer_channel',
       '독서 타이머',
@@ -88,7 +102,20 @@ class NotificationService {
     );
   }
 
+
   static Future<void> showBreakCompleteNotification() async {
+    // 알림 설정 확인
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+      
+      final enabled = doc.data()?['notificationsEnabled'] ?? false;
+      if (!enabled) return;
+    }
+
     const androidDetails = AndroidNotificationDetails(
       'reading_timer_channel',
       '독서 타이머',
