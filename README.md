@@ -173,7 +173,7 @@
 |-----------|------------------------|------------------------------------------|
 | 강연수     | Frontend Developer     | Email: yskang009@gmail.com<br>GitHub: [@mamemomif](https://github.com/mamemomif) |
 | 문병진     | Frontend Developer     | Email: qudwls5778@naver.com<br>GitHub: [@Moonbjin](https://github.com/Moonbjin) |
-| 조현주     | UI/UX 설계 / Frontend  | Email: butter0488@gmail.com<br>GitHub: [@hjuump](https://github.com/hjuump) |
+| 조현주     | UX/UI Design / Frontend  | Email: butter0488@gmail.com<br>GitHub: [@hjuump](https://github.com/hjuump) |
 | 홍영준     | Backend Developer      | Email: moejihong@gmail.com<br>GitHub: [@HONGMOEJI](https://github.com/HONGMOEJI) |
 
 ---
