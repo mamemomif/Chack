@@ -74,6 +74,11 @@
 	<key>NSUserNotificationUsageDescription</key>
 	<string>독서 타이머 알림을 보내기 위해 알림 권한이 필요합니다.</string>
 
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>mailto</string>
+	</array>
+
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
