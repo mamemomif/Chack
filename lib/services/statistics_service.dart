@@ -18,6 +18,30 @@ class StatisticsService {
         });
   }
 
+    // 월간 독서 데이터를 실시간으로 받아오는 스트림
+  Stream<Map<DateTime, int>> getMonthlyReadingStream(String userId, DateTime month) {
+    final monthPrefix = '${month.year}-${month.month.toString().padLeft(2, '0')}';
+    
+    return _firestore
+        .collection('daily_reading_records')
+        .doc(userId)
+        .snapshots()
+        .map((doc) {
+          if (!doc.exists) return {};
+
+          Map<DateTime, int> monthlyStats = {};
+          
+          doc.data()!.forEach((dateStr, value) {
+            if (dateStr.startsWith(monthPrefix)) {
+              final date = DateTime.parse(dateStr);
+              monthlyStats[date] = value['totalSeconds'] as int;
+            }
+          });
+
+          return monthlyStats;
+        });
+  }
+
   // 특정 월의 일별 독서 시간 데이터 조회
   Future<Map<DateTime, int>> getMonthlyReadingData(String userId, DateTime month) async {
     try {
