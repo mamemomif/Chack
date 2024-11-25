@@ -25,7 +25,10 @@ class PomodoroPage extends StatefulWidget {
   _PomodoroPageState createState() => _PomodoroPageState();
 }
 
-class _PomodoroPageState extends State<PomodoroPage> {
+class _PomodoroPageState extends State<PomodoroPage> with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true; // 상태 유지 활성화
+
   final BookReadingTimeService _readingTimeService = BookReadingTimeService();
   final DailyReadingService _dailyReadingService = DailyReadingService();
   String elapsedTimeText = '';

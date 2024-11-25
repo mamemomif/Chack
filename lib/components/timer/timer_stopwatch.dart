@@ -23,7 +23,10 @@ class StopwatchPage extends StatefulWidget {
   _StopwatchPageState createState() => _StopwatchPageState();
 }
 
-class _StopwatchPageState extends State<StopwatchPage> {
+class _StopwatchPageState extends State<StopwatchPage> with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true; // 상태 유지 활성화
+
   final BookReadingTimeService _readingTimeService = BookReadingTimeService();
   String elapsedTimeText = '00:00';
   Map<String, String>? selectedBook;
