@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:chack_project/services/daily_reading_service.dart';
+import 'package:chack_project/services/notification_service.dart';
 
 class TimerService with WidgetsBindingObserver {
   final DailyReadingService _dailyReadingService = DailyReadingService();
@@ -8,8 +9,8 @@ class TimerService with WidgetsBindingObserver {
   final int breakDuration;
   late int duration;
   late int _remainingTime;
-  int elapsedTimeForFirestore = 0; // Firestore에 저장할 경과 시간
-  int elapsedTimeForUI = 0;        // UI에 표시할 경과 시간
+  int elapsedTimeForFirestore = 0;
+  int elapsedTimeForUI = 0;
   double progress;
   Timer? _timer;
   bool isRunning = false;
@@ -19,8 +20,8 @@ class TimerService with WidgetsBindingObserver {
   VoidCallback? onComplete;
 
   TimerService({
-    this.pomodoroDuration = 10, // 기본 25분
-    this.breakDuration = 5,     // 기본 5분
+    this.pomodoroDuration = 10,
+    this.breakDuration = 5,
   })  : duration = pomodoroDuration,
         _remainingTime = pomodoroDuration,
         progress = 1.0 {
@@ -38,23 +39,38 @@ class TimerService with WidgetsBindingObserver {
       if (_remainingTime > 0) {
         _remainingTime--;
         if (isPomodoro) {
-          elapsedTimeForFirestore++; // Firestore용 경과 시간 증가
-          elapsedTimeForUI++;        // UI용 경과 시간 증가
+          elapsedTimeForFirestore++;
+          elapsedTimeForUI++;
         }
         progress = _remainingTime / duration;
         onTick?.call();
       } else {
         stop();
-        onComplete?.call();
-        switchTimer();
-        start();
+        _handleTimerComplete();
       }
     });
   }
 
+  void _handleTimerComplete() async {
+    if (isPomodoro) {
+      // 뽀모도로 타이머가 끝났을 때
+      await NotificationService.showReadingCompleteNotification(pomodoroDuration);
+      onComplete?.call();
+      switchTimer(); // 휴식 타이머로 전환
+      start(); // 휴식 타이머 시작
+    } else {
+      // 휴식 타이머가 끝났을 때
+      await NotificationService.showBreakCompleteNotification();
+      onComplete?.call();
+      switchTimer(); // 다시 뽀모도로 타이머로 전환
+      // 여기서는 자동으로 시작하지 않음
+      reset(); // 타이머를 초기 상태로 리셋
+    }
+  }
+
   void pause() {
     if (!isRunning) return;
-    _timer?.cancel(); // 타이머 중단
+    _timer?.cancel();
     _timer = null;
     isRunning = false;
   }
@@ -62,8 +78,8 @@ class TimerService with WidgetsBindingObserver {
   void switchTimer() {
     if (isPomodoro) {
       duration = breakDuration;
-      elapsedTimeForFirestore = 0; // Firestore 용 경과 시간 초기화
-      elapsedTimeForUI = 0;        // UI 표시 용 경과 시간 초기화
+      elapsedTimeForFirestore = 0;
+      elapsedTimeForUI = 0;
     } else {
       duration = pomodoroDuration;
     }
@@ -81,7 +97,7 @@ class TimerService with WidgetsBindingObserver {
   void reset() {
     stop();
     elapsedTimeForFirestore = 0;
-    elapsedTimeForUI = 0; // UI 시간도 초기화
+    elapsedTimeForUI = 0;
     _remainingTime = duration;
     progress = 1.0;
     onTick?.call();
@@ -108,7 +124,7 @@ class TimerService with WidgetsBindingObserver {
           seconds: elapsedTimeForFirestore,
           date: DateTime.now(),
         );
-        elapsedTimeForFirestore = 0;  // 업데이트 후 초기화
+        elapsedTimeForFirestore = 0;
       } catch (e) {
         print('Error updating daily reading time: $e');
       }
