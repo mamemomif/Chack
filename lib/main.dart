@@ -1,31 +1,15 @@
 // lib/main.dart
-
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart'; // dotenv import
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'screens/splash_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/main_screen.dart';
 import 'constants/colors.dart';
-import 'services/book_cache_service.dart';
 
-void main() async {
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  print('main: dotenv 초기화 시작');
-  await dotenv.load(fileName: ".env"); // dotenv 초기화
-  print('main: dotenv 초기화 완료');
-
-  print('main: Firebase 초기화 시작');
-  await Firebase.initializeApp();
-  print('main: Firebase 초기화 완료');
-
-  await Hive.initFlutter();
-  final cacheService = BookCacheService();
-  await cacheService.initialize();
-
-  await cacheService.clearCache(); // 캐시 초기화
   runApp(const MyApp());
 }
 
@@ -34,8 +18,8 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print('MyApp: MaterialApp 빌드 시작');
     return MaterialApp(
+      navigatorKey: navigatorKey,
       title: '채크',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
@@ -83,7 +67,6 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      // To support Korean language
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
@@ -98,7 +81,6 @@ class MyApp extends StatelessWidget {
         '/splash': (context) => const SplashScreen(),
         '/login': (context) => const LoginScreen(),
         '/home': (context) => const MainScreen(),
-        // '/search': (context) => const SearchScreen(), // 검색 화면 추가 필요
       },
       onUnknownRoute: (settings) {
         return MaterialPageRoute(

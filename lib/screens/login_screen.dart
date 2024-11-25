@@ -10,6 +10,7 @@ import '../constants/text_styles.dart';
 import '../constants/icons.dart';
 import '../constants/colors.dart';
 import 'signup_screen.dart';
+import 'find_account_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -317,7 +318,16 @@ class _LoginScreenState extends State<LoginScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             TextButton(
-                              onPressed: _isLoading ? null : () {},
+                              onPressed: _isLoading 
+                                ? null 
+                                : () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const FindAccountScreen(
+                                      isFindPassword: false,
+                                    )
+                                  )
+                                ),
                               child: Text('아이디 찾기',
                                   style: AppTextStyles.subTextStyle),
                             ),
@@ -329,7 +339,16 @@ class _LoginScreenState extends State<LoginScreen> {
                               endIndent: 10,
                             ),
                             TextButton(
-                              onPressed: _isLoading ? null : () {},
+                              onPressed: _isLoading 
+                                ? null 
+                                : () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const FindAccountScreen(
+                                      isFindPassword: true,
+                                    )
+                                  )
+                                ),
                               child: Text('비밀번호 찾기',
                                   style: AppTextStyles.subTextStyle),
                             ),

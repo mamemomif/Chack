@@ -7,6 +7,7 @@ import '../../services/reading_time_service.dart';
 import '../../components/timer/timer_select_book_button.dart';
 import '../../components/custom_alert_banner.dart';
 import '../../constants/colors.dart';
+import '../../constants/text_styles.dart';
 
 class StopwatchPage extends StatefulWidget {
   final StopwatchService stopwatchService;
@@ -200,98 +201,95 @@ class _StopwatchPageState extends State<StopwatchPage> {
   @override
   Widget build(BuildContext context) {
     final double screenWidth = MediaQuery.of(context).size.width;
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Align(
-          alignment: Alignment.topLeft,
-          child: Padding(
-            padding: EdgeInsets.symmetric(
-                horizontal: screenWidth * 0.1, vertical: 1),
-            child: const Text(
-              '스톱워치',
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: 24,
-                fontWeight: FontWeight.w800,
-                fontFamily: 'SUITE',
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Align(
+            alignment: Alignment.topLeft,
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 15),
+              child: Text(
+                '스톱워치',
+                style: AppTextStyles.titleStyle,
               ),
             ),
           ),
-        ),
-        Expanded(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                widget.stopwatchService.formatTime(),
-                style: const TextStyle(
-                  fontFamily: "SUITE",
-                  fontSize: 44,
-                  fontWeight: FontWeight.w800,
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  widget.stopwatchService.formatTime(),
+                  style: const TextStyle(
+                    fontFamily: "SUITE",
+                    fontSize: 44,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Column(
-                    children: [
-                      IconButton(
-                        icon: SvgPicture.asset(AppIcons.restartIcon),
-                        iconSize: 30,
-                        onPressed: _resetStopwatch,
-                      ),
-                      const Text(
-                        "다시 시작",
-                        style: TextStyle(
-                          fontFamily: "SUITE",
-                          fontSize: 12,
-                          color: Colors.grey,
-                          fontWeight: FontWeight.w600,
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Column(
+                      children: [
+                        IconButton(
+                          icon: SvgPicture.asset(AppIcons.restartIcon),
+                          iconSize: 30,
+                          onPressed: _resetStopwatch,
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(width: 40),
-                  Column(
-                    children: [
-                      IconButton(
-                        icon: SvgPicture.asset(
-                          widget.stopwatchService.isRunning
-                              ? AppIcons.pauseIcon
-                              : AppIcons.startIcon,
+                        const Text(
+                          "다시 시작",
+                          style: TextStyle(
+                            fontFamily: "SUITE",
+                            fontSize: 12,
+                            color: Colors.grey,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
-                        iconSize: 30,
-                        onPressed: _toggleStopwatch,
-                      ),
-                      Text(
-                        widget.stopwatchService.isRunning ? "정지" : "시작",
-                        style: const TextStyle(
-                          fontFamily: "SUITE",
-                          fontSize: 12,
-                          color: Colors.grey,
-                          fontWeight: FontWeight.w600,
+                      ],
+                    ),
+                    const SizedBox(width: 40),
+                    Column(
+                      children: [
+                        IconButton(
+                          icon: SvgPicture.asset(
+                            widget.stopwatchService.isRunning
+                                ? AppIcons.pauseIcon
+                                : AppIcons.startIcon,
+                          ),
+                          iconSize: 30,
+                          onPressed: _toggleStopwatch,
                         ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ],
+                        Text(
+                          widget.stopwatchService.isRunning ? "정지" : "시작",
+                          style: const TextStyle(
+                            fontFamily: "SUITE",
+                            fontSize: 12,
+                            color: Colors.grey,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 25, horizontal: 20),
-          child: BookSelectionWidget(
-            elapsedTimeText: elapsedTimeText,
-            onBookSelected: _onBookSelected,
-            userId: widget.userId,
-            timerService: widget.stopwatchService,
-            stopwatchService: widget.stopwatchService, // StopwatchService 전달
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 25, horizontal: 20),
+            child: BookSelectionWidget(
+              elapsedTimeText: elapsedTimeText,
+              onBookSelected: _onBookSelected,
+              userId: widget.userId,
+              timerService: widget.stopwatchService,
+              stopwatchService: widget.stopwatchService, // StopwatchService 전달
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

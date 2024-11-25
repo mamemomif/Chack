@@ -339,6 +339,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                 const SizedBox(height: 25),
 
                 Container(
+                  width: double.infinity,
                   decoration: BoxDecoration(
                       border: Border(
                           bottom: BorderSide(

@@ -4,8 +4,10 @@ import 'package:percent_indicator/percent_indicator.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../services/reading_time_service.dart';
 import '../../components/timer/timer_select_book_button.dart';
+import '../../services/daily_reading_service.dart';
 import '../../components/custom_alert_banner.dart';
 import '../../constants/icons.dart';
+import '../../constants/text_styles.dart';
 import '../../services/pomodoro_service.dart';
 import '../../constants/colors.dart';
 
@@ -25,6 +27,7 @@ class PomodoroPage extends StatefulWidget {
 
 class _PomodoroPageState extends State<PomodoroPage> {
   final BookReadingTimeService _readingTimeService = BookReadingTimeService();
+  final DailyReadingService _dailyReadingService = DailyReadingService();
   String elapsedTimeText = '';
   Map<String, String>? selectedBook;
   StreamSubscription? _readingStatusSubscription;
@@ -68,16 +71,21 @@ class _PomodoroPageState extends State<PomodoroPage> {
     final sessionTime = widget.timerService.elapsedTimeForFirestore;
 
     try {
-      // Firestore에 읽은 시간 업데이트
-      await _readingTimeService.updateReadingTime(
-        userId: widget.userId,
-        isbn: selectedBook!['isbn']!,
-        elapsedSeconds: sessionTime,
-      );
-
-      await widget.timerService.updateDailyReadingTime(
-        userId: widget.userId,
-      );
+      // 도서 독서 시간과 일일 독서 시간을 동시에 업데이트
+      await Future.wait([
+        // 특정 도서의 독서 시간 업데이트
+        _readingTimeService.updateReadingTime(
+          userId: widget.userId,
+          isbn: selectedBook!['isbn']!,
+          elapsedSeconds: sessionTime,
+        ),
+        // 하루 전체 독서 시간 업데이트
+        _dailyReadingService.updateDailyReadingTime(
+          userId: widget.userId,
+          seconds: sessionTime,
+          date: DateTime.now(),
+        ),
+      ]);
 
       // Firestore 업데이트 후 저장 시간 초기화 (UI용 시간은 유지)
       widget.timerService.elapsedTimeForFirestore = 0;
@@ -226,131 +234,131 @@ class _PomodoroPageState extends State<PomodoroPage> {
 
   @override
   Widget build(BuildContext context) {
+    final double screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       resizeToAvoidBottomInset: true,
       body: SafeArea(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    '뽀모도로',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 24,
-                      fontWeight: FontWeight.w800,
-                      fontFamily: 'SUITE',
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '뽀모도로',
+                      style: AppTextStyles.titleStyle,
                     ),
+                  ],
+                ),
+              ),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      CircularPercentIndicator(
+                        radius: 114.5,
+                        lineWidth: 20.0,
+                        percent: widget.timerService.progress,
+                        center: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              widget.timerService.formatTime(),
+                              style: const TextStyle(
+                                fontFamily: "SUITE",
+                                fontSize: 44,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            if (!widget.timerService.isPomodoro)
+                              const Text(
+                                "휴식 시간",
+                                style: TextStyle(
+                                  fontFamily: "SUITE",
+                                  fontSize: 16,
+                                  color: Colors.grey,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                          ],
+                        ),
+                        progressColor: widget.timerService.isPomodoro
+                            ? AppColors.pointColor
+                            : Colors.green,
+                        backgroundColor: Colors.grey[300]!,
+                        circularStrokeCap: CircularStrokeCap.butt,
+                        reverse: true,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Column(
+                        children: [
+                          IconButton(
+                            icon: SvgPicture.asset(AppIcons.restartIcon),
+                            iconSize: 30,
+                            onPressed: _resetTimer,
+                          ),
+                          const Text(
+                            "다시 시작",
+                            style: TextStyle(
+                              fontFamily: "SUITE",
+                              fontSize: 12,
+                              color: Colors.grey,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(width: 40),
+                      Column(
+                        children: [
+                          IconButton(
+                            icon: SvgPicture.asset(
+                              widget.timerService.isRunning
+                                  ? AppIcons.pauseIcon
+                                  : AppIcons.startIcon,
+                            ),
+                            iconSize: 30,
+                            onPressed: _toggleTimer,
+                          ),
+                          Text(
+                            widget.timerService.isRunning ? "정지" : "시작",
+                            style: const TextStyle(
+                              fontFamily: "SUITE",
+                              fontSize: 12,
+                              color: Colors.grey,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    CircularPercentIndicator(
-                      radius: 114.5,
-                      lineWidth: 20.0,
-                      percent: widget.timerService.progress,
-                      center: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            widget.timerService.formatTime(),
-                            style: const TextStyle(
-                              fontFamily: "SUITE",
-                              fontSize: 44,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                          if (!widget.timerService.isPomodoro)
-                            const Text(
-                              "휴식 시간",
-                              style: TextStyle(
-                                fontFamily: "SUITE",
-                                fontSize: 16,
-                                color: Colors.grey,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                        ],
-                      ),
-                      progressColor: widget.timerService.isPomodoro
-                          ? AppColors.pointColor
-                          : Colors.green,
-                      backgroundColor: Colors.grey[300]!,
-                      circularStrokeCap: CircularStrokeCap.butt,
-                      reverse: true,
-                    ),
-                  ],
+              // 바텀 네비게이션과 도서 선택 버튼 사이 간격
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 25, horizontal: 20),
+                child: BookSelectionWidget(
+                  elapsedTimeText: elapsedTimeText,
+                  onBookSelected: _onBookSelected,
+                  userId: widget.userId,
+                  timerService: widget.timerService,
                 ),
-                const SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Column(
-                      children: [
-                        IconButton(
-                          icon: SvgPicture.asset(AppIcons.restartIcon),
-                          iconSize: 30,
-                          onPressed: _resetTimer,
-                        ),
-                        const Text(
-                          "다시 시작",
-                          style: TextStyle(
-                            fontFamily: "SUITE",
-                            fontSize: 12,
-                            color: Colors.grey,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(width: 40),
-                    Column(
-                      children: [
-                        IconButton(
-                          icon: SvgPicture.asset(
-                            widget.timerService.isRunning
-                                ? AppIcons.pauseIcon
-                                : AppIcons.startIcon,
-                          ),
-                          iconSize: 30,
-                          onPressed: _toggleTimer,
-                        ),
-                        Text(
-                          widget.timerService.isRunning ? "정지" : "시작",
-                          style: const TextStyle(
-                            fontFamily: "SUITE",
-                            fontSize: 12,
-                            color: Colors.grey,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            // 바텀 네비게이션과 도서 선택 버튼 사이 간격
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 25, horizontal: 20),
-              child: BookSelectionWidget(
-                elapsedTimeText: elapsedTimeText,
-                onBookSelected: _onBookSelected,
-                userId: widget.userId,
-                timerService: widget.timerService,
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
