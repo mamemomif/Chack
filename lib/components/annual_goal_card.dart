@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../constants/icons.dart';
 import '../constants/colors.dart';
+import '../constants/text_styles.dart';
 import '../components/custom_alert_banner.dart';
 
 class AnnualGoalCard extends StatelessWidget {
@@ -23,51 +24,167 @@ class AnnualGoalCard extends StatelessWidget {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              title: const Text('연간 독서 목표 설정'),
-              content: TextField(
-                controller: goalController,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  hintText: '목표 권수를 입력하세요',
-                  errorText: errorText,
-                  border: const OutlineInputBorder(),
-                ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              title: Column(
+                children: [
+                  // 아이콘 추가
+                  SvgPicture.asset(
+                    AppIcons.chackIcon,
+                    width: 40,
+                    colorFilter: const ColorFilter.mode(
+                      AppColors.pointColor,
+                      BlendMode.srcIn,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    '연간 독서 목표 설정',
+                    style: AppTextStyles.titleStyle.copyWith(
+                      fontSize: 20,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '올해 읽고 싶은 책의 수를 입력해주세요',
+                    style: AppTextStyles.subTextStyle,
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: goalController,
+                    keyboardType: TextInputType.number,
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.titleLabelStyle.copyWith(
+                      fontSize: 24,
+                      color: AppColors.pointColor,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: '목표 권수',
+                      hintStyle: AppTextStyles.hintTextStyle,
+                      errorText: errorText,
+                      errorStyle: const TextStyle(
+                        color: AppColors.errorColor,
+                        fontSize: 12,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        vertical: 16,
+                        horizontal: 20,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(
+                          color: AppColors.pointColor,
+                          width: 2,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(
+                          color: AppColors.pointColor,
+                          width: 2,
+                        ),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: AppColors.pointColor.withOpacity(0.5),
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '권',
+                    style: AppTextStyles.subTextStyle.copyWith(
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              ),
+              actionsPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 12,
               ),
               actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('취소'),
-                ),
-                TextButton(
-                  onPressed: () async {
-                    final input = goalController.text;
-                    final goal = int.tryParse(input);
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          side: BorderSide(
+                            color: AppColors.pointColor.withOpacity(0.5),
+                          ),
+                        ),
+                        child: Text(
+                          '취소',
+                          style: AppTextStyles.buttonTextStyle.copyWith(
+                            color: AppColors.pointColor,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          final input = goalController.text;
+                          final goal = int.tryParse(input);
 
-                    if (goal == null || goal <= 0) {
-                      setState(() => errorText = '올바른 숫자를 입력해주세요.');
-                      return;
-                    }
+                          if (goal == null || goal <= 0) {
+                            setState(() => errorText = '1권 이상의 숫자를 입력해주세요.');
+                            return;
+                          }
 
-                    try {
-                      await FirebaseFirestore.instance
-                          .collection('users')
-                          .doc(userId)
-                          .update({
-                        'annualGoal': goal,
-                      });
+                          try {
+                            await FirebaseFirestore.instance
+                                .collection('users')
+                                .doc(userId)
+                                .update({
+                              'annualGoal': goal,
+                            });
 
-                      if (context.mounted) Navigator.of(context).pop();
-                    } catch (e) {
-                      if (context.mounted) {
-                        CustomAlertBanner.show(
-                          context,
-                          message: '목표 설정 중 오류가 발생했습니다.',
-                          iconColor: AppColors.errorColor, // 에러 색상 적용
-                        );
-                      }
-                    }
-                  },
-                  child: const Text('설정'),
+                            if (context.mounted) Navigator.of(context).pop();
+                          } catch (e) {
+                            if (context.mounted) {
+                              CustomAlertBanner.show(
+                                context,
+                                message: '목표 설정 중 오류가 발생했습니다.',
+                                iconColor: AppColors.errorColor,
+                              );
+                            }
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.pointColor,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 0,
+                        ),
+                        child: Text(
+                          '설정',
+                          style: AppTextStyles.buttonTextStyle.copyWith(
+                            color: Colors.white,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             );

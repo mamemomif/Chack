@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../constants/icons.dart';
 import '../../constants/colors.dart';
+import '../../constants/text_styles.dart';
 import '../../services/pomodoro_service.dart';
 import '../../services/reading_time_service.dart';
 import '../../services/stopwatch_service.dart';
@@ -39,26 +40,118 @@ class _BookSelectionWidgetState extends State<BookSelectionWidget> {
     super.dispose();
   }
 
-  Future<void> _showBookSelectionModal(BuildContext context) async {
-    if (widget.timerService.isRunning) {
-      final bool shouldSwitch = await showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('타이머 실행 중'),
-          content: const Text('현재 실행 중인 타이머가 있습니다. 도서를 변경하시겠습니까?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('취소'),
+  Future<bool> _showBookSwitchDialog(BuildContext context) async {
+    return await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: Column(
+          children: [
+            SvgPicture.asset(
+              AppIcons.chackIcon,
+              width: 40,
+              colorFilter: const ColorFilter.mode(
+                AppColors.pointColor,
+                BlendMode.srcIn,
+              ),
             ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('확인'),
+            const SizedBox(height: 16),
+            Text(
+              '도서 변경',
+              style: AppTextStyles.titleStyle.copyWith(
+                fontSize: 20,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '현재 실행 중인 타이머가 있습니다.\n도서를 변경하시겠습니까?',
+              style: AppTextStyles.subTextStyle,
+              textAlign: TextAlign.center,
             ),
           ],
         ),
-      ) ??
-          false;
+        content: Container(
+          padding: const EdgeInsets.symmetric(
+            vertical: 12,
+            horizontal: 16,
+          ),
+          decoration: BoxDecoration(
+            color: AppColors.pointColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: AppColors.pointColor.withOpacity(0.3),
+            ),
+          ),
+          child: Text(
+            '도서를 변경하면 현재 타이머가 초기화됩니다.',
+            style: AppTextStyles.subTextStyle.copyWith(
+              color: AppColors.pointColor,
+              fontWeight: FontWeight.w600,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+        actionsPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 12,
+        ),
+        actions: [
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    side: BorderSide(
+                      color: AppColors.pointColor.withOpacity(0.5),
+                    ),
+                  ),
+                  child: Text(
+                    '취소',
+                    style: AppTextStyles.buttonTextStyle.copyWith(
+                      color: AppColors.pointColor,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.pointColor,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: Text(
+                    '변경',
+                    style: AppTextStyles.buttonTextStyle.copyWith(
+                      color: Colors.white,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    ) ?? false;
+  }
+
+  Future<void> _showBookSelectionModal(BuildContext context) async {
+    if (widget.timerService.isRunning) {
+      final bool shouldSwitch = await _showBookSwitchDialog(context);
 
       if (!shouldSwitch) return;
 
@@ -66,13 +159,13 @@ class _BookSelectionWidgetState extends State<BookSelectionWidget> {
       widget.timerService.reset();
     }
 
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      isScrollControlled: true,
-      builder: (context) => BookSelectionModal(
+      showModalBottomSheet(
+        context: context,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        isScrollControlled: true,
+        builder: (context) => BookSelectionModal(
         onBookSelected: (book) async {
           setState(() {
             selectedBook = book;
