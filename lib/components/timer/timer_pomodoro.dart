@@ -4,6 +4,7 @@ import 'package:percent_indicator/percent_indicator.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../services/reading_time_service.dart';
 import '../../components/timer/timer_select_book_button.dart';
+import '../../services/daily_reading_service.dart';
 import '../../components/custom_alert_banner.dart';
 import '../../constants/icons.dart';
 import '../../services/pomodoro_service.dart';
@@ -25,6 +26,7 @@ class PomodoroPage extends StatefulWidget {
 
 class _PomodoroPageState extends State<PomodoroPage> {
   final BookReadingTimeService _readingTimeService = BookReadingTimeService();
+  final DailyReadingService _dailyReadingService = DailyReadingService();
   String elapsedTimeText = '';
   Map<String, String>? selectedBook;
   StreamSubscription? _readingStatusSubscription;
@@ -68,16 +70,21 @@ class _PomodoroPageState extends State<PomodoroPage> {
     final sessionTime = widget.timerService.elapsedTimeForFirestore;
 
     try {
-      // Firestore에 읽은 시간 업데이트
-      await _readingTimeService.updateReadingTime(
-        userId: widget.userId,
-        isbn: selectedBook!['isbn']!,
-        elapsedSeconds: sessionTime,
-      );
-
-      await widget.timerService.updateDailyReadingTime(
-        userId: widget.userId,
-      );
+      // 도서 독서 시간과 일일 독서 시간을 동시에 업데이트
+      await Future.wait([
+        // 특정 도서의 독서 시간 업데이트
+        _readingTimeService.updateReadingTime(
+          userId: widget.userId,
+          isbn: selectedBook!['isbn']!,
+          elapsedSeconds: sessionTime,
+        ),
+        // 하루 전체 독서 시간 업데이트
+        _dailyReadingService.updateDailyReadingTime(
+          userId: widget.userId,
+          seconds: sessionTime,
+          date: DateTime.now(),
+        ),
+      ]);
 
       // Firestore 업데이트 후 저장 시간 초기화 (UI용 시간은 유지)
       widget.timerService.elapsedTimeForFirestore = 0;
@@ -85,7 +92,6 @@ class _PomodoroPageState extends State<PomodoroPage> {
       print('Failed to update reading time: $e');
     }
   }
-
   void _resetTimer() {
     if (widget.timerService.isRunning) {
       showDialog(

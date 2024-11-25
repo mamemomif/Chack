@@ -15,6 +15,7 @@ class TimerService with WidgetsBindingObserver {
   Timer? _timer;
   bool isRunning = false;
   bool isPomodoro = true;
+  String? _userId;
 
   VoidCallback? onTick;
   VoidCallback? onComplete;
@@ -54,6 +55,9 @@ class TimerService with WidgetsBindingObserver {
   void _handleTimerComplete() async {
     if (isPomodoro) {
       // 뽀모도로 타이머가 끝났을 때
+      if (_userId != null) {
+        await updateDailyReadingTime(userId: _userId!);
+      }
       await NotificationService.showReadingCompleteNotification(pomodoroDuration);
       onComplete?.call();
       switchTimer(); // 휴식 타이머로 전환
