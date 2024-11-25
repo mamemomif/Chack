@@ -386,10 +386,11 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                       borderRadius: BorderRadius.circular(15),
                     ),
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 25, vertical: 20),
+                        horizontal: 25, vertical: 18),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        const SizedBox(height: 4),
                         const Text(
                           '근처 도서관 보유 현황',
                           style: TextStyle(
@@ -397,19 +398,26 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                             fontWeight: FontWeight.w800,
                           ),
                         ),
-                        const SizedBox(height: 3),
+                        const SizedBox(height: 6),
                         Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              _libraryName,
-                              style: const TextStyle(fontSize: 14),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  _libraryName,
+                                  style: const TextStyle(fontSize: 14),
+                                ),
+                                Text(
+                                  '($_libraryDistance)',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: Colors.black.withOpacity(0.3),
+                                  ),
+                                ),
+                              ],
                             ),
-                            const SizedBox(width: 7),
-                            Text(
-                              '($_libraryDistance)',
-                              style: const TextStyle(fontSize: 14),
-                            ),
-                            const SizedBox(width: 10),
                             Container(
                               padding: const EdgeInsets.symmetric(
                                   vertical: 5, horizontal: 12),
