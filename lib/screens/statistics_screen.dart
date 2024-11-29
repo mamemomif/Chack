@@ -295,7 +295,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           ),
           const SizedBox(height: 30),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            padding: const EdgeInsets.symmetric(horizontal: 25),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -312,141 +312,164 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                 const SizedBox(height: 20),
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.grey[200],
-                    borderRadius: BorderRadius.circular(30),
+                    color: Colors.black.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(20),
                   ),
                   padding: const EdgeInsets.all(30),
                   child: SizedBox(
-                    height: 250,
+                    height: 200,
                     child: LineChart(
                       LineChartData(
+                        // 터치 동작 및 툴팁 설정
                         lineTouchData: LineTouchData(
-                          enabled: true,
+                          enabled: true, // 터치 동작 활성화
                           touchTooltipData: LineTouchTooltipData(
-                            tooltipBgColor: Colors.white,
+                            tooltipBgColor:
+                                Colors.black.withOpacity(0.05), // 툴팁 배경색
                             getTooltipItems: (List<LineBarSpot> touchedSpots) {
+                              // 터치한 점들의 데이터를 툴팁으로 표시
                               return touchedSpots.map((LineBarSpot spot) {
                                 return LineTooltipItem(
-                                  '${spot.y.toStringAsFixed(1)}분',
+                                  '${spot.y.toStringAsFixed(1)}분', // 값을 소수점 한 자리로 표시
                                   const TextStyle(
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.w700,
+                                    color: Colors.black, // 툴팁 텍스트 색상
+                                    fontWeight: FontWeight.w700, // 텍스트 굵기
                                   ),
                                 );
                               }).toList();
                             },
                           ),
                         ),
+                        // 차트의 격자선 설정
                         gridData: FlGridData(
-                          show: true,
-                          drawHorizontalLine: true,
-                          drawVerticalLine: false,
-                          horizontalInterval: 30,
+                          show: true, // 격자선 표시
+                          drawHorizontalLine: true, // 가로선 표시
+                          drawVerticalLine: false, // 세로선 숨김
+                          horizontalInterval: 10, // 가로선 간격 (값이 10 단위로 나타남)
                           getDrawingHorizontalLine: (value) {
+                            // 각 가로선의 스타일 정의
                             return FlLine(
-                              color: Colors.grey.withOpacity(0.6),
-                              strokeWidth: 1,
+                              color: Colors.black.withOpacity(0.1), // 선 색상
+                              strokeWidth: 1, // 선 두께
                             );
                           },
                         ),
+                        // 축 타이틀 설정
                         titlesData: FlTitlesData(
+                          // 왼쪽 Y축 타이틀
                           leftTitles: AxisTitles(
                             sideTitles: SideTitles(
-                              showTitles: true,
-                              reservedSize: 50,
+                              showTitles: true, // Y축 타이틀 표시
+                              reservedSize: 50, // 공간 확보
                               getTitlesWidget: (value, _) {
+                                // 값을 받아 텍스트로 변환
                                 return Padding(
                                   padding: const EdgeInsets.only(right: 8.0),
                                   child: Text(
-                                    formatMinutes(value),
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey,
+                                    formatMinutes(value), // 값을 분/시간 형식으로 변환
+                                    style: TextStyle(
+                                      fontSize: 12, // 텍스트 크기
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.black
+                                          .withOpacity(0.3), // 텍스트 색상
                                     ),
                                   ),
                                 );
                               },
-                              interval: 30,
+                              interval: 30, // 30 단위로 값 표시
                             ),
                           ),
+                          // 아래 X축 타이틀
                           bottomTitles: AxisTitles(
                             sideTitles: SideTitles(
-                              showTitles: true,
-                              reservedSize: 30,
+                              showTitles: true, // X축 타이틀 표시
+                              reservedSize: 30, // 공간 확보
                               getTitlesWidget: (value, _) {
+                                // 값을 날짜로 변환
                                 final index = value.toInt();
                                 if (index >= 0 && index <= 6) {
                                   final date = DateTime.now()
                                       .subtract(Duration(days: 6 - index));
-                                  final isToday = index == 6;
+                                  final isToday = index == 6; // 오늘인지 확인
                                   return Padding(
-                                    padding: const EdgeInsets.only(top: 8.0),
+                                    padding: const EdgeInsets.only(top: 10),
                                     child: Text(
-                                      isToday ? '오늘' : '${date.day}일',
+                                      isToday
+                                          ? '오늘'
+                                          : '${date.day}일', // 오늘이면 '오늘', 아니면 날짜 표시
                                       style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: isToday
-                                            ? FontWeight.bold
-                                            : FontWeight.normal,
-                                        color: isToday
-                                            ? AppColors.pointColor
-                                            : Colors.grey,
+                                        fontSize: 12, // 텍스트 크기
+                                        fontWeight: FontWeight.w700, // 굵기 설정
+                                        color: Colors.black
+                                            .withOpacity(0.3), // 색상 설정
                                       ),
                                     ),
                                   );
                                 }
-                                return const SizedBox.shrink();
+                                return const SizedBox
+                                    .shrink(); // 표시할 값이 없으면 빈 위젯 반환
                               },
                             ),
                           ),
                           topTitles: const AxisTitles(
-                              sideTitles: SideTitles(showTitles: false)),
+                              sideTitles:
+                                  SideTitles(showTitles: false)), // 위쪽 타이틀 숨김
                           rightTitles: const AxisTitles(
-                              sideTitles: SideTitles(showTitles: false)),
+                              sideTitles:
+                                  SideTitles(showTitles: false)), // 오른쪽 타이틀 숨김
                         ),
-                        borderData: FlBorderData(show: false),
-                        minX: 0,
-                        maxX: 6,
-                        minY: 0,
+                        // 차트 외곽선 설정
+                        borderData: FlBorderData(show: false), // 외곽선 숨김
+                        // X축, Y축의 최소/최대값 설정
+                        minX: 0, // X축 최소값
+                        maxX: 6, // X축 최대값
+                        minY: 0, // Y축 최소값
                         maxY: () {
+                          // Y축 최대값 계산
                           final maxMinutes = _weeklySpots.fold<double>(
                             0,
-                            (max, spot) => spot.y > max ? spot.y : max,
+                            (max, spot) =>
+                                spot.y > max ? spot.y : max, // 데이터 중 최대값 찾기
                           );
 
                           if (maxMinutes <= 0) {
-                            return 30.0;
+                            return 30.0; // 값이 없으면 기본값으로 30 설정
                           }
 
                           return ((maxMinutes / 30).ceil() * 30.0)
-                              .clamp(30.0, double.infinity);
+                              .clamp(30.0, double.infinity); // 30 단위로 반올림
                         }(),
+                        // 선 데이터 설정
                         lineBarsData: [
                           LineChartBarData(
-                            spots: _weeklySpots,
-                            isCurved: true,
-                            color: AppColors.pointColor,
-                            barWidth: 4,
+                            spots: _weeklySpots, // 차트에 표시할 데이터
+                            isCurved: true, // 곡선으로 표시
+                            color: AppColors.pointColor, // 선 색상
+                            barWidth: 4, // 선 두께
+                            // 점 스타일 설정
                             dotData: FlDotData(
-                              show: true,
+                              show: true, // 점 표시
                               getDotPainter: (spot, percent, barData, index) {
                                 return FlDotCirclePainter(
-                                  radius: 6,
-                                  color: AppColors.pointColor,
-                                  strokeWidth: 2,
-                                  strokeColor: Colors.white,
+                                  radius: 4, // 점 크기
+                                  color: AppColors.pointColor, // 점 색상
+                                  strokeWidth: 1, // 테두리 두께
+                                  strokeColor: AppColors.pointColor, // 테두리 색상
                                 );
                               },
                             ),
+                            // 선 아래 영역 스타일 설정
                             belowBarData: BarAreaData(
-                              show: true,
+                              show: true, // 아래 영역 표시
                               gradient: LinearGradient(
                                 colors: [
-                                  AppColors.pointColor.withOpacity(0.4),
-                                  AppColors.pointColor.withOpacity(0.1),
+                                  AppColors.pointColor
+                                      .withOpacity(0.4), // 위쪽 색상
+                                  AppColors.pointColor
+                                      .withOpacity(0.1), // 아래쪽 색상
                                 ],
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
+                                begin: Alignment.topCenter, // 그라데이션 시작점
+                                end: Alignment.bottomCenter, // 그라데이션 끝점
                               ),
                             ),
                           ),
@@ -455,7 +478,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 100),
+                const SizedBox(height: 150),
               ],
             ),
           ),
