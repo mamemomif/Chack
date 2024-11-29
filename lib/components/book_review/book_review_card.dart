@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../constants/colors.dart';
+import '../../constants/icons.dart';
 import '../../services/book_review_service.dart';
 
 class BookReviewCard extends StatefulWidget {
@@ -8,11 +10,11 @@ class BookReviewCard extends StatefulWidget {
   final VoidCallback onReviewSaved;
 
   const BookReviewCard({
-    Key? key,
+    super.key,
     required this.userId,
     required this.isbn,
     required this.onReviewSaved,
-  }) : super(key: key);
+  });
 
   @override
   _BookReviewCardState createState() => _BookReviewCardState();
@@ -87,7 +89,7 @@ class _BookReviewCardState extends State<BookReviewCard> {
           _reviewText = _controller.text;
           _isEditing = false;
         });
-        widget.onReviewSaved();  // 저장 완료 후 콜백 호출
+        widget.onReviewSaved(); // 저장 완료 후 콜백 호출
       }
     } catch (e) {
       if (mounted) {
@@ -142,101 +144,114 @@ class _BookReviewCardState extends State<BookReviewCard> {
       );
     }
 
-    return Card(
-      color: Colors.grey[100],
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
-      elevation: 0,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    const Text(
-                      '내 별점',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w800,
-                        fontFamily: "SUITE",
-                        fontSize: 20,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Row(
-                      children: List.generate(5, (index) {
-                        return GestureDetector(
-                          onTap: _isEditing
-                              ? () {
-                                  setState(() {
-                                    _rating = index + 1;
-                                  });
-                                }
-                              : null,
-                          child: Icon(
-                            index < _rating ? Icons.star : Icons.star_border,
-                            color: AppColors.pointColor,
-                            size: 24,
-                          ),
-                        );
-                      }),
-                    ),
-                  ],
-                ),
-                IconButton(
-                  onPressed: () {
-                    setState(() {
-                      if (_isEditing) {
-                        _saveReview();  // 저장 로직 호출
-                      } else {
-                        setState(() {
-                          _isEditing = true;
-                        });
-                      }
-                    });
-                  },
-                  icon: Icon(
-                    _isEditing ? Icons.check : Icons.edit,
-                    color: _isEditing ? Colors.teal : Colors.grey,
-                    size: 20,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-
-            _isEditing
-                ? TextField(
-                    controller: _controller,
-                    maxLines: 3,
-                    decoration: InputDecoration(
-                      hintText: '독후감을 작성하세요.',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(color: Colors.grey),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(color: AppColors.unreadColor),
-                      ),
-                    ),
-                  )
-                : Text(
-                    _reviewText,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  const Text(
+                    '내 별점',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w800,
                       fontFamily: "SUITE",
+                      fontSize: 20,
                       color: AppColors.primary,
                     ),
                   ),
-          ],
-        ),
+                  const SizedBox(width: 8),
+                  Row(
+                    children: List.generate(
+                      5,
+                      (index) {
+                        return Row(
+                          children: [
+                            GestureDetector(
+                              onTap: _isEditing
+                                  ? () {
+                                      setState(() {
+                                        _rating = index + 1;
+                                      });
+                                    }
+                                  : null,
+                              child: index < _rating
+                                  ? SvgPicture.asset(
+                                      AppIcons.starIcon,
+                                      width: 18,
+                                      colorFilter: const ColorFilter.mode(
+                                        AppColors.pointColor,
+                                        BlendMode.srcIn,
+                                      ),
+                                    )
+                                  : SvgPicture.asset(
+                                      AppIcons.starIcon,
+                                      width: 18,
+                                      colorFilter: ColorFilter.mode(
+                                        Colors.black.withOpacity(0.1),
+                                        BlendMode.srcIn,
+                                      ),
+                                    ),
+                            ),
+                            if (index < 4) const SizedBox(width: 6), // 별 사이의 간격
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              IconButton(
+                onPressed: () {
+                  setState(() {
+                    if (_isEditing) {
+                      _saveReview(); // 저장 로직 호출
+                    } else {
+                      setState(() {
+                        _isEditing = true;
+                      });
+                    }
+                  });
+                },
+                icon: Icon(
+                  _isEditing ? Icons.check : Icons.edit,
+                  color: _isEditing ? Colors.teal : Colors.grey,
+                  size: 20,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _isEditing
+              ? TextField(
+                  controller: _controller,
+                  maxLines: 3,
+                  decoration: InputDecoration(
+                    hintText: '독후감을 작성하세요.',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(color: Colors.grey),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide:
+                          const BorderSide(color: AppColors.unreadColor),
+                    ),
+                  ),
+                )
+              : Text(
+                  _reviewText,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                    fontFamily: "SUITE",
+                    color: AppColors.primary,
+                  ),
+                ),
+        ],
       ),
     );
   }
