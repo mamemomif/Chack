@@ -95,8 +95,8 @@
 ### 4.2 설치 및 실행
 1. **저장소 클론**  
    ```bash
-   git clone https://github.com/CHACK-team/CHACK-project.git
-   cd CHACK-project
+   git clone https://github.com/ChackTeam/Chack.git
+   cd Chack
    ```
 
 2. **Flutter 의존성 설치**  
@@ -133,14 +133,15 @@
 ## 5. API 명세
 
 ### 5.1 엔드포인트
-- **도서관 검색**  
+- **근처 도서관 검색**  
   `GET /api/libraries`  
   **Query Parameters:**  
   - isbn: string  
   - latitude: number  
   - longitude: number  
 
-- **인기 도서 조회**  
+- **인기 도서 업데이트**
+- 월요일 1:00AM 자동 실행
   `GET /api/hot-books`  
   **Query Parameters:**  
   - ageGroup: string  
