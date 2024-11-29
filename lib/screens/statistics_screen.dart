@@ -1,15 +1,17 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:chack_project/constants/colors.dart';
 import 'package:chack_project/constants/icons.dart';
+import 'package:chack_project/constants/text_styles.dart';
 import 'package:chack_project/services/statistics_service.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class StatisticsScreen extends StatefulWidget {
   final String userId;
-  
+
   const StatisticsScreen({
     super.key,
     required this.userId,
@@ -23,7 +25,8 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   final StatisticsService _statisticsService = StatisticsService();
   DateTime _focusedDay = DateTime.now();
   Map<DateTime, int> _monthlyReadingData = {};
-  List<FlSpot> _weeklySpots = List.generate(7, (index) => FlSpot(index.toDouble(), 0));
+  List<FlSpot> _weeklySpots =
+      List.generate(7, (index) => FlSpot(index.toDouble(), 0));
   int _maxReadingTime = 0;
   double _weeklyMaxReadingTime = 0;
   Stream<int>? _todayReadingStream;
@@ -38,21 +41,23 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
 
   void _initializeTodayStream() {
     final today = DateTime.now();
-    _todayReadingStream = _statisticsService.getTodayReadingStream(widget.userId);
+    _todayReadingStream =
+        _statisticsService.getTodayReadingStream(widget.userId);
     _todayReadingStream?.listen((seconds) {
       if (mounted) {
         setState(() {
-          _monthlyReadingData[DateTime(today.year, today.month, today.day)] = seconds;
-          
+          _monthlyReadingData[DateTime(today.year, today.month, today.day)] =
+              seconds;
+
           // 오늘의 독서 시간을 주간 데이터에 반영
           final minutesRead = seconds / 60;
           _weeklySpots = List.from(_weeklySpots)..[6] = FlSpot(6, minutesRead);
-          
+
           // 주간 최대값 업데이트
           if (minutesRead > _weeklyMaxReadingTime) {
             _weeklyMaxReadingTime = minutesRead;
           }
-          
+
           // 월별 캘린더용 최대값 업데이트
           if (seconds > _maxReadingTime) {
             _maxReadingTime = seconds;
@@ -64,21 +69,21 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
 
   Future<void> _loadMonthlyData() async {
     final monthlyData = await _statisticsService.getMonthlyReadingData(
-      widget.userId, 
-      _focusedDay
-    );
-    
+        widget.userId, _focusedDay);
+
     if (mounted) {
       setState(() {
         _monthlyReadingData = monthlyData;
-        _maxReadingTime = monthlyData.values.fold(0, (max, value) => value > max ? value : max);
+        _maxReadingTime = monthlyData.values
+            .fold(0, (max, value) => value > max ? value : max);
       });
     }
   }
 
   Future<void> _loadWeeklyData() async {
-    final weeklyData = await _statisticsService.getWeeklyReadingData(widget.userId);
-    
+    final weeklyData =
+        await _statisticsService.getWeeklyReadingData(widget.userId);
+
     if (mounted) {
       setState(() {
         _weeklySpots = weeklyData
@@ -91,19 +96,20 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
             .toList();
 
         // 최근 7일 최대값 계산
-        _weeklyMaxReadingTime = _weeklySpots.fold(0.0, (max, spot) => spot.y > max ? spot.y : max);
+        _weeklyMaxReadingTime =
+            _weeklySpots.fold(0.0, (max, spot) => spot.y > max ? spot.y : max);
       });
     }
   }
 
   Color getColorByTime(int seconds) {
     if (_maxReadingTime == 0) return Colors.transparent;
-    final minOpacity = 0.1;
-    final maxOpacity = 0.8;
+    const minOpacity = 0.3;
+    const maxOpacity = 1;
     final ratio = seconds / _maxReadingTime;
     final logRatio = (log(ratio * 9 + 1) / log(10));
     final opacity = minOpacity + (maxOpacity - minOpacity) * logRatio;
-    return AppColors.pointColor.withOpacity(opacity.clamp(minOpacity, maxOpacity));
+    return AppColors.pointColor.withOpacity(opacity.clamp(0.0, 1.0));
   }
 
   String formatMinutes(double minutes) {
@@ -112,19 +118,20 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     }
     final hours = (minutes / 60).floor();
     final mins = (minutes % 60).round();
-    return mins > 0 ? '$hours시간 ${mins}분' : '$hours시간';
+    return mins > 0 ? '$hours시간 $mins분' : '$hours시간';
   }
 
   @override
   Widget build(BuildContext context) {
     final today = DateTime.now();
-    final isCurrentMonth = _focusedDay.year == today.year && _focusedDay.month == today.month;
+    final isCurrentMonth =
+        _focusedDay.year == today.year && _focusedDay.month == today.month;
 
     return SingleChildScrollView(
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(20.0),
+            padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 5),
             child: TableCalendar(
               firstDay: DateTime.utc(2024, 1, 1),
               lastDay: DateTime.utc(2025, 12, 31),
@@ -136,67 +143,55 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
               },
               headerStyle: HeaderStyle(
                 titleCentered: true,
-                titleTextFormatter: (date, locale) => '${date.year}년 ${date.month}월',
+                titleTextFormatter: (date, locale) =>
+                    '${date.year}년 ${date.month}월',
                 titleTextStyle: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
                   color: Colors.black,
                 ),
                 formatButtonVisible: false,
               ),
-              calendarStyle: const CalendarStyle(
-                defaultDecoration: BoxDecoration(),
-                weekendDecoration: BoxDecoration(),
-                outsideDecoration: BoxDecoration(),
-                selectedDecoration: BoxDecoration(),
-                todayDecoration: BoxDecoration(),
-                defaultTextStyle: TextStyle(
-                  color: Colors.black,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+              daysOfWeekStyle: DaysOfWeekStyle(
+                weekdayStyle: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.black.withOpacity(0.3),
                 ),
-                weekendTextStyle: TextStyle(
-                  color: Colors.black,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-                outsideTextStyle: TextStyle(
-                  color: Colors.grey,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-                selectedTextStyle: TextStyle(
-                  color: Colors.black,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-                todayTextStyle: TextStyle(
-                  color: Colors.black,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+                weekendStyle: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.black.withOpacity(0.3),
                 ),
               ),
+              rowHeight: 60,
               calendarBuilders: CalendarBuilders(
                 defaultBuilder: (context, day, focusedDay) {
-                  final readingTime = _monthlyReadingData[DateTime(day.year, day.month, day.day)] ?? 0;
+                  final readingTime = _monthlyReadingData[
+                          DateTime(day.year, day.month, day.day)] ??
+                      0;
                   final isToday = isSameDay(day, today);
-                  
+
                   return Stack(
                     clipBehavior: Clip.none,
                     children: [
                       Container(
-                        margin: const EdgeInsets.all(4),
+                        margin: const EdgeInsets.all(3),
                         decoration: BoxDecoration(
-                          color: readingTime > 0 ? getColorByTime(readingTime) : null,
+                          color: readingTime > 0
+                              ? getColorByTime(readingTime)
+                              : null,
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Center(
                           child: Text(
                             '${day.day}',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black,
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w800,
+                              color: (readingTime > 0)
+                                  ? Colors.white
+                                  : Colors.black.withOpacity(0.7),
                             ),
                           ),
                         ),
@@ -209,7 +204,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                             AppIcons.chackIcon,
                             width: 12,
                             height: 12,
-                            colorFilter: ColorFilter.mode(
+                            colorFilter: const ColorFilter.mode(
                               AppColors.primary,
                               BlendMode.srcIn,
                             ),
@@ -219,97 +214,71 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                   );
                 },
                 selectedBuilder: (context, day, focusedDay) {
-                  final readingTime = _monthlyReadingData[DateTime(day.year, day.month, day.day)] ?? 0;
+                  final readingTime = _monthlyReadingData[
+                          DateTime(day.year, day.month, day.day)] ??
+                      0;
                   final isToday = isSameDay(day, today);
-                  
+
                   return Stack(
                     clipBehavior: Clip.none,
                     children: [
                       Container(
-                        margin: const EdgeInsets.all(4),
+                        margin: const EdgeInsets.all(3),
                         decoration: BoxDecoration(
-                          color: readingTime > 0 ? getColorByTime(readingTime) : null,
+                          color: readingTime > 0
+                              ? getColorByTime(readingTime)
+                              : null,
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Center(
-                          child: Text(
-                            '${day.day}',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black,
-                            ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                '${day.day}',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w800,
+                                  color: (readingTime > 0)
+                                      ? Colors.white
+                                      : Colors.black.withOpacity(0.7),
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Container(
+                                width: 5,
+                                height: 5,
+                                decoration: BoxDecoration(
+                                  color: (readingTime > 0)
+                                      ? Colors.white
+                                      : Colors.black.withOpacity(0.7),
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
+                              )
+                            ],
                           ),
                         ),
                       ),
-                      if (isToday)
-                        Positioned(
-                          top: 2,
-                          left: 2,
-                          child: SvgPicture.asset(
-                            AppIcons.chackIcon,
-                            width: 12,
-                            height: 12,
-                            colorFilter: ColorFilter.mode(
-                              AppColors.primary,
-                              BlendMode.srcIn,
-                            ),
-                          ),
-                        ),
                     ],
                   );
                 },
                 todayBuilder: (context, day, focusedDay) {
-                  final readingTime = _monthlyReadingData[DateTime(day.year, day.month, day.day)] ?? 0;
+                  final readingTime = _monthlyReadingData[
+                          DateTime(day.year, day.month, day.day)] ??
+                      0;
                   final isToday = isSameDay(day, today);
-                  
-                  return Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      Container(
-                        margin: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: readingTime > 0 ? getColorByTime(readingTime) : null,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Center(
-                          child: Text(
-                            '${day.day}',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black,
-                            ),
-                          ),
-                        ),
-                      ),
-                      if (isToday)
-                        Positioned(
-                          top: 2,
-                          left: 2,
-                          child: SvgPicture.asset(
-                            AppIcons.chackIcon,
-                            width: 12,
-                            height: 12,
-                            colorFilter: ColorFilter.mode(
-                              AppColors.primary,
-                              BlendMode.srcIn,
-                            ),
-                          ),
-                        ),
-                    ],
-                  );
+                  return null;
                 },
                 outsideBuilder: (context, day, focusedDay) {
                   return Container(
-                    margin: const EdgeInsets.all(4),
+                    margin: const EdgeInsets.all(3),
                     child: Center(
                       child: Text(
                         '${day.day}',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey,
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.black.withOpacity(0.25),
                         ),
                       ),
                     ),
@@ -326,15 +295,18 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           ),
           const SizedBox(height: 30),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 30.0),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  '최근 7일 독서 시간',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 10),
+                  child: Text(
+                    '최근 7일 독서 시간',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -358,7 +330,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                                   '${spot.y.toStringAsFixed(1)}분',
                                   const TextStyle(
                                     color: Colors.black,
-                                    fontWeight: FontWeight.bold,
+                                    fontWeight: FontWeight.w700,
                                   ),
                                 );
                               }).toList();
@@ -404,7 +376,8 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                               getTitlesWidget: (value, _) {
                                 final index = value.toInt();
                                 if (index >= 0 && index <= 6) {
-                                  final date = DateTime.now().subtract(Duration(days: 6 - index));
+                                  final date = DateTime.now()
+                                      .subtract(Duration(days: 6 - index));
                                   final isToday = index == 6;
                                   return Padding(
                                     padding: const EdgeInsets.only(top: 8.0),
@@ -412,8 +385,12 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                                       isToday ? '오늘' : '${date.day}일',
                                       style: TextStyle(
                                         fontSize: 12,
-                                        fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
-                                        color: isToday ? AppColors.pointColor : Colors.grey,
+                                        fontWeight: isToday
+                                            ? FontWeight.bold
+                                            : FontWeight.normal,
+                                        color: isToday
+                                            ? AppColors.pointColor
+                                            : Colors.grey,
                                       ),
                                     ),
                                   );
@@ -422,8 +399,10 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                               },
                             ),
                           ),
-                          topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                          rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                          topTitles: const AxisTitles(
+                              sideTitles: SideTitles(showTitles: false)),
+                          rightTitles: const AxisTitles(
+                              sideTitles: SideTitles(showTitles: false)),
                         ),
                         borderData: FlBorderData(show: false),
                         minX: 0,
@@ -434,12 +413,13 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                             0,
                             (max, spot) => spot.y > max ? spot.y : max,
                           );
-                          
+
                           if (maxMinutes <= 0) {
                             return 30.0;
                           }
-                          
-                          return ((maxMinutes / 30).ceil() * 30.0).clamp(30.0, double.infinity);
+
+                          return ((maxMinutes / 30).ceil() * 30.0)
+                              .clamp(30.0, double.infinity);
                         }(),
                         lineBarsData: [
                           LineChartBarData(
@@ -475,7 +455,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 30),
+                const SizedBox(height: 100),
               ],
             ),
           ),
@@ -483,11 +463,9 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
       ),
     );
   }
-    
 
   @override
   void dispose() {
     super.dispose();
   }
 }
-                                
