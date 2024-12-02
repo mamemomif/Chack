@@ -230,7 +230,7 @@ class SupportScreen extends StatelessWidget {
                 _buildFAQItem(
                   question: '독서 타이머는 어떻게 사용하나요?',
                   answer: '독서 타이머는 책을 읽는 시간을 자동으로 기록하여 일일 독서 통계에 반영합니다. '
-                      '타이머 버튼을 누르면 기록이 시작되고, 휴식이 필요할 때는 일시정지 버튼을 눌러주세요. ',
+                      '타이머 버튼을 누르면 기록이 시작되며, 휴식이 필요할 때는 일시정지 버튼을 눌러주세요. ',
                   icon: Icons.timer,
                 ),
                 _buildFAQItem(
