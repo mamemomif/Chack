@@ -1,0 +1,61 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "chack-ace76",
+          "appId": "1:28041757619:android:6d6da4cdad44ce1b7141c6",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "ios": {
+        "default": {
+          "projectId": "chack-ace76",
+          "appId": "1:28041757619:ios:0c78749dab444f097141c6",
+          "uploadDebugSymbols": false,
+          "fileOutput": "ios/Runner/GoogleService-Info.plist"
+        }
+      },
+      "macos": {
+        "default": {
+          "projectId": "chack-ace76",
+          "appId": "1:28041757619:ios:0c78749dab444f097141c6",
+          "uploadDebugSymbols": false,
+          "fileOutput": "macos/Runner/GoogleService-Info.plist"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "chack-ace76",
+          "configurations": {
+            "android": "1:28041757619:android:6d6da4cdad44ce1b7141c6",
+            "ios": "1:28041757619:ios:0c78749dab444f097141c6",
+            "macos": "1:28041757619:ios:0c78749dab444f097141c6",
+            "web": "1:28041757619:web:6c3be0cee970258c7141c6",
+            "windows": "1:28041757619:web:7bfa2f3d0e2073687141c6"
+          }
+        }
+      }
+    }
+  },
+  "functions": [
+    {
+      "region": "asia-northeast3",
+      "source": "backend_service",
+      "codebase": "backend_service",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ],
+      "predeploy": [
+        "npm --prefix \"$RESOURCE_DIR\" run lint",
+        "npm --prefix \"$RESOURCE_DIR\" run build"
+      ],
+      "vpcConnector": "chack-serless-connector",
+      "vpcConnectorEgressSettings": "ALL_TRAFFIC"
+    }
+  ]
+}
