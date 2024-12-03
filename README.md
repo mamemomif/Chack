@@ -43,10 +43,6 @@
 | **인증** | Firebase Authentication |
 | **외부 API** | 도서관 정보나루, Naver 책 검색 API, VWorld API |
 
-> 💡 자세한 기술 문서는 다음을 참고해주세요:
-> - [OPEN API 가이드](./wiki/%5BBack‐end-Services%5D-%08Open‐API-Specifications-and-Guides)
-> - [Mobile 개발 가이드](./wiki/%5BMobile%5D-Code-Guides)
-
 ---
 
 ## 3. 시작하기
@@ -70,10 +66,6 @@ flutter pub get
 # iOS 의존성 설치
 cd ios && pod install && cd ..
 ```
-
-> 💡 자세한 설치 가이드:
-> - [빌드 가이드](./wiki/%5BMobile%5D-Build-Guides)
-
 ---
 
 ## 4. 프로젝트 구조
