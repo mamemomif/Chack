@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../constants/colors.dart';
 
 class BookReadingtimeCard extends StatelessWidget {
   final DateTime startedAt;
