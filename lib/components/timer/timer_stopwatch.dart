@@ -1,13 +1,14 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import '../../constants/icons.dart';
-import '../../services/stopwatch_service.dart';
-import '../../services/reading_time_service.dart';
-import '../../components/timer/timer_select_book_button.dart';
-import '../../components/custom_alert_banner.dart';
-import '../../constants/colors.dart';
-import '../../constants/text_styles.dart';
+
+import 'package:chack_project/components/timer/timer_select_book_button.dart';
+import 'package:chack_project/components/custom_alert_banner.dart';
+import 'package:chack_project/constants/colors.dart';
+import 'package:chack_project/constants/text_styles.dart';
+import 'package:chack_project/constants/icons.dart';
+import 'package:chack_project/services/stopwatch_service.dart';
+import 'package:chack_project/services/reading_time_service.dart';
 
 class StopwatchPage extends StatefulWidget {
   final StopwatchService stopwatchService;
@@ -20,10 +21,10 @@ class StopwatchPage extends StatefulWidget {
   });
 
   @override
-  _StopwatchPageState createState() => _StopwatchPageState();
+  StopwatchPageState createState() => StopwatchPageState();
 }
 
-class _StopwatchPageState extends State<StopwatchPage>
+class StopwatchPageState extends State<StopwatchPage>
     with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true; // 상태 유지 활성화
@@ -204,6 +205,7 @@ class _StopwatchPageState extends State<StopwatchPage>
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final double screenWidth = MediaQuery.of(context).size.width;
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
