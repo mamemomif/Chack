@@ -14,7 +14,7 @@ class BirthdateTextField extends StatelessWidget {
   final List<TextInputFormatter>? inputFormatters;
 
   const BirthdateTextField({
-    Key? key,
+    super.key,
     required this.controller,
     required this.hintText,
     this.hasError = false,
@@ -22,7 +22,7 @@ class BirthdateTextField extends StatelessWidget {
     this.keyboardType = TextInputType.text,
     this.validator,
     this.inputFormatters,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

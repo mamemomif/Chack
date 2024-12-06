@@ -13,10 +13,10 @@ class CollectBirthDateScreen extends StatefulWidget {
   const CollectBirthDateScreen({super.key});
 
   @override
-  _CollectBirthDateScreenState createState() => _CollectBirthDateScreenState();
+  CollectBirthDateScreenState createState() => CollectBirthDateScreenState();
 }
 
-class _CollectBirthDateScreenState extends State<CollectBirthDateScreen> {
+class CollectBirthDateScreenState extends State<CollectBirthDateScreen> {
   final TextEditingController _birthDateController = TextEditingController();
   final AuthService _authService = AuthService();
   bool _isLoading = false;
@@ -255,8 +255,6 @@ class _CollectBirthDateScreenState extends State<CollectBirthDateScreen> {
   }
 }
 
-// 날짜 입력 시 자동으로 '.' 추가하는 Formatter
-// 날짜 입력 시 자동으로 '-' 추가하는 Formatter
 class _DateInputFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(

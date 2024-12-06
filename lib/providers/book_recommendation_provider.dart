@@ -108,7 +108,7 @@ class BookRecommendationProvider with ChangeNotifier {
         const Duration(hours: 1),
         (_) async {
           final newPosition = await _locationService.getCurrentLocation(forceUpdate: true);
-          if (newPosition != null && _shouldUpdateLocation(newPosition)) {
+          if (_shouldUpdateLocation(newPosition)) {
             _currentPosition = newPosition;
             await _clearLibraryCache();
             await _updateLibraryInfo();
