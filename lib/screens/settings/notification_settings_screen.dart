@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../constants/colors.dart';
-import '../../components/custom_alert_banner.dart';
-import '../../services/notification_service.dart';
+
+import 'package:chack_project/constants/colors.dart';
+import 'package:chack_project/components/custom_alert_banner.dart';
 
 class NotificationSettingsScreen extends StatefulWidget {
   const NotificationSettingsScreen({super.key});
