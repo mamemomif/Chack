@@ -19,10 +19,10 @@ class BookReviewCard extends StatefulWidget {
   });
 
   @override
-  _BookReviewCardState createState() => _BookReviewCardState();
+  BookReviewCardState createState() => BookReviewCardState();
 }
 
-class _BookReviewCardState extends State<BookReviewCard> {
+class BookReviewCardState extends State<BookReviewCard> {
   final BookReviewService _reviewService = BookReviewService();
   bool _isEditing = false;
   String _reviewText = '책 읽은 후 소감을 알려주세요.';
