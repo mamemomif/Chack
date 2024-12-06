@@ -360,7 +360,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 : () => Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => SignUpScreen(),
+                                    builder: (context) => const SignUpScreen(),
                                   ),
                                 ),
                               child: Text('회원가입',

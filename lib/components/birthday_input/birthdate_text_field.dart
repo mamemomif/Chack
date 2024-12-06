@@ -55,7 +55,7 @@ class BirthdateTextField extends StatelessWidget {
         // 포커스되었을 때의 border
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(
+          borderSide: const BorderSide(
             color: AppColors.pointColor, // 원하는 색상으로 설정
             width: 2.0,
           ),

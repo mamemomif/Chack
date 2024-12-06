@@ -10,11 +10,11 @@ class NoResultsFound extends StatelessWidget {
   final String buttonText;
 
   const NoResultsFound({
-    Key? key,
+    super.key,
     required this.onRetry,
     required this.searchText,
     this.buttonText = '다시 검색하기',
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
