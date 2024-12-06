@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../constants/colors.dart';
-import '../../constants/text_styles.dart';
+
+import 'package:chack_project/constants/colors.dart';
+import 'package:chack_project/constants/text_styles.dart';
 
 class BirthdateButton extends StatelessWidget {
   final String text;
