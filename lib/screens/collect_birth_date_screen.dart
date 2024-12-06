@@ -1,13 +1,13 @@
 // screens/collect_birth_date_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../constants/colors.dart';
-import '../constants/text_styles.dart';
-import '../components/birthday_input/birthdate_text_field.dart';
-import '../components/birthday_input/birthdate_button.dart';
-import '../components/custom_alert_banner.dart';
-import '../services/authentication_service.dart';
+
+import 'package:chack_project/components/birthday_input/birthdate_text_field.dart';
+import 'package:chack_project/components/birthday_input/birthdate_button.dart';
+import 'package:chack_project/components/custom_alert_banner.dart';
+import 'package:chack_project/constants/colors.dart';
+import 'package:chack_project/constants/text_styles.dart';
+import 'package:chack_project/services/authentication_service.dart';
 
 class CollectBirthDateScreen extends StatefulWidget {
   const CollectBirthDateScreen({super.key});

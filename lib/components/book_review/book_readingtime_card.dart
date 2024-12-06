@@ -16,11 +16,6 @@ class BookReadingtimeCard extends StatelessWidget {
     return '${date.month}월 ${date.day}일';
   }
 
-  String _formatDuration() {
-    if (finishedAt == null) return '0일';
-    return '${finishedAt!.difference(startedAt).inDays}일';
-  }
-
   String _formatReadTime() {
     int hours = readTime ~/ 3600;
     int minutes = (readTime % 3600) ~/ 60;
@@ -99,32 +94,6 @@ class BookReadingtimeCard extends StatelessWidget {
                 ),
               ],
             ),
-            /*
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const Text(
-                  '소요 일수',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w400,
-                    
-                    fontSize: 14,
-                    color: AppColors.unreadColor,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  _formatDuration(),
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w800,
-                    
-                    fontSize: 20,
-                    color: AppColors.primary,
-                  ),
-                ),
-              ],
-            ),
-            */
           ],
         ),
       ],

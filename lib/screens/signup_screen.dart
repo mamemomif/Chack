@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import '../services/authentication_service.dart';
-import '../components/custom_text_field.dart';
-import '../components/primary_button.dart';
-import '../components/custom_alert_banner.dart';
-import '../constants/text_styles.dart';
-import '../constants/colors.dart';
+
+import 'package:chack_project/services/authentication_service.dart';
+import 'package:chack_project/components/custom_text_field.dart';
+import 'package:chack_project/components/primary_button.dart';
+import 'package:chack_project/components/custom_alert_banner.dart';
+import 'package:chack_project/constants/text_styles.dart';
+import 'package:chack_project/constants/colors.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
