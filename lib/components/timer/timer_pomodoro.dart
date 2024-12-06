@@ -94,7 +94,7 @@ class PomodoroPageState extends State<PomodoroPage>
       // Firestore 업데이트 후 저장 시간 초기화 (UI용 시간은 유지)
       widget.timerService.elapsedTimeForFirestore = 0;
     } catch (e) {
-      // print('Failed to update reading time: $e');
+      // // print('Failed to update reading time: $e');
     }
   }
 

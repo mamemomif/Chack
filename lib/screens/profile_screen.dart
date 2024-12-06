@@ -40,7 +40,7 @@ class ProfileScreen extends StatelessWidget {
         Navigator.of(context)
             .pushNamedAndRemoveUntil('/login', (route) => false);
       } catch (e) {
-        print('Logout Error: $e');
+        // print('Logout Error: $e');
         CustomAlertBanner.show(
           context,
           message: '로그아웃 중 오류가 발생했습니다.',
@@ -154,8 +154,9 @@ class ProfileScreen extends StatelessWidget {
                                         fit: BoxFit.cover,
                                         loadingBuilder:
                                             (context, child, loadingProgress) {
-                                          if (loadingProgress == null)
+                                          if (loadingProgress == null) {
                                             return child;
+                                          }
                                           return const Center(
                                             child: CircularProgressIndicator(),
                                           );

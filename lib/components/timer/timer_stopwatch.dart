@@ -71,9 +71,9 @@ class StopwatchPageState extends State<StopwatchPage>
       // Firestore 업데이트 후 저장 시간 초기화 (중복 방지)
       widget.stopwatchService.elapsedTimeForFirestore = 0;
     } catch (e) {
-      print('Failed to update reading time: $e');
+      // print('Failed to update reading time: $e');
     }
-    print('Firestore 업데이트 시간: $sessionTime'); // 디버깅용 로그
+    // print('Firestore 업데이트 시간: $sessionTime'); // 디버깅용 로그
   }
 
   void _toggleStopwatch() {

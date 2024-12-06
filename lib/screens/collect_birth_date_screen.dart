@@ -177,7 +177,7 @@ class CollectBirthDateScreenState extends State<CollectBirthDateScreen> {
         (route) => false,
       );
     } catch (e) {
-      print('Error: $e');
+      // print('Error: $e');
       CustomAlertBanner.show(
         context,
         message: e.toString(),
